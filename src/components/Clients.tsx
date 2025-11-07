@@ -1,12 +1,21 @@
+import nationalGeographic from "@/assets/logos/national-geographic.png";
+import netflix from "@/assets/logos/netflix.png";
+import ted from "@/assets/logos/ted.png";
+import ign from "@/assets/logos/ign.png";
+import espn from "@/assets/logos/espn.png";
+import disneyKids from "@/assets/logos/disney-kids.png";
+import unesco from "@/assets/logos/unesco.png";
+import barbie from "@/assets/logos/barbie.png";
+
 const clients = [
-  "National Geographic",
-  "Netflix", 
-  "TED",
-  "IGN",
-  "ESPN",
-  "Disney Kids",
-  "UNESCO",
-  "Barbie"
+  { name: "National Geographic", logo: nationalGeographic },
+  { name: "Netflix", logo: netflix },
+  { name: "TED", logo: ted },
+  { name: "IGN", logo: ign },
+  { name: "ESPN", logo: espn },
+  { name: "Disney Kids", logo: disneyKids },
+  { name: "UNESCO", logo: unesco },
+  { name: "Barbie", logo: barbie },
 ];
 
 const Clients = () => {
@@ -27,11 +36,13 @@ const Clients = () => {
             {[...clients, ...clients].map((client, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 mx-4 flex items-center justify-center p-6 rounded-lg bg-card/30 border border-border hover:border-primary/30 transition-all duration-300 min-w-[200px]"
+                className="flex-shrink-0 mx-8 flex items-center justify-center p-6 rounded-lg bg-card/30 border border-border hover:border-primary/30 transition-all duration-300 min-w-[200px] h-[120px]"
               >
-                <span className="text-lg font-semibold text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap">
-                  {client}
-                </span>
+                <img 
+                  src={client.logo} 
+                  alt={client.name}
+                  className="max-w-full max-h-full object-contain filter brightness-90 hover:brightness-110 transition-all"
+                />
               </div>
             ))}
           </div>
