@@ -1,28 +1,37 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap } from "lucide-react";
-import heroBg from "@/assets/hero-bg.jpg";
+import { useState, useEffect } from "react";
+import MetropolisScene from "./MetropolisScene";
 
 const Hero = () => {
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroSection = document.getElementById('hero-section');
+      if (!heroSection) return;
+      
+      const heroHeight = heroSection.offsetHeight;
+      const scrolled = window.scrollY;
+      const progress = Math.min(scrolled / heroHeight, 1);
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Image with Overlay */}
+    <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* 3D Metropolis Background */}
+      <MetropolisScene scrollProgress={scrollProgress} />
+
+      {/* Frosted Glass Content */}
       <div 
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: `url(${heroBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+        className="container mx-auto px-4 z-10 text-center transition-opacity duration-500"
+        style={{ opacity: 1 - scrollProgress * 0.5 }}
       >
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
-      </div>
-
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-transparent to-background z-0" />
-
-      {/* Content */}
-      <div className="container mx-auto px-4 z-10 text-center">
-        <div className="animate-fade-in-up">
+        <div className="animate-fade-in-up backdrop-blur-xl bg-background/20 border border-primary/20 rounded-3xl p-8 md:p-12 max-w-5xl mx-auto">
           {/* Trust Badge */}
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-primary/20">
             <Zap className="w-4 h-4 text-primary" />
@@ -70,9 +79,17 @@ const Hero = () => {
             <div className="p-6 rounded-lg bg-card/30 backdrop-blur-sm border border-primary/10">
               <div className="text-3xl md:text-4xl font-bold gradient-text mb-2">60%</div>
               <div className="text-sm text-muted-foreground">Cost Savings</div>
-            </div>
           </div>
         </div>
+
+        {/* Scroll Instruction */}
+        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center animate-bounce">
+          <p className="text-sm text-foreground/60 mb-2">Scroll to explore</p>
+          <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2 mx-auto">
+            <div className="w-1.5 h-3 bg-primary rounded-full animate-pulse" />
+          </div>
+        </div>
+      </div>
       </div>
     </section>
   );
