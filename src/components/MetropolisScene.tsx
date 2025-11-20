@@ -1,5 +1,10 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { EffectComposer } from 'three-stdlib';
+import { RenderPass } from 'three-stdlib';
+import { UnrealBloomPass } from 'three-stdlib';
+import { ShaderPass } from 'three-stdlib';
+import { FXAAShader } from 'three-stdlib';
 
 interface MetropolisSceneProps {
   scrollProgress: number;
@@ -11,6 +16,7 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
+    composer: EffectComposer;
     fibers: THREE.Line[];
     buildings: THREE.Group[];
     targetBuilding: THREE.Group | null;
@@ -21,7 +27,7 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
 
     // Scene setup
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0f1a, 0.008);
+    scene.fog = new THREE.FogExp2(0x0a0f1a, 0.005);
     
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -34,23 +40,57 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
 
     const renderer = new THREE.WebGLRenderer({ 
       antialias: true, 
-      alpha: true 
+      alpha: false,
+      powerPreference: 'high-performance'
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x0a0f1a, 1);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.2;
     containerRef.current.appendChild(renderer.domElement);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x00d4ff, 0.4);
+    // Post-processing setup
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    // Bloom effect for glowing elements
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      1.2, // strength
+      0.4, // radius
+      0.85 // threshold
+    );
+    composer.addPass(bloomPass);
+
+    // Anti-aliasing
+    const fxaaPass = new ShaderPass(FXAAShader);
+    const pixelRatio = renderer.getPixelRatio();
+    fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+    fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+    composer.addPass(fxaaPass);
+
+    // Enhanced Lighting
+    const ambientLight = new THREE.AmbientLight(0x1a2332, 0.3);
     scene.add(ambientLight);
 
-    const pointLight1 = new THREE.PointLight(0x00d4ff, 1.5, 200);
-    pointLight1.position.set(30, 60, 30);
+    const directionalLight = new THREE.DirectionalLight(0x00d4ff, 0.8);
+    directionalLight.position.set(50, 100, 50);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+
+    const pointLight1 = new THREE.PointLight(0x00d4ff, 2, 300);
+    pointLight1.position.set(30, 80, 30);
     scene.add(pointLight1);
 
-    const pointLight2 = new THREE.PointLight(0x00bfcc, 1.2, 200);
-    pointLight2.position.set(-30, 60, -30);
+    const pointLight2 = new THREE.PointLight(0x00bfcc, 1.8, 300);
+    pointLight2.position.set(-30, 80, -30);
     scene.add(pointLight2);
+
+    const rimLight = new THREE.PointLight(0x4dd4ff, 1.5, 200);
+    rimLight.position.set(0, 120, 0);
+    scene.add(rimLight);
 
     // Create metropolis grid
     const buildings: THREE.Group[] = [];
@@ -67,16 +107,19 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
         const width = 4 + Math.random() * 4;
         const depth = 4 + Math.random() * 4;
         
-        // Building base - white material
+        // Building base - enhanced material
         const baseGeometry = new THREE.BoxGeometry(width, height, depth);
-        const baseMaterial = new THREE.MeshPhongMaterial({ 
-          color: 0xffffff,
+        const baseMaterial = new THREE.MeshStandardMaterial({ 
+          color: 0xe8f4f8,
+          metalness: 0.3,
+          roughness: 0.4,
           emissive: 0x00d4ff,
-          emissiveIntensity: 0.05,
-          shininess: 100
+          emissiveIntensity: 0.02,
         });
         const base = new THREE.Mesh(baseGeometry, baseMaterial);
         base.position.y = height / 2;
+        base.castShadow = true;
+        base.receiveShadow = true;
         building.add(base);
         
         // Windows - create grid of lit windows
@@ -114,27 +157,41 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
           }
         }
         
-        // Connection point on roof with blue glow
-        const connectionGeometry = new THREE.SphereGeometry(0.5, 16, 16);
-        const connectionMaterial = new THREE.MeshBasicMaterial({ 
+        // Connection point on roof with enhanced glow
+        const connectionGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+        const connectionMaterial = new THREE.MeshStandardMaterial({ 
           color: 0x00d4ff,
-          transparent: true,
-          opacity: 0.9
+          emissive: 0x00d4ff,
+          emissiveIntensity: 2,
+          metalness: 0.8,
+          roughness: 0.2
         });
         const connection = new THREE.Mesh(connectionGeometry, connectionMaterial);
         connection.position.y = height + 0.5;
         building.add(connection);
         
-        // Glow effect
-        const glowGeometry = new THREE.SphereGeometry(1, 16, 16);
-        const glowMaterial = new THREE.MeshBasicMaterial({
+        // Enhanced glow layers
+        const glowGeometry1 = new THREE.SphereGeometry(1.2, 32, 32);
+        const glowMaterial1 = new THREE.MeshBasicMaterial({
           color: 0x00d4ff,
           transparent: true,
-          opacity: 0.2
+          opacity: 0.3,
+          side: THREE.BackSide
         });
-        const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-        glow.position.copy(connection.position);
-        building.add(glow);
+        const glow1 = new THREE.Mesh(glowGeometry1, glowMaterial1);
+        glow1.position.copy(connection.position);
+        building.add(glow1);
+
+        const glowGeometry2 = new THREE.SphereGeometry(1.8, 32, 32);
+        const glowMaterial2 = new THREE.MeshBasicMaterial({
+          color: 0x00d4ff,
+          transparent: true,
+          opacity: 0.15,
+          side: THREE.BackSide
+        });
+        const glow2 = new THREE.Mesh(glowGeometry2, glowMaterial2);
+        glow2.position.copy(connection.position);
+        building.add(glow2);
         
         const posX = x * spacing + (Math.random() - 0.5) * 5;
         const posZ = z * spacing + (Math.random() - 0.5) * 5;
@@ -173,13 +230,13 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
         pos2
       );
       
-      const points = curve.getPoints(20);
+      const points = curve.getPoints(30);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
       const material = new THREE.LineBasicMaterial({
         color: 0x00d4ff,
         transparent: true,
-        opacity: 0.4,
-        linewidth: 2
+        opacity: 0.5,
+        linewidth: 3
       });
       
       const line = new THREE.Line(geometry, material);
@@ -194,6 +251,7 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
       scene,
       camera,
       renderer,
+      composer,
       fibers,
       buildings,
       targetBuilding
@@ -203,7 +261,8 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     const animate = () => {
       if (!sceneRef.current) return;
       
-      const { scene, camera, renderer, fibers, buildings, targetBuilding } = sceneRef.current;
+      const { composer, fibers, buildings } = sceneRef.current;
+      const time = Date.now() * 0.001;
       
       // Animate windows flickering
       buildings.forEach((building) => {
@@ -217,13 +276,14 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
         });
       });
       
-      // Pulse fiber connections
+      // Pulse fiber connections with smooth animation
       fibers.forEach((fiber, index) => {
         const material = fiber.material as THREE.LineBasicMaterial;
-        material.opacity = 0.3 + Math.sin(Date.now() * 0.001 + index) * 0.15;
+        material.opacity = 0.4 + Math.sin(time * 2 + index * 0.5) * 0.2;
       });
       
-      renderer.render(scene, camera);
+      // Render with post-processing
+      composer.render();
       requestAnimationFrame(animate);
     };
     animate();
@@ -231,10 +291,19 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     // Handle resize
     const handleResize = () => {
       if (!sceneRef.current) return;
-      const { camera, renderer } = sceneRef.current;
+      const { camera, renderer, composer } = sceneRef.current;
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      
+      // Update FXAA resolution
+      const fxaaPass = composer.passes[2] as ShaderPass;
+      if (fxaaPass) {
+        const pixelRatio = renderer.getPixelRatio();
+        fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
+        fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
+      }
     };
     window.addEventListener('resize', handleResize);
 
@@ -274,8 +343,8 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     
     // Increase blue hue on target building as we zoom
     if (scrollProgress > 0.3 && targetBuilding.children[0] instanceof THREE.Mesh) {
-      const baseMaterial = targetBuilding.children[0].material as THREE.MeshPhongMaterial;
-      baseMaterial.emissiveIntensity = 0.05 + (scrollProgress - 0.3) * 0.3;
+      const baseMaterial = targetBuilding.children[0].material as THREE.MeshStandardMaterial;
+      baseMaterial.emissiveIntensity = 0.02 + (scrollProgress - 0.3) * 0.5;
     }
   }, [scrollProgress]);
 
