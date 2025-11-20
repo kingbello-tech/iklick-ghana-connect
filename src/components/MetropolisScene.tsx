@@ -47,7 +47,9 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(0x0a0f1a, 1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.2;
+    renderer.toneMappingExposure = 1.4;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     containerRef.current.appendChild(renderer.domElement);
 
     // Post-processing setup
@@ -55,12 +57,12 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
-    // Bloom effect for glowing elements
+    // Bloom effect for glowing elements - enhanced for glossy look
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(window.innerWidth, window.innerHeight),
-      1.2, // strength
-      0.4, // radius
-      0.85 // threshold
+      1.8, // strength - increased for more glow
+      0.6, // radius - increased for softer glow
+      0.75 // threshold - lowered to bloom more elements
     );
     composer.addPass(bloomPass);
 
@@ -71,26 +73,47 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
     composer.addPass(fxaaPass);
 
-    // Enhanced Lighting
-    const ambientLight = new THREE.AmbientLight(0x1a2332, 0.3);
+    // Environment Map for Realistic Reflections
+    const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
+    const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
+    scene.add(cubeCamera);
+    
+    // Enhanced Lighting Setup
+    const ambientLight = new THREE.AmbientLight(0x1a2332, 0.5);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0x00d4ff, 0.8);
+    // Main directional light with higher intensity
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
     directionalLight.position.set(50, 100, 50);
     directionalLight.castShadow = true;
+    directionalLight.shadow.mapSize.width = 2048;
+    directionalLight.shadow.mapSize.height = 2048;
     scene.add(directionalLight);
 
-    const pointLight1 = new THREE.PointLight(0x00d4ff, 2, 300);
-    pointLight1.position.set(30, 80, 30);
-    scene.add(pointLight1);
+    // Key lights for glossy reflections
+    const keyLight1 = new THREE.PointLight(0x00d4ff, 3, 400);
+    keyLight1.position.set(40, 100, 40);
+    scene.add(keyLight1);
 
-    const pointLight2 = new THREE.PointLight(0x00bfcc, 1.8, 300);
-    pointLight2.position.set(-30, 80, -30);
-    scene.add(pointLight2);
+    const keyLight2 = new THREE.PointLight(0x4dd4ff, 2.5, 400);
+    keyLight2.position.set(-40, 100, -40);
+    scene.add(keyLight2);
 
-    const rimLight = new THREE.PointLight(0x4dd4ff, 1.5, 200);
-    rimLight.position.set(0, 120, 0);
-    scene.add(rimLight);
+    // Fill light
+    const fillLight = new THREE.PointLight(0x00bfcc, 2, 350);
+    fillLight.position.set(0, 80, -50);
+    scene.add(fillLight);
+
+    // Rim lights for glossy edges
+    const rimLight1 = new THREE.PointLight(0x4dd4ff, 2, 250);
+    rimLight1.position.set(0, 130, 0);
+    scene.add(rimLight1);
+
+    const rimLight2 = new THREE.SpotLight(0xffffff, 1.5);
+    rimLight2.position.set(0, 150, 0);
+    rimLight2.angle = Math.PI / 3;
+    rimLight2.penumbra = 0.3;
+    scene.add(rimLight2);
 
     // Create metropolis grid
     const buildings: THREE.Group[] = [];
@@ -107,14 +130,20 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
         const width = 4 + Math.random() * 4;
         const depth = 4 + Math.random() * 4;
         
-        // Building base - enhanced material
+        // Building base - glossy production material
         const baseGeometry = new THREE.BoxGeometry(width, height, depth);
-        const baseMaterial = new THREE.MeshStandardMaterial({ 
-          color: 0xe8f4f8,
-          metalness: 0.3,
-          roughness: 0.4,
+        const baseMaterial = new THREE.MeshPhysicalMaterial({ 
+          color: 0xf0f8ff,
+          metalness: 0.85,
+          roughness: 0.12,
+          clearcoat: 1.0,
+          clearcoatRoughness: 0.08,
+          reflectivity: 1,
           emissive: 0x00d4ff,
-          emissiveIntensity: 0.02,
+          emissiveIntensity: 0.08,
+          envMapIntensity: 2,
+          transparent: false,
+          opacity: 1
         });
         const base = new THREE.Mesh(baseGeometry, baseMaterial);
         base.position.y = height / 2;
@@ -122,26 +151,37 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
         base.receiveShadow = true;
         building.add(base);
         
-        // Windows - create grid of lit windows
-        const windowGeometry = new THREE.PlaneGeometry(0.8, 1.2);
-        const windowMaterial = new THREE.MeshBasicMaterial({ 
-          color: 0x00d4ff,
-          transparent: true,
-          opacity: 0.8
-        });
+        // Windows - create grid of glossy lit windows
+        const windowGeometry = new THREE.BoxGeometry(0.6, 1.0, 0.15);
         
-        // Add windows to front and back faces
+        // Add windows to all faces
         const windowRows = Math.floor(height / 3);
         const windowCols = Math.floor(width / 2);
         
         for (let row = 0; row < windowRows; row++) {
           for (let col = 0; col < windowCols; col++) {
             if (Math.random() > 0.3) { // 70% chance of window being lit
-              const window1 = new THREE.Mesh(windowGeometry, windowMaterial.clone());
+              const isLit = Math.random() > 0.2;
+              const windowMaterial = new THREE.MeshPhysicalMaterial({ 
+                color: 0x00d4ff,
+                metalness: 0.95,
+                roughness: 0.05,
+                transmission: 0.4,
+                thickness: 0.5,
+                emissive: 0x00d4ff,
+                emissiveIntensity: isLit ? 1.5 : 0.2,
+                transparent: true,
+                opacity: 0.95,
+                clearcoat: 1,
+                clearcoatRoughness: 0.03,
+                reflectivity: 1
+              });
+              
+              const window1 = new THREE.Mesh(windowGeometry, windowMaterial);
               window1.position.set(
                 (col - windowCols / 2) * 1.5,
                 row * 3 + 3,
-                depth / 2 + 0.01
+                depth / 2 + 0.05
               );
               building.add(window1);
               
@@ -149,38 +189,50 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
               window2.position.set(
                 (col - windowCols / 2) * 1.5,
                 row * 3 + 3,
-                -depth / 2 - 0.01
+                -depth / 2 - 0.05
               );
-              window2.rotation.y = Math.PI;
               building.add(window2);
             }
           }
         }
         
-        // Connection point on roof with enhanced glow
-        const connectionGeometry = new THREE.SphereGeometry(0.6, 32, 32);
-        const connectionMaterial = new THREE.MeshStandardMaterial({ 
+        // Connection point on roof with intense glossy glow
+        const connectionGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+        const connectionMaterial = new THREE.MeshPhysicalMaterial({ 
           color: 0x00d4ff,
           emissive: 0x00d4ff,
-          emissiveIntensity: 2,
-          metalness: 0.8,
-          roughness: 0.2
+          emissiveIntensity: 3,
+          metalness: 1,
+          roughness: 0.05,
+          clearcoat: 1,
+          clearcoatRoughness: 0,
+          transparent: true,
+          opacity: 0.98,
+          reflectivity: 1
         });
         const connection = new THREE.Mesh(connectionGeometry, connectionMaterial);
         connection.position.y = height + 0.5;
         building.add(connection);
         
-        // Enhanced glow layers
-        const glowGeometry1 = new THREE.SphereGeometry(1.2, 32, 32);
-        const glowMaterial1 = new THREE.MeshBasicMaterial({
-          color: 0x00d4ff,
-          transparent: true,
-          opacity: 0.3,
-          side: THREE.BackSide
-        });
-        const glow1 = new THREE.Mesh(glowGeometry1, glowMaterial1);
-        glow1.position.copy(connection.position);
-        building.add(glow1);
+        // Multiple glossy glow layers for intense bloom effect
+        for (let i = 0; i < 5; i++) {
+          const glowGeometry = new THREE.SphereGeometry(0.8 + i * 0.3, 32, 32);
+          const glowMaterial = new THREE.MeshPhysicalMaterial({
+            color: 0x00d4ff,
+            emissive: 0x00d4ff,
+            emissiveIntensity: 2 - i * 0.3,
+            metalness: 1,
+            roughness: 0,
+            transparent: true,
+            opacity: 0.5 - i * 0.08,
+            clearcoat: 1,
+            clearcoatRoughness: 0,
+            side: THREE.BackSide
+          });
+          const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+          glow.position.copy(connection.position);
+          building.add(glow);
+        }
 
         const glowGeometry2 = new THREE.SphereGeometry(1.8, 32, 32);
         const glowMaterial2 = new THREE.MeshBasicMaterial({
@@ -230,18 +282,29 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
         pos2
       );
       
-      const points = curve.getPoints(30);
+      const points = curve.getPoints(80);
       const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      const material = new THREE.LineBasicMaterial({
+      
+      // Create glossy fiber cable with tube geometry for 3D look
+      const tubeGeometry = new THREE.TubeGeometry(curve, 80, 0.08, 8, false);
+      const tubeMaterial = new THREE.MeshPhysicalMaterial({
         color: 0x00d4ff,
+        metalness: 0.95,
+        roughness: 0.05,
+        emissive: 0x00d4ff,
+        emissiveIntensity: 0.8,
         transparent: true,
-        opacity: 0.5,
-        linewidth: 3
+        opacity: 0.9,
+        clearcoat: 1,
+        clearcoatRoughness: 0,
+        transmission: 0.2,
+        thickness: 0.5,
+        reflectivity: 1
       });
       
-      const line = new THREE.Line(geometry, material);
-      scene.add(line);
-      fibers.push(line);
+      const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+      scene.add(tube);
+      fibers.push(tube as any);
     }
 
     // Select a target building for zoom
