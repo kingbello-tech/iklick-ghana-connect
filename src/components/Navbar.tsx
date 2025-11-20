@@ -2,7 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Zap } from "lucide-react";
 
-const Navbar = () => {
+interface NavbarProps {
+  visible?: boolean;
+}
+
+const Navbar = ({ visible = true }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
@@ -13,7 +17,11 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border">
+    <nav 
+      className={`fixed top-0 w-full z-50 bg-background/80 backdrop-blur-lg border-b border-border transition-all duration-700 ${
+        visible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
+      }`}
+    >
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}

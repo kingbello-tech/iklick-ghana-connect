@@ -3,7 +3,11 @@ import { ArrowRight, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import MetropolisScene from "./MetropolisScene";
 
-const Hero = () => {
+interface HeroProps {
+  onAnimationComplete?: () => void;
+}
+
+const Hero = ({ onAnimationComplete }: HeroProps) => {
   const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
@@ -15,23 +19,31 @@ const Hero = () => {
       const scrolled = window.scrollY;
       const progress = Math.min(scrolled / heroHeight, 1);
       setScrollProgress(progress);
+
+      // Trigger animation complete when zoom is almost done
+      if (progress >= 0.85 && onAnimationComplete) {
+        onAnimationComplete();
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [onAnimationComplete]);
 
   return (
-    <section id="hero-section" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="hero-section" className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* 3D Metropolis Background */}
       <MetropolisScene scrollProgress={scrollProgress} />
 
       {/* Frosted Glass Content */}
       <div 
-        className="container mx-auto px-4 z-10 text-center transition-opacity duration-500"
-        style={{ opacity: 1 - scrollProgress * 0.5 }}
+        className="container mx-auto px-4 z-10 text-center transition-all duration-700"
+        style={{ 
+          opacity: 1 - scrollProgress * 1.5,
+          transform: `scale(${1 - scrollProgress * 0.2})`
+        }}
       >
-        <div className="animate-fade-in-up backdrop-blur-xl bg-background/20 border border-primary/20 rounded-3xl p-8 md:p-12 max-w-5xl mx-auto">
+        <div className="animate-fade-in-up backdrop-blur-2xl bg-background/10 border border-primary/30 rounded-3xl p-8 md:p-12 max-w-5xl mx-auto shadow-2xl">
           {/* Trust Badge */}
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-card/50 backdrop-blur-sm border border-primary/20">
             <Zap className="w-4 h-4 text-primary" />
@@ -83,8 +95,11 @@ const Hero = () => {
         </div>
 
         {/* Scroll Instruction */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center animate-bounce">
-          <p className="text-sm text-foreground/60 mb-2">Scroll to explore</p>
+        <div 
+          className="absolute bottom-12 left-1/2 -translate-x-1/2 text-center transition-opacity duration-500"
+          style={{ opacity: scrollProgress > 0.3 ? 0 : 1 }}
+        >
+          <p className="text-sm text-foreground/60 mb-2 animate-bounce">Scroll to explore</p>
           <div className="w-6 h-10 border-2 border-primary/50 rounded-full flex items-start justify-center p-2 mx-auto">
             <div className="w-1.5 h-3 bg-primary rounded-full animate-pulse" />
           </div>
