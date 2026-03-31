@@ -1,24 +1,26 @@
-import nationalGeographic from "@/assets/logos/national-geographic.png";
-import netflix from "@/assets/logos/netflix.png";
-import ted from "@/assets/logos/ted.png";
-import ign from "@/assets/logos/ign.png";
-import espn from "@/assets/logos/espn.png";
-import disneyKids from "@/assets/logos/disney-kids.png";
-import unesco from "@/assets/logos/unesco.png";
-import barbie from "@/assets/logos/barbie.png";
+import shc from "@/assets/logos/shc.jpg";
+import soccabet from "@/assets/logos/soccabet.png";
+import umat from "@/assets/logos/umat.png";
+import qgConstruction from "@/assets/logos/qg-construction.jpg";
+import mkopa from "@/assets/logos/mkopa.png";
+import royalSenchi from "@/assets/logos/royal-senchi.jpg";
+import gtbank from "@/assets/logos/gtbank.png";
+import uhas from "@/assets/logos/uhas.jpg";
+import b5plus from "@/assets/logos/b5plus.png";
 
 const row1 = [
-  { name: "National Geographic", logo: nationalGeographic },
-  { name: "Netflix", logo: netflix },
-  { name: "TED", logo: ted },
-  { name: "IGN", logo: ign },
+  { name: "State Housing Company", logo: shc },
+  { name: "SoccaBet", logo: soccabet },
+  { name: "UMaT", logo: umat },
+  { name: "Queiroz Galvão", logo: qgConstruction },
+  { name: "B5 Plus Group", logo: b5plus },
 ];
 
 const row2 = [
-  { name: "ESPN", logo: espn },
-  { name: "Disney Kids", logo: disneyKids },
-  { name: "UNESCO", logo: unesco },
-  { name: "Barbie", logo: barbie },
+  { name: "M-KOPA", logo: mkopa },
+  { name: "Royal Senchi", logo: royalSenchi },
+  { name: "GTBank", logo: gtbank },
+  { name: "UHAS", logo: uhas },
 ];
 
 const Clients = () => {
