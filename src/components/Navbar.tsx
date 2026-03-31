@@ -75,9 +75,12 @@ const Navbar = ({ visible = true }: NavbarProps) => {
                   {link.name}
                 </a>
               ))}
-              <Button variant="hero" size="sm" className="w-full">
-                Get Started
-              </Button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle />
+                <Button variant="hero" size="sm" className="flex-1">
+                  Get Started
+                </Button>
+              </div>
             </div>
           </div>
         )}
