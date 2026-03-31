@@ -1,4 +1,4 @@
-import { Zap } from "lucide-react";
+import iklickLogo from "@/assets/iklick-logo.jpg";
 
 const Footer = () => {
   return (
