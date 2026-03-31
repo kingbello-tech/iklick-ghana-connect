@@ -94,7 +94,7 @@ const MetropolisScene = ({ scrollProgress, theme = 'light' }: MetropolisScenePro
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.set(2048, 2048);
     scene.add(dirLight);
-    scene.add(new THREE.PointLight(0x00d4ff, isDark ? 3 : 2, 400).translateTo?.(40, 100, 40) || (() => { const l = new THREE.PointLight(0x00d4ff, isDark ? 3 : 2, 400); l.position.set(40, 100, 40); return l; })());
+    const kl1 = new THREE.PointLight(0x00d4ff, isDark ? 3 : 2, 400); kl1.position.set(40, 100, 40); scene.add(kl1);
     scene.add((() => { const l = new THREE.PointLight(0x4dd4ff, isDark ? 2.5 : 1.5, 400); l.position.set(-40, 100, -40); return l; })());
     scene.add((() => { const l = new THREE.PointLight(0x00bfcc, isDark ? 2 : 1.2, 350); l.position.set(0, 80, -50); return l; })());
     scene.add((() => { const l = new THREE.PointLight(0x4dd4ff, isDark ? 2 : 1, 250); l.position.set(0, 130, 0); return l; })());
