@@ -100,7 +100,7 @@ const Hero = () => {
                 return (
                   <div
                     key={i}
-                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 animate-float"
+                    className="absolute left-1/2 top-1/2 animate-pulse"
                     style={{
                       transform: `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`,
                       animationDelay: node.delay,
