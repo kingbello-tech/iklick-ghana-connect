@@ -7,6 +7,12 @@ import royalSenchi from "@/assets/logos/royal-senchi.jpg";
 import gtbank from "@/assets/logos/gtbank.png";
 import uhas from "@/assets/logos/uhas.jpg";
 import b5plus from "@/assets/logos/b5plus.png";
+import unnamedSchool from "@/assets/logos/unnamed-school.jpg";
+import kaaf from "@/assets/logos/kaaf.jpg";
+import fidelity from "@/assets/logos/fidelity.jfif";
+import lancaster from "@/assets/logos/lancaster.jfif";
+import safariValley from "@/assets/logos/safari-valley.png";
+import heritage from "@/assets/logos/heritage.png";
 
 const row1 = [
   { name: "State Housing Company", logo: shc },
@@ -14,6 +20,9 @@ const row1 = [
   { name: "UMaT", logo: umat },
   { name: "Queiroz Galvão", logo: qgConstruction },
   { name: "B5 Plus Group", logo: b5plus },
+  { name: "KAAF University", logo: kaaf },
+  { name: "Fidelity Bank", logo: fidelity },
+  { name: "Safari Valley Resort", logo: safariValley },
 ];
 
 const row2 = [
@@ -21,6 +30,9 @@ const row2 = [
   { name: "Royal Senchi", logo: royalSenchi },
   { name: "GTBank", logo: gtbank },
   { name: "UHAS", logo: uhas },
+  { name: "Make Your Mark", logo: unnamedSchool },
+  { name: "Lancaster University", logo: lancaster },
+  { name: "Heritage Christian University", logo: heritage },
 ];
 
 const Clients = () => {
