@@ -123,6 +123,14 @@ export default {
           "100%": {
             transform: "translateX(-50%)"
           }
+        },
+        "scroll-reverse": {
+          "0%": {
+            transform: "translateX(-50%)"
+          },
+          "100%": {
+            transform: "translateX(0)"
+          }
         }
       },
       animation: {
@@ -133,6 +141,7 @@ export default {
         "gradient-shift": "gradient-shift 3s ease infinite",
         "float": "float 3s ease-in-out infinite",
         "scroll": "scroll 30s linear infinite",
+        "scroll-reverse": "scroll-reverse 30s linear infinite",
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

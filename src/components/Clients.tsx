@@ -7,11 +7,14 @@ import disneyKids from "@/assets/logos/disney-kids.png";
 import unesco from "@/assets/logos/unesco.png";
 import barbie from "@/assets/logos/barbie.png";
 
-const clients = [
+const row1 = [
   { name: "National Geographic", logo: nationalGeographic },
   { name: "Netflix", logo: netflix },
   { name: "TED", logo: ted },
   { name: "IGN", logo: ign },
+];
+
+const row2 = [
   { name: "ESPN", logo: espn },
   { name: "Disney Kids", logo: disneyKids },
   { name: "UNESCO", logo: unesco },
@@ -20,32 +23,42 @@ const clients = [
 
 const Clients = () => {
   return (
-    <section className="py-24 border-y border-border overflow-hidden">
+    <section className="py-20 overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Trusted by <span className="gradient-text">Leading Organizations</span>
-          </h2>
-          <p className="text-muted-foreground">
-            Powering connectivity for Ghana's most innovative businesses
+        <div className="text-center mb-12">
+          <p className="text-sm uppercase tracking-widest text-muted-foreground font-medium">
+            Trusted by leading organizations
           </p>
         </div>
+      </div>
 
-        <div className="relative">
-          <div className="flex animate-scroll">
-            {[...clients, ...clients].map((client, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 mx-8 flex items-center justify-center p-6 rounded-lg bg-card/30 border border-border hover:border-primary/30 transition-all duration-300 min-w-[200px] h-[120px]"
-              >
-                <img 
-                  src={client.logo} 
-                  alt={client.name}
-                  className="max-w-full max-h-full object-contain filter brightness-90 hover:brightness-110 transition-all"
-                />
-              </div>
-            ))}
-          </div>
+      {/* Row 1 - scrolls left */}
+      <div className="relative mb-8">
+        <div className="flex animate-scroll gap-16 items-center">
+          {[...row1, ...row1, ...row1, ...row1].map((client, i) => (
+            <div key={i} className="flex-shrink-0 px-4">
+              <img
+                src={client.logo}
+                alt={client.name}
+                className="h-10 md:h-12 object-contain opacity-40 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-500"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Row 2 - scrolls right */}
+      <div className="relative">
+        <div className="flex animate-scroll-reverse gap-16 items-center">
+          {[...row2, ...row2, ...row2, ...row2].map((client, i) => (
+            <div key={i} className="flex-shrink-0 px-4">
+              <img
+                src={client.logo}
+                alt={client.name}
+                className="h-10 md:h-12 object-contain opacity-40 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-500"
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>
