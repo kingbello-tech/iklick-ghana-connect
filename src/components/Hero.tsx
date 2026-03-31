@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Wifi, Globe, Shield, Zap, Signal } from "lucide-react";
+import { ArrowRight, Wifi, Globe, Shield, Star, Zap, Signal } from "lucide-react";
 
 const Hero = () => {
   return (
