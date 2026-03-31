@@ -29,8 +29,8 @@ const MetropolisScene = ({ scrollProgress, theme = 'light' }: MetropolisScenePro
     const { scene, renderer } = sceneRef.current;
     
     const isDark = theme === 'dark';
-    const bgColor = isDark ? 0x0a0f1a : 0xe8f0f8;
-    const fogColor = isDark ? 0x0a0f1a : 0xe8f0f8;
+    const bgColor = isDark ? 0x0a0f1a : 0xb8d0e8;
+    const fogColor = isDark ? 0x0a0f1a : 0xb8d0e8;
     
     scene.fog = new THREE.FogExp2(fogColor, isDark ? 0.005 : 0.004);
     renderer.setClearColor(bgColor, 1);
