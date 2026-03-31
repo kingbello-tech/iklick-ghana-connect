@@ -51,7 +51,7 @@ const MetropolisScene = ({ scrollProgress, theme = 'light' }: MetropolisScenePro
     if (!containerRef.current) return;
 
     const isDark = theme === 'dark';
-    const bgColor = isDark ? 0x0a0f1a : 0xe8f0f8;
+    const bgColor = isDark ? 0x0a0f1a : 0xb8d0e8;
 
     // Scene setup
     const scene = new THREE.Scene();
