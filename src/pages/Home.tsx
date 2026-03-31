@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Clients from "@/components/Clients";
@@ -11,12 +10,10 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
 const Home = () => {
-  const [showNavbar, setShowNavbar] = useState(false);
-
   return (
     <div className="min-h-screen">
-      <Navbar visible={showNavbar} />
-      <Hero onAnimationComplete={() => setShowNavbar(true)} />
+      <Navbar visible={true} />
+      <Hero />
       <Clients />
       <ValuePropositions />
       <div id="services">
