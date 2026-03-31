@@ -1,12 +1,12 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import ValuePropositions from "@/components/ValuePropositions";
-import EnterpriseServices from "@/components/EnterpriseServices";
-import ResidentialServices from "@/components/ResidentialServices";
-import Pricing from "@/components/Pricing";
-import Support from "@/components/Support";
 import Clients from "@/components/Clients";
+import ValuePropositions from "@/components/ValuePropositions";
+import FeatureTabs from "@/components/FeatureTabs";
+import Support from "@/components/Support";
+import Testimonials from "@/components/Testimonials";
+import Pricing from "@/components/Pricing";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
@@ -17,18 +17,18 @@ const Home = () => {
     <div className="min-h-screen">
       <Navbar visible={showNavbar} />
       <Hero onAnimationComplete={() => setShowNavbar(true)} />
+      <Clients />
       <ValuePropositions />
       <div id="services">
-        <EnterpriseServices />
-        <ResidentialServices />
-      </div>
-      <div id="pricing">
-        <Pricing />
+        <FeatureTabs />
       </div>
       <div id="support">
         <Support />
       </div>
-      <Clients />
+      <Testimonials />
+      <div id="pricing">
+        <Pricing />
+      </div>
       <div id="contact">
         <Contact />
       </div>
