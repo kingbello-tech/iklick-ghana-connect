@@ -42,7 +42,7 @@ const Clients = () => {
               <img
                 src={client.logo}
                 alt={client.name}
-                className="h-10 md:h-12 object-contain opacity-40 hover:opacity-100 grayscale hover:grayscale-0 transition-all duration-500"
+                className="h-10 md:h-12 object-contain opacity-80 transition-all duration-500 hover:scale-110"
               />
             </div>
           ))}
