@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Zap } from "lucide-react";
+import ThemeToggle from "@/components/ThemeToggle";
 
 interface NavbarProps {
   visible?: boolean;
