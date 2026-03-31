@@ -14,7 +14,7 @@ import lancaster from "@/assets/logos/lancaster.jfif";
 import safariValley from "@/assets/logos/safari-valley.png";
 import heritage from "@/assets/logos/heritage.png";
 
-const row1 = [
+const allClients = [
   { name: "State Housing Company", logo: shc },
   { name: "SoccaBet", logo: soccabet },
   { name: "UMaT", logo: umat },
@@ -23,9 +23,6 @@ const row1 = [
   { name: "KAAF University", logo: kaaf },
   { name: "Fidelity Bank", logo: fidelity },
   { name: "Safari Valley Resort", logo: safariValley },
-];
-
-const row2 = [
   { name: "M-KOPA", logo: mkopa },
   { name: "Royal Senchi", logo: royalSenchi },
   { name: "GTBank", logo: gtbank },
@@ -46,25 +43,9 @@ const Clients = () => {
         </div>
       </div>
 
-      {/* Row 1 - scrolls left */}
-      <div className="relative mb-8">
-        <div className="flex animate-scroll gap-16 items-center">
-          {[...row1, ...row1, ...row1, ...row1].map((client, i) => (
-            <div key={i} className="flex-shrink-0 px-4">
-              <img
-                src={client.logo}
-                alt={client.name}
-                className="h-10 md:h-12 object-contain opacity-80 transition-all duration-500 hover:scale-110"
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Row 2 - scrolls right */}
       <div className="relative">
-        <div className="flex animate-scroll-reverse gap-16 items-center">
-          {[...row2, ...row2, ...row2, ...row2].map((client, i) => (
+        <div className="flex animate-scroll gap-16 items-center">
+          {[...allClients, ...allClients, ...allClients, ...allClients].map((client, i) => (
             <div key={i} className="flex-shrink-0 px-4">
               <img
                 src={client.logo}
