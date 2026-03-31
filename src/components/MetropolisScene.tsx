@@ -1,10 +1,5 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { EffectComposer } from 'three-stdlib';
-import { RenderPass } from 'three-stdlib';
-import { UnrealBloomPass } from 'three-stdlib';
-import { ShaderPass } from 'three-stdlib';
-import { FXAAShader } from 'three-stdlib';
 
 interface MetropolisSceneProps {
   scrollProgress: number;
@@ -16,398 +11,396 @@ const MetropolisScene = ({ scrollProgress }: MetropolisSceneProps) => {
     scene: THREE.Scene;
     camera: THREE.PerspectiveCamera;
     renderer: THREE.WebGLRenderer;
-    composer: EffectComposer;
-    fibers: THREE.Line[];
-    buildings: THREE.Group[];
-    targetBuilding: THREE.Group | null;
+    houses: THREE.Group[];
+    fiberCable: THREE.Mesh;
+    wifiIcons: THREE.Group[];
+    time: number;
   }>();
 
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Scene setup
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x0a0f1a, 0.005);
-    
+    scene.background = new THREE.Color(0xf0f4f8);
+
+    // Isometric-like perspective camera
     const camera = new THREE.PerspectiveCamera(
-      75,
+      35,
       window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    camera.position.set(0, 50, 100);
+    camera.position.set(40, 50, 40);
     camera.lookAt(0, 0, 0);
 
-    const renderer = new THREE.WebGLRenderer({ 
-      antialias: true, 
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
       alpha: false,
-      powerPreference: 'high-performance'
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x0a0f1a, 1);
+    renderer.setClearColor(0xf0f4f8, 1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.4;
+    renderer.toneMappingExposure = 1.2;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     containerRef.current.appendChild(renderer.domElement);
 
-    // Post-processing setup
-    const composer = new EffectComposer(renderer);
-    const renderPass = new RenderPass(scene, camera);
-    composer.addPass(renderPass);
-
-    // Bloom effect for glowing elements - enhanced for glossy look
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(window.innerWidth, window.innerHeight),
-      1.8, // strength - increased for more glow
-      0.6, // radius - increased for softer glow
-      0.75 // threshold - lowered to bloom more elements
-    );
-    composer.addPass(bloomPass);
-
-    // Anti-aliasing
-    const fxaaPass = new ShaderPass(FXAAShader);
-    const pixelRatio = renderer.getPixelRatio();
-    fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
-    fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
-    composer.addPass(fxaaPass);
-
-    // Environment Map for Realistic Reflections
-    const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
-    const cubeCamera = new THREE.CubeCamera(0.1, 1000, cubeRenderTarget);
-    scene.add(cubeCamera);
-    
-    // Enhanced Lighting Setup
-    const ambientLight = new THREE.AmbientLight(0x1a2332, 0.5);
+    // Lighting - bright, clean, soft
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambientLight);
 
-    // Main directional light with higher intensity
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2.5);
-    directionalLight.position.set(50, 100, 50);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.5);
+    directionalLight.position.set(30, 60, 30);
     directionalLight.castShadow = true;
     directionalLight.shadow.mapSize.width = 2048;
     directionalLight.shadow.mapSize.height = 2048;
+    directionalLight.shadow.camera.near = 0.5;
+    directionalLight.shadow.camera.far = 200;
+    directionalLight.shadow.camera.left = -50;
+    directionalLight.shadow.camera.right = 50;
+    directionalLight.shadow.camera.top = 50;
+    directionalLight.shadow.camera.bottom = -50;
+    directionalLight.shadow.bias = -0.001;
     scene.add(directionalLight);
 
-    // Key lights for glossy reflections
-    const keyLight1 = new THREE.PointLight(0x00d4ff, 3, 400);
-    keyLight1.position.set(40, 100, 40);
-    scene.add(keyLight1);
-
-    const keyLight2 = new THREE.PointLight(0x4dd4ff, 2.5, 400);
-    keyLight2.position.set(-40, 100, -40);
-    scene.add(keyLight2);
-
-    // Fill light
-    const fillLight = new THREE.PointLight(0x00bfcc, 2, 350);
-    fillLight.position.set(0, 80, -50);
+    const fillLight = new THREE.DirectionalLight(0xe8f0ff, 0.6);
+    fillLight.position.set(-20, 40, -20);
     scene.add(fillLight);
 
-    // Rim lights for glossy edges
-    const rimLight1 = new THREE.PointLight(0x4dd4ff, 2, 250);
-    rimLight1.position.set(0, 130, 0);
-    scene.add(rimLight1);
+    // Ground plane
+    const groundGeometry = new THREE.PlaneGeometry(200, 200);
+    const groundMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xe8edf3,
+      roughness: 0.9,
+      metalness: 0,
+    });
+    const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.1;
+    ground.receiveShadow = true;
+    scene.add(ground);
 
-    const rimLight2 = new THREE.SpotLight(0xffffff, 1.5);
-    rimLight2.position.set(0, 150, 0);
-    rimLight2.angle = Math.PI / 3;
-    rimLight2.penumbra = 0.3;
-    scene.add(rimLight2);
-
-    // Create metropolis grid
-    const buildings: THREE.Group[] = [];
-    const buildingPositions: THREE.Vector3[] = [];
-    const gridSize = 8;
-    const spacing = 25;
-
-    for (let x = -gridSize / 2; x < gridSize / 2; x++) {
-      for (let z = -gridSize / 2; z < gridSize / 2; z++) {
-        const building = new THREE.Group();
-        
-        // Randomize building height
-        const height = 10 + Math.random() * 30;
-        const width = 4 + Math.random() * 4;
-        const depth = 4 + Math.random() * 4;
-        
-        // Building base - glossy production material
-        const baseGeometry = new THREE.BoxGeometry(width, height, depth);
-        const baseMaterial = new THREE.MeshPhysicalMaterial({ 
-          color: 0xf0f8ff,
-          metalness: 0.85,
-          roughness: 0.12,
-          clearcoat: 1.0,
-          clearcoatRoughness: 0.08,
-          reflectivity: 1,
-          emissive: 0x00d4ff,
-          emissiveIntensity: 0.08,
-          envMapIntensity: 2,
-          transparent: false,
-          opacity: 1
-        });
-        const base = new THREE.Mesh(baseGeometry, baseMaterial);
-        base.position.y = height / 2;
-        base.castShadow = true;
-        base.receiveShadow = true;
-        building.add(base);
-        
-        // Windows - create grid of glossy lit windows
-        const windowGeometry = new THREE.BoxGeometry(0.6, 1.0, 0.15);
-        
-        // Add windows to all faces
-        const windowRows = Math.floor(height / 3);
-        const windowCols = Math.floor(width / 2);
-        
-        for (let row = 0; row < windowRows; row++) {
-          for (let col = 0; col < windowCols; col++) {
-            if (Math.random() > 0.3) { // 70% chance of window being lit
-              const isLit = Math.random() > 0.2;
-              const windowMaterial = new THREE.MeshPhysicalMaterial({ 
-                color: 0x00d4ff,
-                metalness: 0.95,
-                roughness: 0.05,
-                transmission: 0.4,
-                thickness: 0.5,
-                emissive: 0x00d4ff,
-                emissiveIntensity: isLit ? 1.5 : 0.2,
-                transparent: true,
-                opacity: 0.95,
-                clearcoat: 1,
-                clearcoatRoughness: 0.03,
-                reflectivity: 1
-              });
-              
-              const window1 = new THREE.Mesh(windowGeometry, windowMaterial);
-              window1.position.set(
-                (col - windowCols / 2) * 1.5,
-                row * 3 + 3,
-                depth / 2 + 0.05
-              );
-              building.add(window1);
-              
-              const window2 = new THREE.Mesh(windowGeometry, windowMaterial.clone());
-              window2.position.set(
-                (col - windowCols / 2) * 1.5,
-                row * 3 + 3,
-                -depth / 2 - 0.05
-              );
-              building.add(window2);
-            }
-          }
-        }
-        
-        // Connection point on roof with intense glossy glow
-        const connectionGeometry = new THREE.SphereGeometry(0.7, 32, 32);
-        const connectionMaterial = new THREE.MeshPhysicalMaterial({ 
-          color: 0x00d4ff,
-          emissive: 0x00d4ff,
-          emissiveIntensity: 3,
-          metalness: 1,
-          roughness: 0.05,
-          clearcoat: 1,
-          clearcoatRoughness: 0,
-          transparent: true,
-          opacity: 0.98,
-          reflectivity: 1
-        });
-        const connection = new THREE.Mesh(connectionGeometry, connectionMaterial);
-        connection.position.y = height + 0.5;
-        building.add(connection);
-        
-        // Multiple glossy glow layers for intense bloom effect
-        for (let i = 0; i < 5; i++) {
-          const glowGeometry = new THREE.SphereGeometry(0.8 + i * 0.3, 32, 32);
-          const glowMaterial = new THREE.MeshPhysicalMaterial({
-            color: 0x00d4ff,
-            emissive: 0x00d4ff,
-            emissiveIntensity: 2 - i * 0.3,
-            metalness: 1,
-            roughness: 0,
-            transparent: true,
-            opacity: 0.5 - i * 0.08,
-            clearcoat: 1,
-            clearcoatRoughness: 0,
-            side: THREE.BackSide
-          });
-          const glow = new THREE.Mesh(glowGeometry, glowMaterial);
-          glow.position.copy(connection.position);
-          building.add(glow);
-        }
-
-        const glowGeometry2 = new THREE.SphereGeometry(1.8, 32, 32);
-        const glowMaterial2 = new THREE.MeshBasicMaterial({
-          color: 0x00d4ff,
-          transparent: true,
-          opacity: 0.15,
-          side: THREE.BackSide
-        });
-        const glow2 = new THREE.Mesh(glowGeometry2, glowMaterial2);
-        glow2.position.copy(connection.position);
-        building.add(glow2);
-        
-        const posX = x * spacing + (Math.random() - 0.5) * 5;
-        const posZ = z * spacing + (Math.random() - 0.5) * 5;
-        building.position.set(posX, 0, posZ);
-        
-        scene.add(building);
-        buildings.push(building);
-        buildingPositions.push(new THREE.Vector3(posX, height, posZ));
-      }
-    }
-
-    // Create aerial fiber connections between buildings
-    const fibers: THREE.Line[] = [];
-    const connectionCount = buildings.length * 2;
-    
-    for (let i = 0; i < connectionCount; i++) {
-      const building1 = buildings[Math.floor(Math.random() * buildings.length)];
-      const building2 = buildings[Math.floor(Math.random() * buildings.length)];
-      
-      if (building1 === building2) continue;
-      
-      const pos1 = building1.position.clone();
-      pos1.y = building1.children[0].position.y * 2; // Top of building
-      
-      const pos2 = building2.position.clone();
-      pos2.y = building2.children[0].position.y * 2;
-      
-      // Create curved fiber line
-      const curve = new THREE.QuadraticBezierCurve3(
-        pos1,
-        new THREE.Vector3(
-          (pos1.x + pos2.x) / 2,
-          Math.max(pos1.y, pos2.y) + 5,
-          (pos1.z + pos2.z) / 2
-        ),
-        pos2
-      );
-      
-      const points = curve.getPoints(80);
-      const geometry = new THREE.BufferGeometry().setFromPoints(points);
-      
-      // Create glossy fiber cable with tube geometry for 3D look
-      const tubeGeometry = new THREE.TubeGeometry(curve, 80, 0.08, 8, false);
-      const tubeMaterial = new THREE.MeshPhysicalMaterial({
-        color: 0x00d4ff,
-        metalness: 0.95,
-        roughness: 0.05,
-        emissive: 0x00d4ff,
-        emissiveIntensity: 0.8,
-        transparent: true,
-        opacity: 0.9,
-        clearcoat: 1,
-        clearcoatRoughness: 0,
-        transmission: 0.2,
-        thickness: 0.5,
-        reflectivity: 1
+    // House building function
+    const createHouse = (x: number, z: number, scale: number = 1, roofType: 'gable' | 'hip' = 'gable') => {
+      const house = new THREE.Group();
+      const houseMat = new THREE.MeshPhysicalMaterial({
+        color: 0xdce3eb,
+        roughness: 0.4,
+        metalness: 0.05,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.4,
       });
-      
-      const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
-      scene.add(tube);
-      fibers.push(tube as any);
-    }
 
-    // Select a target building for zoom
-    const targetBuilding = buildings[Math.floor(buildings.length / 2)];
+      // Body
+      const bodyW = 4 * scale;
+      const bodyH = 3 * scale;
+      const bodyD = 5 * scale;
+      const bodyGeo = new THREE.BoxGeometry(bodyW, bodyH, bodyD);
+      const body = new THREE.Mesh(bodyGeo, houseMat);
+      body.position.y = bodyH / 2;
+      body.castShadow = true;
+      body.receiveShadow = true;
+      house.add(body);
+
+      // Roof
+      if (roofType === 'gable') {
+        const roofShape = new THREE.Shape();
+        roofShape.moveTo(-bodyW / 2 - 0.3, 0);
+        roofShape.lineTo(0, bodyH * 0.6);
+        roofShape.lineTo(bodyW / 2 + 0.3, 0);
+        roofShape.closePath();
+
+        const extrudeSettings = { depth: bodyD + 0.4, bevelEnabled: false };
+        const roofGeo = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
+        const roofMat = new THREE.MeshPhysicalMaterial({
+          color: 0xc8d0d9,
+          roughness: 0.35,
+          metalness: 0.05,
+          clearcoat: 0.4,
+        });
+        const roof = new THREE.Mesh(roofGeo, roofMat);
+        roof.position.set(0, bodyH, -bodyD / 2 - 0.2);
+        roof.castShadow = true;
+        house.add(roof);
+      } else {
+        const roofGeo = new THREE.ConeGeometry(bodyW * 0.8, bodyH * 0.5, 4);
+        const roofMat = new THREE.MeshPhysicalMaterial({
+          color: 0xc8d0d9,
+          roughness: 0.35,
+          metalness: 0.05,
+          clearcoat: 0.4,
+        });
+        const roof = new THREE.Mesh(roofGeo, roofMat);
+        roof.position.y = bodyH + bodyH * 0.25;
+        roof.rotation.y = Math.PI / 4;
+        roof.castShadow = true;
+        house.add(roof);
+      }
+
+      // Windows
+      const winMat = new THREE.MeshPhysicalMaterial({
+        color: 0xb8cce0,
+        roughness: 0.1,
+        metalness: 0.3,
+        transmission: 0.3,
+        thickness: 0.5,
+        clearcoat: 1,
+        clearcoatRoughness: 0.05,
+      });
+      const winGeo = new THREE.BoxGeometry(0.8 * scale, 1.0 * scale, 0.1);
+
+      // Front windows
+      [-1, 1].forEach((side) => {
+        const win = new THREE.Mesh(winGeo, winMat);
+        win.position.set(side * 1.2 * scale, bodyH * 0.55, bodyD / 2 + 0.06);
+        house.add(win);
+      });
+
+      // Door
+      const doorGeo = new THREE.BoxGeometry(0.9 * scale, 1.6 * scale, 0.1);
+      const doorMat = new THREE.MeshPhysicalMaterial({
+        color: 0x9ab0c8,
+        roughness: 0.3,
+        metalness: 0.1,
+      });
+      const door = new THREE.Mesh(doorGeo, doorMat);
+      door.position.set(0, 0.8 * scale, bodyD / 2 + 0.06);
+      house.add(door);
+
+      house.position.set(x, 0, z);
+      return house;
+    };
+
+    // Place houses in a neighborhood layout
+    const houseData = [
+      { x: -18, z: -12, scale: 1.1, roof: 'gable' as const },
+      { x: -12, z: -5, scale: 0.9, roof: 'hip' as const },
+      { x: -20, z: 3, scale: 1.0, roof: 'gable' as const },
+      { x: -8, z: 8, scale: 1.2, roof: 'gable' as const },
+      { x: 10, z: -15, scale: 0.8, roof: 'hip' as const },
+      { x: 16, z: -8, scale: 1.0, roof: 'gable' as const },
+      { x: 5, z: 5, scale: 1.1, roof: 'gable' as const },
+      { x: 18, z: 6, scale: 0.9, roof: 'hip' as const },
+      { x: -5, z: 15, scale: 1.0, roof: 'gable' as const },
+      { x: 12, z: 16, scale: 0.85, roof: 'gable' as const },
+      { x: -15, z: 14, scale: 0.95, roof: 'hip' as const },
+      { x: 22, z: -2, scale: 1.05, roof: 'gable' as const },
+    ];
+
+    const houses: THREE.Group[] = [];
+    houseData.forEach((h) => {
+      const house = createHouse(h.x, h.z, h.scale, h.roof);
+      // Slight random rotation for organic feel
+      house.rotation.y = (Math.random() - 0.5) * 0.4;
+      scene.add(house);
+      houses.push(house);
+    });
+
+    // Small trees
+    const createTree = (x: number, z: number, height: number = 3) => {
+      const tree = new THREE.Group();
+      const trunkGeo = new THREE.CylinderGeometry(0.15, 0.2, height * 0.4, 6);
+      const trunkMat = new THREE.MeshPhysicalMaterial({ color: 0xc0cad5, roughness: 0.6 });
+      const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+      trunk.position.y = height * 0.2;
+      trunk.castShadow = true;
+      tree.add(trunk);
+
+      const foliageGeo = new THREE.ConeGeometry(height * 0.4, height * 0.7, 6);
+      const foliageMat = new THREE.MeshPhysicalMaterial({ color: 0xbdc8d4, roughness: 0.5 });
+      const foliage = new THREE.Mesh(foliageGeo, foliageMat);
+      foliage.position.y = height * 0.6;
+      foliage.castShadow = true;
+      tree.add(foliage);
+
+      tree.position.set(x, 0, z);
+      return tree;
+    };
+
+    const treePositions = [
+      [-6, -10], [3, -12], [-16, -2], [14, 2], [8, -5],
+      [-10, 12], [20, 12], [-22, 8], [0, -8], [25, -12],
+      [-25, -8], [7, 18], [-8, -18], [22, 18],
+    ];
+    treePositions.forEach(([x, z]) => {
+      scene.add(createTree(x, z, 2 + Math.random() * 2));
+    });
+
+    // Winding fiber cable - glowing blue path
+    const cablePath = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-25, 0.3, 20),
+      new THREE.Vector3(-15, 0.3, 14),
+      new THREE.Vector3(-8, 0.3, 8),
+      new THREE.Vector3(-2, 0.3, 2),
+      new THREE.Vector3(5, 0.3, -2),
+      new THREE.Vector3(10, 0.3, -8),
+      new THREE.Vector3(16, 0.3, -12),
+      new THREE.Vector3(25, 0.3, -18),
+    ], false, 'catmullrom', 0.5);
+
+    // Main cable
+    const cableTubeGeo = new THREE.TubeGeometry(cablePath, 120, 0.8, 12, false);
+    const cableMat = new THREE.MeshPhysicalMaterial({
+      color: 0x38bdf8,
+      emissive: 0x0ea5e9,
+      emissiveIntensity: 0.6,
+      roughness: 0.15,
+      metalness: 0.3,
+      clearcoat: 1,
+      clearcoatRoughness: 0.05,
+      transparent: true,
+      opacity: 0.85,
+    });
+    const fiberCable = new THREE.Mesh(cableTubeGeo, cableMat);
+    fiberCable.castShadow = true;
+    scene.add(fiberCable);
+
+    // Glow around cable
+    const glowTubeGeo = new THREE.TubeGeometry(cablePath, 120, 2.0, 12, false);
+    const glowMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.08,
+      side: THREE.BackSide,
+    });
+    const glowTube = new THREE.Mesh(glowTubeGeo, glowMat);
+    scene.add(glowTube);
+
+    // Secondary glow
+    const glowTubeGeo2 = new THREE.TubeGeometry(cablePath, 120, 3.5, 12, false);
+    const glowMat2 = new THREE.MeshBasicMaterial({
+      color: 0x7dd3fc,
+      transparent: true,
+      opacity: 0.04,
+      side: THREE.BackSide,
+    });
+    scene.add(new THREE.Mesh(glowTubeGeo2, glowMat2));
+
+    // WiFi signal icons (3D arcs above select houses)
+    const wifiIcons: THREE.Group[] = [];
+    const createWifiIcon = (parent: THREE.Group) => {
+      const wifi = new THREE.Group();
+      const arcMat = new THREE.MeshBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.8,
+        side: THREE.DoubleSide,
+      });
+
+      for (let i = 0; i < 3; i++) {
+        const innerR = 0.5 + i * 0.5;
+        const outerR = innerR + 0.15;
+        const arcShape = new THREE.RingGeometry(innerR, outerR, 16, 1, Math.PI * 0.3, Math.PI * 0.4);
+        const arc = new THREE.Mesh(arcShape, arcMat.clone());
+        arc.rotation.x = -Math.PI / 6;
+        arc.position.y = 5 + i * 0.1;
+        wifi.add(arc);
+      }
+
+      // Dot at base
+      const dotGeo = new THREE.SphereGeometry(0.15, 8, 8);
+      const dot = new THREE.Mesh(dotGeo, arcMat.clone());
+      dot.position.y = 4.7;
+      wifi.add(dot);
+
+      wifi.position.copy(parent.position);
+      return wifi;
+    };
+
+    // Add WiFi to a few houses
+    [0, 3, 5, 7, 10].forEach((idx) => {
+      if (houses[idx]) {
+        const wifi = createWifiIcon(houses[idx]);
+        scene.add(wifi);
+        wifiIcons.push(wifi);
+      }
+    });
 
     sceneRef.current = {
       scene,
       camera,
       renderer,
-      composer,
-      fibers,
-      buildings,
-      targetBuilding
+      houses,
+      fiberCable,
+      wifiIcons,
+      time: 0,
     };
 
     // Animation loop
+    let animId: number;
     const animate = () => {
       if (!sceneRef.current) return;
-      
-      const { composer, fibers, buildings } = sceneRef.current;
-      const time = Date.now() * 0.001;
-      
-      // Animate windows flickering
-      buildings.forEach((building) => {
-        building.children.forEach((child, index) => {
-          if (child instanceof THREE.Mesh && index > 0) {
-            const material = child.material as THREE.MeshBasicMaterial;
-            if (material.transparent && Math.random() > 0.98) {
-              material.opacity = Math.random() * 0.5 + 0.5;
-            }
-          }
+      const { renderer, scene, camera, wifiIcons, fiberCable } = sceneRef.current;
+      sceneRef.current.time += 0.016;
+      const t = sceneRef.current.time;
+
+      // Pulse fiber cable glow
+      const cMat = fiberCable.material as THREE.MeshPhysicalMaterial;
+      cMat.emissiveIntensity = 0.5 + Math.sin(t * 2) * 0.2;
+
+      // Animate WiFi icons - gentle float and pulse
+      wifiIcons.forEach((wifi, i) => {
+        wifi.children.forEach((child, j) => {
+          const mat = (child as THREE.Mesh).material as THREE.MeshBasicMaterial;
+          mat.opacity = 0.5 + Math.sin(t * 3 + i + j * 0.5) * 0.3;
         });
       });
-      
-      // Pulse fiber connections with smooth animation
-      fibers.forEach((fiber, index) => {
-        const material = fiber.material as THREE.LineBasicMaterial;
-        material.opacity = 0.4 + Math.sin(time * 2 + index * 0.5) * 0.2;
-      });
-      
-      // Render with post-processing
-      composer.render();
-      requestAnimationFrame(animate);
+
+      // Slow auto-rotation
+      const baseAngle = t * 0.05;
+      const radius = 55;
+      camera.position.x = Math.cos(baseAngle) * radius;
+      camera.position.z = Math.sin(baseAngle) * radius;
+      camera.position.y = 45;
+      camera.lookAt(0, 0, 0);
+
+      renderer.render(scene, camera);
+      animId = requestAnimationFrame(animate);
     };
     animate();
 
-    // Handle resize
     const handleResize = () => {
       if (!sceneRef.current) return;
-      const { camera, renderer, composer } = sceneRef.current;
+      const { camera, renderer } = sceneRef.current;
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      composer.setSize(window.innerWidth, window.innerHeight);
-      
-      // Update FXAA resolution
-      const fxaaPass = composer.passes[2] as ShaderPass;
-      if (fxaaPass) {
-        const pixelRatio = renderer.getPixelRatio();
-        fxaaPass.material.uniforms['resolution'].value.x = 1 / (window.innerWidth * pixelRatio);
-        fxaaPass.material.uniforms['resolution'].value.y = 1 / (window.innerHeight * pixelRatio);
-      }
     };
     window.addEventListener('resize', handleResize);
 
-    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animId);
       renderer.dispose();
       containerRef.current?.removeChild(renderer.domElement);
     };
   }, []);
 
-  // Update camera based on scroll
+  // Zoom into a house on scroll
   useEffect(() => {
     if (!sceneRef.current) return;
-    const { camera, targetBuilding } = sceneRef.current;
-    
-    if (!targetBuilding) return;
-    
-    // Calculate camera position based on scroll
-    const startPos = new THREE.Vector3(0, 50, 100);
-    const targetPos = targetBuilding.position.clone();
-    const buildingHeight = targetBuilding.children[0].position.y * 2;
-    targetPos.y = buildingHeight + 5;
-    targetPos.z += 15;
-    
-    // Interpolate camera position
-    camera.position.lerpVectors(startPos, targetPos, scrollProgress);
-    
-    // Interpolate look-at target
-    const lookAtStart = new THREE.Vector3(0, 0, 0);
-    const lookAtEnd = targetBuilding.position.clone();
-    lookAtEnd.y = buildingHeight;
-    
-    const lookAtTarget = new THREE.Vector3();
-    lookAtTarget.lerpVectors(lookAtStart, lookAtEnd, scrollProgress);
-    camera.lookAt(lookAtTarget);
-    
-    // Increase blue hue on target building as we zoom
-    if (scrollProgress > 0.3 && targetBuilding.children[0] instanceof THREE.Mesh) {
-      const baseMaterial = targetBuilding.children[0].material as THREE.MeshStandardMaterial;
-      baseMaterial.emissiveIntensity = 0.02 + (scrollProgress - 0.3) * 0.5;
+    const { camera, houses } = sceneRef.current;
+    const target = houses[6]; // Center house
+    if (!target) return;
+
+    if (scrollProgress > 0) {
+      const t = Math.min(scrollProgress * 1.2, 1);
+      const ease = t * t * (3 - 2 * t); // smoothstep
+
+      const startPos = new THREE.Vector3(
+        camera.position.x,
+        45,
+        camera.position.z
+      );
+      const endPos = target.position.clone().add(new THREE.Vector3(8, 8, 10));
+
+      camera.position.lerpVectors(startPos, endPos, ease);
+
+      const lookStart = new THREE.Vector3(0, 0, 0);
+      const lookEnd = target.position.clone().add(new THREE.Vector3(0, 2, 0));
+      const lookAt = new THREE.Vector3().lerpVectors(lookStart, lookEnd, ease);
+      camera.lookAt(lookAt);
     }
   }, [scrollProgress]);
 
