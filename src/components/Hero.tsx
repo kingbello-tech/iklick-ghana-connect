@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Wifi } from "lucide-react";
 import { useState, useEffect } from "react";
 import MetropolisScene from "./MetropolisScene";
+import { useTheme } from "./ThemeProvider";
 
 interface HeroProps {
   onAnimationComplete?: () => void;
@@ -18,6 +19,7 @@ const clientStats = [
 
 const Hero = ({ onAnimationComplete }: HeroProps) => {
   const [scrollProgress, setScrollProgress] = useState(0);
+  const { theme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -42,7 +44,7 @@ const Hero = ({ onAnimationComplete }: HeroProps) => {
 
   return (
     <section id="hero-section" className="relative h-screen flex items-center justify-center overflow-hidden">
-      <MetropolisScene scrollProgress={scrollProgress} />
+      <MetropolisScene scrollProgress={scrollProgress} theme={theme} />
 
       {/* Content Overlay */}
       <div 
@@ -50,19 +52,19 @@ const Hero = ({ onAnimationComplete }: HeroProps) => {
         style={{ opacity: contentOpacity, pointerEvents: contentOpacity < 0.1 ? 'none' : 'auto' }}
       >
         {/* Trust Badge */}
-        <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-card/40 backdrop-blur-md border border-border/50">
+        <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-card/60 backdrop-blur-md border border-border/50 shadow-lg">
           <Star className="w-4 h-4 text-primary fill-primary" />
-          <span className="text-sm text-foreground/80 font-medium">Trusted by 100+ Businesses in Ghana</span>
+          <span className="text-sm text-foreground font-medium">Trusted by 100+ Businesses in Ghana</span>
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 max-w-4xl leading-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 max-w-4xl leading-tight text-foreground drop-shadow-lg">
           Reliable High-Speed{" "}
           <span className="gradient-text">Internet for Ghana</span>
         </h1>
 
         {/* Subtitle */}
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mb-8">
+        <p className="text-lg md:text-xl text-foreground/80 max-w-2xl mb-8 drop-shadow-md">
           Seamless fiber connectivity for businesses and homes with 98.5% uptime guarantee
         </p>
 
@@ -83,7 +85,7 @@ const Hero = ({ onAnimationComplete }: HeroProps) => {
             {[...clientStats, ...clientStats].map((client, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-full bg-card/30 backdrop-blur-sm border border-border/30"
+                className="flex-shrink-0 flex items-center gap-3 px-5 py-3 rounded-full bg-card/50 backdrop-blur-md border border-border/40 shadow-md"
               >
                 <Wifi className="w-4 h-4 text-primary" />
                 <div className="text-left">
@@ -101,7 +103,7 @@ const Hero = ({ onAnimationComplete }: HeroProps) => {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 text-center z-10"
         style={{ opacity: scrollProgress > 0.15 ? 0 : contentOpacity * 0.7 }}
       >
-        <p className="text-xs text-foreground/50 mb-2 animate-bounce">Scroll to explore</p>
+        <p className="text-xs text-foreground/60 mb-2 animate-bounce drop-shadow">Scroll to explore</p>
         <div className="w-5 h-8 border-2 border-primary/40 rounded-full flex items-start justify-center p-1.5 mx-auto">
           <div className="w-1 h-2 bg-primary rounded-full animate-pulse" />
         </div>
