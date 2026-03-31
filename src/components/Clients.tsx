@@ -1,35 +1,19 @@
-import shc from "@/assets/logos/shc.jpg";
-import soccabet from "@/assets/logos/soccabet.png";
-import umat from "@/assets/logos/umat.png";
-import qgConstruction from "@/assets/logos/qg-construction.jpg";
-import mkopa from "@/assets/logos/mkopa.png";
-import royalSenchi from "@/assets/logos/royal-senchi.jpg";
-import gtbank from "@/assets/logos/gtbank.png";
-import uhas from "@/assets/logos/uhas.jpg";
-import b5plus from "@/assets/logos/b5plus.png";
-import unnamedSchool from "@/assets/logos/unnamed-school.jpg";
-import kaaf from "@/assets/logos/kaaf.jpg";
-import fidelity from "@/assets/logos/fidelity.jfif";
-import lancaster from "@/assets/logos/lancaster.jfif";
-import safariValley from "@/assets/logos/safari-valley.png";
-import heritage from "@/assets/logos/heritage.png";
+import ruijie from "@/assets/logos/ruijie.png";
+import ubiquiti from "@/assets/logos/ubiquiti.png";
+import furukawa from "@/assets/logos/furukawa.png";
+import vsol from "@/assets/logos/vsol.jpg";
+import nedco from "@/assets/logos/nedco.jpg";
+import mikrotik from "@/assets/logos/mikrotik.jpg";
+import vobiss from "@/assets/logos/vobiss.png";
 
 const allClients = [
-  { name: "State Housing Company", logo: shc },
-  { name: "SoccaBet", logo: soccabet },
-  { name: "UMaT", logo: umat },
-  { name: "Queiroz Galvão", logo: qgConstruction },
-  { name: "B5 Plus Group", logo: b5plus },
-  { name: "KAAF University", logo: kaaf },
-  { name: "Fidelity Bank", logo: fidelity },
-  { name: "Safari Valley Resort", logo: safariValley },
-  { name: "M-KOPA", logo: mkopa },
-  { name: "Royal Senchi", logo: royalSenchi },
-  { name: "GTBank", logo: gtbank },
-  { name: "UHAS", logo: uhas },
-  { name: "Make Your Mark", logo: unnamedSchool },
-  { name: "Lancaster University", logo: lancaster },
-  { name: "Heritage Christian University", logo: heritage },
+  { name: "Ruijie Networks", logo: ruijie },
+  { name: "Ubiquiti Networks", logo: ubiquiti },
+  { name: "Furukawa Electric", logo: furukawa },
+  { name: "V-SOL", logo: vsol },
+  { name: "NEDCo", logo: nedco },
+  { name: "MikroTik", logo: mikrotik },
+  { name: "VOBISS Solutions", logo: vobiss },
 ];
 
 const Clients = () => {
@@ -38,7 +22,7 @@ const Clients = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <p className="text-sm uppercase tracking-widest text-muted-foreground font-medium">
-            Trusted by leading organizations
+            Our Partners and Vendors
           </p>
         </div>
       </div>
