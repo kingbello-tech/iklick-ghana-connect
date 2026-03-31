@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import iklickLogo from "@/assets/iklick-logo.jpg";
 
 interface NavbarProps {
   visible?: boolean;
@@ -12,7 +13,6 @@ const Navbar = ({ visible = true }: NavbarProps) => {
 
   const navLinks = [
     { name: "Services", href: "#services" },
-    { name: "Pricing", href: "#pricing" },
     { name: "Support", href: "#support" },
     { name: "Contact", href: "#contact" }
   ];
@@ -27,12 +27,7 @@ const Navbar = ({ visible = true }: NavbarProps) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <a href="#" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Zap className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold">
-              i<span className="gradient-text">Klick</span>
-            </span>
+            <img src={iklickLogo} alt="iKlick Communications" className="h-10 w-auto object-contain rounded" />
           </a>
 
           {/* Desktop Navigation */}
@@ -47,9 +42,11 @@ const Navbar = ({ visible = true }: NavbarProps) => {
               </a>
             ))}
             <ThemeToggle />
-            <Button variant="hero" size="sm">
-              Get Started
-            </Button>
+            <a href="mailto:sales@iklickgh.com">
+              <Button variant="hero" size="sm">
+                Get Started
+              </Button>
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -77,9 +74,11 @@ const Navbar = ({ visible = true }: NavbarProps) => {
               ))}
               <div className="flex items-center gap-2">
                 <ThemeToggle />
-                <Button variant="hero" size="sm" className="flex-1">
-                  Get Started
-                </Button>
+                <a href="mailto:sales@iklickgh.com" className="flex-1">
+                  <Button variant="hero" size="sm" className="w-full">
+                    Get Started
+                  </Button>
+                </a>
               </div>
             </div>
           </div>

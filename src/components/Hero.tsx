@@ -88,13 +88,17 @@ const Hero = () => {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in" style={{ animationDelay: '0.45s' }}>
-              <Button variant="hero" size="lg" className="text-base px-8 py-6">
-                Get Connected
-                <ArrowRight className="w-5 h-5 ml-1" />
-              </Button>
-              <Button variant="hero-outline" size="lg" className="text-base px-8 py-6">
-                View Plans
-              </Button>
+              <a href="mailto:sales@iklickgh.com">
+                <Button variant="hero" size="lg" className="text-base px-8 py-6">
+                  Schedule a Consultation
+                  <ArrowRight className="w-5 h-5 ml-1" />
+                </Button>
+              </a>
+              <a href="tel:+233242548764">
+                <Button variant="hero-outline" size="lg" className="text-base px-8 py-6">
+                  Call +233-242-548-764
+                </Button>
+              </a>
             </div>
 
             {/* Stats */}
