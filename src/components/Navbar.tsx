@@ -46,6 +46,7 @@ const Navbar = ({ visible = true }: NavbarProps) => {
                 {link.name}
               </a>
             ))}
+            <ThemeToggle />
             <Button variant="hero" size="sm">
               Get Started
             </Button>
