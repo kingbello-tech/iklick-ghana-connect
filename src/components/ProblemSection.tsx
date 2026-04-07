@@ -85,22 +85,6 @@ const ProblemSection = () => {
         </div>
       </div>
 
-      <style>{`
-        @keyframes card-flip-in {
-          0% {
-            transform: scale(1) perspective(800px) rotateY(0deg);
-          }
-          40% {
-            transform: scale(1.08) perspective(800px) rotateY(180deg);
-          }
-          70% {
-            transform: scale(1.05) perspective(800px) rotateY(360deg);
-          }
-          100% {
-            transform: scale(1.05) perspective(800px) rotateY(360deg);
-          }
-        }
-      `}</style>
     </section>
   );
 };
