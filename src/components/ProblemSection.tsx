@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { AlertTriangle, MapPin, DollarSign, Wifi } from "lucide-react";
 
 const challenges = [
