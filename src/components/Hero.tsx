@@ -14,7 +14,7 @@ const slides = [
     headline: "Internet",
     headlineAccent: "at a Click",
     subtitle:
-      "We're building Ghana's most reliable fiber-optic network — delivering high-speed internet to homes and enterprises across the nation.",
+      "We're building Ghana's most reliable network — delivering high-speed fiber and wireless internet to homes and enterprises across the nation.",
   },
   {
     image: slideCity,
@@ -22,7 +22,7 @@ const slides = [
     headline: "Powering a",
     headlineAccent: "Connected Nation",
     subtitle:
-      "Our fiber infrastructure spans across Accra, Tema, and beyond — linking communities, businesses, and institutions to the digital world.",
+      "Our fiber and wireless infrastructure spans across Accra, Tema, and beyond — linking communities, businesses, and institutions to the digital world.",
   },
   {
     image: slideHome,
@@ -30,7 +30,7 @@ const slides = [
     headline: "Seamless Internet",
     headlineAccent: "for Every Home",
     subtitle:
-      "Stream, learn, and stay connected with your family on blazing-fast fiber broadband — reliable internet you can count on, every day.",
+      "Stream, learn, and stay connected with blazing-fast fiber broadband or reliable wireless — internet you can count on, every day.",
   },
   {
     image: slideEnterprise,
@@ -38,7 +38,7 @@ const slides = [
     headline: "Enterprise-Grade",
     headlineAccent: "Connectivity",
     subtitle:
-      "Dedicated fiber lines, 99.9% SLA-backed uptime, and 24/7 NOC support — mission-critical internet built for business.",
+      "Dedicated fiber lines, high-speed wireless links, 99.9% SLA-backed uptime, and 24/7 NOC support — mission-critical internet built for business.",
   },
 ];
 

@@ -3,23 +3,23 @@ import { Zap, Shield, Globe, TrendingUp } from "lucide-react";
 const solutions = [
   {
     icon: Zap,
-    title: "High-Speed Fiber Deployment",
-    description: "Enterprise-grade fiber-optic lines delivered directly to homes and businesses for symmetrical, blazing-fast internet.",
+    title: "High-Speed Fiber & Wireless",
+    description: "Enterprise-grade fiber-optic lines and reliable wireless connectivity delivered directly to homes and businesses for fast, dependable internet.",
   },
   {
     icon: Shield,
     title: "98.5% Service Reliability",
-    description: "Redundant network architecture and proactive monitoring ensure consistent uptime you can depend on.",
+    description: "Redundant network architecture across fiber and wireless — with proactive monitoring to ensure consistent uptime you can depend on.",
   },
   {
     icon: Globe,
     title: "Expanding Coverage Across Ghana",
-    description: "Aggressive network expansion into Accra, Tema, and beyond — connecting communities that were previously underserved.",
+    description: "Aggressive network expansion into Accra, Tema, and beyond — using fiber and wireless to connect communities that were previously underserved.",
   },
   {
     icon: TrendingUp,
     title: "60% Cost Savings",
-    description: "Competitive pricing with transparent plans — delivering superior speeds at significantly lower costs than competitors.",
+    description: "Competitive pricing with transparent plans — delivering superior speeds via fiber or wireless at significantly lower costs than competitors.",
   },
 ];
 
@@ -53,14 +53,14 @@ const SolutionSection = () => {
               <span className="text-sm font-medium text-primary uppercase tracking-wider">Our Solution</span>
             </div>
             <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              Fiber-Powered Internet{" "}
+              Fiber & Wireless Internet{" "}
               <span className="gradient-text">For Everyone</span>
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              iKlick Communications delivers reliable, high-speed fiber-optic internet directly to homes, businesses, and institutions — bridging Ghana's digital divide with infrastructure built for the future.
+              iKlick Communications delivers reliable, high-speed internet through fiber-optic and wireless solutions — to homes, businesses, and institutions — bridging Ghana's digital divide with infrastructure built for the future.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              Through strategic network design and dedicated local support, we provide the connectivity backbone that families need to stay connected and enterprises need to compete globally.
+              Whether through dedicated fiber lines or robust wireless links, we provide the connectivity backbone that families need to stay connected and enterprises need to compete globally.
             </p>
           </div>
         </div>
