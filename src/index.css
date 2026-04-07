@@ -117,3 +117,12 @@ All colors MUST be HSL.
     box-shadow: 0 0 40px -5px hsl(var(--glow-primary) / 0.5);
   }
 }
+
+@keyframes kenburns {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.08);
+  }
+}
