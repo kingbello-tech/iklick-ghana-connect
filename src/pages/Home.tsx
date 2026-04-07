@@ -1,8 +1,11 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Clients from "@/components/Clients";
-import ValuePropositions from "@/components/ValuePropositions";
+import ProblemSection from "@/components/ProblemSection";
+import SolutionSection from "@/components/SolutionSection";
+import AboutSection from "@/components/AboutSection";
 import FeatureTabs from "@/components/FeatureTabs";
+import InfrastructureSection from "@/components/InfrastructureSection";
 import Support from "@/components/Support";
 import Testimonials from "@/components/Testimonials";
 import Contact from "@/components/Contact";
@@ -14,10 +17,13 @@ const Home = () => {
       <Navbar visible={true} />
       <Hero />
       <Clients />
-      <ValuePropositions />
+      <ProblemSection />
+      <SolutionSection />
+      <AboutSection />
       <div id="services">
         <FeatureTabs />
       </div>
+      <InfrastructureSection />
       <div id="support">
         <Support />
       </div>
