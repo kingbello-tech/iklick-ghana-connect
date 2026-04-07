@@ -1,4 +1,4 @@
-import { Cable, Network, Headphones, Settings } from "lucide-react";
+import { Cable, Network, Headphones, Settings, Wifi } from "lucide-react";
 
 const capabilities = [
   {
@@ -7,14 +7,19 @@ const capabilities = [
     description: "Expert engineers design and deploy fiber-optic networks tailored to residential neighborhoods and enterprise campuses.",
   },
   {
+    icon: Wifi,
+    title: "Wireless Network Solutions",
+    description: "High-performance wireless infrastructure for areas where fiber isn't yet available — delivering reliable speeds via point-to-point and point-to-multipoint links.",
+  },
+  {
     icon: Network,
     title: "Last-Mile Connectivity",
-    description: "High-speed fiber delivered directly to your doorstep — from FTTH for homes to dedicated lines for enterprises.",
+    description: "High-speed internet delivered directly to your doorstep — from FTTH for homes to dedicated fiber or wireless links for enterprises.",
   },
   {
     icon: Settings,
     title: "Managed Network Services",
-    description: "Comprehensive monitoring, maintenance, and optimization of your connection for maximum uptime and performance.",
+    description: "Comprehensive monitoring, maintenance, and optimization of your fiber and wireless connections for maximum uptime and performance.",
   },
   {
     icon: Headphones,
@@ -45,7 +50,7 @@ const InfrastructureSection = () => {
 
         {/* Timeline-style cards */}
         <div className="max-w-5xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
             {capabilities.map((cap, index) => (
               <div
                 key={index}

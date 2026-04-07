@@ -17,7 +17,7 @@ const AboutSection = () => {
             <span className="gradient-text">Digital Divide</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            iKlick Communications Ltd was founded to address the critical need for reliable, affordable internet connectivity across Ghana. We bring enterprise-grade fiber solutions to homes, businesses, and institutions nationwide.
+            iKlick Communications Ltd was founded to address the critical need for reliable, affordable internet connectivity across Ghana. We bring enterprise-grade fiber and wireless solutions to homes, businesses, and institutions nationwide.
           </p>
         </div>
 
@@ -29,7 +29,7 @@ const AboutSection = () => {
             </div>
             <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
             <p className="text-muted-foreground leading-relaxed">
-              To deliver innovative, reliable, and affordable fiber-optic internet that empowers homes, businesses, and communities to thrive in a connected world — improving service quality and driving digital inclusion across Ghana.
+              To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes, businesses, and communities to thrive in a connected world — improving service quality and driving digital inclusion across Ghana.
             </p>
           </div>
 
