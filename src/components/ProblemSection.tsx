@@ -25,57 +25,30 @@ const challenges = [
 ];
 
 const ChallengeCard = ({ challenge, index }: { challenge: typeof challenges[0]; index: number }) => {
-  const [expanded, setExpanded] = useState(false);
-
   return (
     <div
-      onClick={() => setExpanded(!expanded)}
-      className={`relative cursor-pointer rounded-xl bg-card/50 backdrop-blur-sm border transition-all duration-500 animate-fade-in-up overflow-hidden ${
-        expanded
-          ? "p-6 border-destructive/40 shadow-lg shadow-destructive/10 scale-105 z-10"
-          : "p-6 border-border hover:border-destructive/30"
-      }`}
+      className="group relative cursor-default rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-destructive/40 hover:shadow-lg hover:shadow-destructive/10 hover:scale-105 hover:z-10 p-6 transition-all duration-500 animate-fade-in-up overflow-hidden"
       style={{
         animationDelay: `${index * 100}ms`,
-        transform: expanded ? "scale(1.05) rotateY(0deg)" : "scale(1) rotateY(0deg)",
-        animation: expanded
-          ? `card-flip-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`
-          : undefined,
+        perspective: "800px",
       }}
     >
       {/* Icon */}
-      <div
-        className={`w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center mb-4 transition-all duration-500 ${
-          expanded ? "mx-auto w-14 h-14 rounded-xl" : ""
-        }`}
-      >
-        <challenge.icon className={`text-destructive transition-all duration-500 ${expanded ? "w-7 h-7" : "w-5 h-5"}`} />
+      <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:mx-auto group-hover:w-14 group-hover:h-14 group-hover:rounded-xl">
+        <challenge.icon className="w-5 h-5 text-destructive transition-all duration-500 group-hover:w-7 group-hover:h-7" />
       </div>
 
-      {/* Title — always visible */}
-      <h3
-        className={`font-semibold text-foreground transition-all duration-500 ${
-          expanded ? "text-center text-lg mb-3" : "mb-0"
-        }`}
-      >
+      {/* Title */}
+      <h3 className="font-semibold text-foreground transition-all duration-500 group-hover:text-center group-hover:text-lg group-hover:mb-3">
         {challenge.title}
       </h3>
 
-      {/* Description — only visible when expanded */}
-      <div
-        className={`overflow-hidden transition-all duration-500 ease-in-out ${
-          expanded ? "max-h-40 opacity-100 mt-2" : "max-h-0 opacity-0 mt-0"
-        }`}
-      >
+      {/* Description — revealed on hover */}
+      <div className="max-h-0 opacity-0 mt-0 overflow-hidden transition-all duration-500 ease-in-out group-hover:max-h-40 group-hover:opacity-100 group-hover:mt-2">
         <p className="text-sm text-muted-foreground leading-relaxed">
           {challenge.description}
         </p>
       </div>
-
-      {/* Tap hint */}
-      {!expanded && (
-        <p className="text-[10px] text-muted-foreground/50 mt-3 uppercase tracking-wider">Tap to learn more</p>
-      )}
     </div>
   );
 };
