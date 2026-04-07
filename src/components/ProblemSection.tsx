@@ -58,30 +58,28 @@ const ProblemSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-background via-destructive/3 to-background" />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-20">
-          {/* Left: Story text */}
-          <div className="space-y-6 animate-fade-in">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20">
-              <span className="text-sm font-medium text-destructive uppercase tracking-wider">The Challenge</span>
-            </div>
-            <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-              Connectivity Gaps in a{" "}
-              <span className="text-destructive">Rapidly Growing</span> Digital Economy
-            </h2>
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Despite strong growth in mobile penetration and digital services, Ghana's internet infrastructure faces structural challenges that limit nationwide connectivity and service quality for both homes and businesses.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              The result is a growing gap between the demand for reliable internet and the infrastructure needed to support everyday life, education, healthcare, and business operations.
-            </p>
+        {/* Centered header text */}
+        <div className="text-center max-w-3xl mx-auto space-y-6 mb-16 animate-fade-in">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20">
+            <span className="text-sm font-medium text-destructive uppercase tracking-wider">The Challenge</span>
           </div>
+          <h2 className="text-4xl md:text-5xl font-bold leading-tight">
+            Connectivity Gaps in a{" "}
+            <span className="text-destructive">Rapidly Growing</span> Digital Economy
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            Despite strong growth in mobile penetration and digital services, Ghana's internet infrastructure faces structural challenges that limit nationwide connectivity and service quality for both homes and businesses.
+          </p>
+          <p className="text-muted-foreground leading-relaxed">
+            The result is a growing gap between the demand for reliable internet and the infrastructure needed to support everyday life, education, healthcare, and business operations.
+          </p>
+        </div>
 
-          {/* Right: Challenge cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {challenges.map((challenge, index) => (
-              <ChallengeCard key={index} challenge={challenge} index={index} />
-            ))}
-          </div>
+        {/* Cards below */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto">
+          {challenges.map((challenge, index) => (
+            <ChallengeCard key={index} challenge={challenge} index={index} />
+          ))}
         </div>
       </div>
 
