@@ -1,86 +1,53 @@
 
 
-# Recreate vidiq.com Layout & Animation Style for iKlick
+## Add a Projects Page
 
-## What vidiq.com does (adapted for iKlick)
+### Overview
+Create a dedicated `/projects` page showcasing three project categories: Community WiFi, Fiber to the Home (FTTH), and University Hostel WiFi. The page will feature a hero banner, filterable project cards with hover animations, and individual project detail sections with compelling visuals.
 
-vidiq.com follows this structure:
-1. **Sticky navbar** -- logo, nav links, CTA button (dark bg, clean)
-2. **Hero section** -- trust badge, big headline, subtitle, CTA button, scrolling creator avatars with stats
-3. **Brand logos** -- horizontal auto-scrolling row of partner/client logos
-4. **Feature tabs section** -- "One App for Everything" with tabbed content showing product screenshots
-5. **Social proof / testimonials** -- scrolling cards with growth stories
-6. **Pricing** -- 3-tier cards
-7. **Footer**
-
-## Plan for iKlick (mapping vidiq sections to ISP context)
-
-### 1. Redesign Hero Section (keep 3D metropolis but add vidiq-style content overlay)
-- Add a **trust badge** at top: "Trusted by 100+ Businesses in Ghana" with a star icon
-- Add **big headline**: "Reliable High-Speed Internet for Ghana"
-- Add **subtitle**: "Seamless fiber connectivity for businesses and homes with 98.5% uptime"
-- Add **CTA button**: "Get Connected" (gradient style)
-- Below the CTA, add a **horizontally scrolling row of client stats** (similar to vidiq's creator avatars) showing key clients with connection stats (e.g., "Connected Since 2022", "99.9% Uptime")
-- The 3D metropolis remains as the background but content overlays on top with subtle glassmorphism
-- Content fades out as user scrolls and metropolis zoom takes over
-
-### 2. Redesign Clients Section (vidiq brand logo strip style)
-- Two rows: first row scrolls left, second row scrolls right (like vidiq)
-- Logos displayed in a clean, minimal style without cards/borders
-- Grayscale logos that brighten on hover
-- Seamless infinite scroll animation
-
-### 3. Add Feature Tabs Section (new component -- "One Platform for All Connectivity")
-- Tabbed interface with icons: "Enterprise", "Residential", "VoIP", "Managed IT"
-- Each tab shows a styled feature card with description, benefits, and a mock UI screenshot area
-- Replace the current separate EnterpriseServices and ResidentialServices with this unified tabbed view
-- Smooth fade transitions between tabs
-
-### 4. Redesign Testimonials / Social Proof Section (new component)
-- Auto-scrolling horizontal cards (two rows, opposite directions like vidiq)
-- Each card: client name, company, quote, and a stat (e.g., "60% cost savings")
-- Glassmorphism card style
-
-### 5. Redesign Pricing Section (vidiq 3-column style)
-- 3 main tiers displayed (combine current 4 into 3 prominent ones + a "Contact for Custom" option)
-- Highlight middle tier as "Most Popular"
-- Clean card design matching vidiq's dark style with gradient accents
-
-### 6. Redesign Footer (expanded, vidiq-style)
-- Multi-column layout: Company info, Services links, Support links, Contact info
-- Social media icons
-- Bottom bar with copyright and legal links
-
-### 7. Add Scroll-Based Animations
-- Intersection Observer-based fade-in-up animations on all sections
-- Staggered delays for grid items
-- Smooth section transitions
-
-## Files to Create/Modify
+### Files to Create/Modify
 
 | File | Action |
 |------|--------|
-| `src/components/Hero.tsx` | Redesign with trust badge, headline, CTA, scrolling client stats overlay on 3D scene |
-| `src/components/Clients.tsx` | Two-row auto-scroll, grayscale logos, no card borders |
-| `src/components/FeatureTabs.tsx` | **New** -- tabbed services section replacing Enterprise + Residential |
-| `src/components/Testimonials.tsx` | **New** -- scrolling social proof cards |
-| `src/components/Pricing.tsx` | Redesign to 3-tier vidiq-style layout |
-| `src/components/Footer.tsx` | Expand to multi-column layout |
-| `src/components/Navbar.tsx` | Minor refinements for vidiq-style spacing |
-| `src/components/Contact.tsx` | Integrate as CTA banner instead of separate section |
-| `src/pages/Home.tsx` | Update section order and component imports |
-| `src/index.css` | Add new animation utilities for scroll and hover effects |
-| `tailwind.config.ts` | Add scroll-reverse animation keyframe |
+| `src/pages/Projects.tsx` | **Create** -- Full projects page |
+| `src/components/Navbar.tsx` | **Edit** -- Add "Projects" nav link pointing to `/projects` |
+| `src/App.tsx` | **Edit** -- Add `/projects` route |
 
-### Section Order (final page flow)
-1. Navbar (sticky, appears after hero scroll)
-2. Hero (3D metropolis + vidiq-style headline/CTA overlay)
-3. Clients (dual-row scrolling logos)
-4. Value Propositions (keep existing, minor style tweaks)
-5. Feature Tabs (unified services section)
-6. Support (keep existing)
-7. Testimonials (new social proof)
-8. Pricing (redesigned 3-tier)
-9. Contact (CTA banner style)
-10. Footer (expanded)
+### Page Structure
+
+1. **Page Hero Banner** -- Gradient background with headline "Our Projects", subtitle about delivering connectivity across Ghana, fade-in animation
+
+2. **Filter Tabs** -- Three pill-style filter buttons: "All", "Community WiFi", "FTTH", "University WiFi" with active state styling
+
+3. **Project Cards Grid** -- 3-column responsive grid (1 col mobile, 2 col tablet, 3 col desktop). Each card includes:
+   - Gradient placeholder image area with project-type icon overlay
+   - Project title, location, description
+   - Key stats (e.g., "500+ homes connected", "99.9% uptime")
+   - Hover effect: scale-up, glow border, reveal "Learn More" button
+   - Staggered fade-in-up entrance animations using Intersection Observer
+
+4. **Featured Project Sections** -- Three detailed sections (one per category) with alternating left/right image-text layouts:
+   - **Community WiFi**: Public hotspots connecting underserved communities
+   - **Fiber to the Home**: Residential fiber rollouts in neighborhoods
+   - **University Hostel WiFi**: Campus-wide high-speed wireless for student hostels
+   - Each section has animated stat counters and descriptive text
+
+5. **CTA Banner** -- "Have a project in mind?" with mailto link to sales@iklickgh.com
+
+### Navigation
+- Add "Projects" link to navbar between "Services" and "Support"
+- Use React Router `Link` component for SPA navigation (not anchor hash)
+- Navbar will use `useLocation` to detect route and render links accordingly
+
+### Animations & Transitions
+- Cards: `animate-fade-in-up` with staggered delays, `hover:scale-105` with `transition-all duration-300`
+- Filter tabs: smooth active-state transition with sliding indicator
+- Section text: fade-in on scroll via Intersection Observer
+- Stats: count-up animation on visibility
+
+### Technical Details
+- Navbar links will use a mix of React Router `Link` (for `/projects`) and anchor tags (for `#services`, `#support`, `#contact`) 
+- Project data stored as a typed array within the component
+- Filter state managed with `useState`
+- Scroll animations via `useEffect` + `IntersectionObserver`
 
