@@ -32,7 +32,7 @@ const projects: Project[] = [
     image: projectCommunityWifi,
   },
   {
-    id: 2, title: "Tema Community Network", category: "community", location: "Tema Metropolitan Area",
+    id: 2, title: "Somanya Community Wifi", category: "community", location: "Somanya, Eastern Region",
     description: "Built a mesh wireless network connecting community libraries, schools, and health centers with reliable high-speed internet access.",
     stats: [{ label: "Locations Connected", value: "35+" }, { label: "Monthly Users", value: "5,000+" }, { label: "Uptime", value: "99.5%" }],
     image: projectCommunityMesh,
