@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
@@ -10,11 +11,13 @@ interface NavbarProps {
 
 const Navbar = ({ visible = true }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const navLinks = [
-    { name: "Services", href: "#services" },
-    { name: "Support", href: "#support" },
-    { name: "Contact", href: "#contact" }
+    { name: "Services", href: "#services", isRoute: false },
+    { name: "Projects", href: "/projects", isRoute: true },
+    { name: "Support", href: "#support", isRoute: false },
+    { name: "Contact", href: "#contact", isRoute: false }
   ];
 
   return (
@@ -32,15 +35,25 @@ const Navbar = ({ visible = true }: NavbarProps) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
+            {navLinks.map((link) =>
+              link.isRoute ? (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className={`transition-colors ${location.pathname === link.href ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {link.name}
+                </Link>
+              ) : (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.name}
+                </a>
+              )
+            )}
             <ThemeToggle />
             <a href="mailto:sales@iklickgh.com">
               <Button variant="hero" size="sm">
@@ -62,16 +75,27 @@ const Navbar = ({ visible = true }: NavbarProps) => {
         {isOpen && (
           <div className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-muted-foreground hover:text-foreground transition-colors py-2"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </a>
-              ))}
+              {navLinks.map((link) =>
+                link.isRoute ? (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={`py-2 transition-colors ${location.pathname === link.href ? "text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </a>
+                )
+              )}
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <a href="mailto:sales@iklickgh.com" className="flex-1">
