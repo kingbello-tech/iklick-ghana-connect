@@ -28,7 +28,7 @@ const projects: Project[] = [
   {
     id: 1, title: "Accra Community Hotspots", category: "community", location: "Greater Accra Region",
     description: "Deployed public WiFi hotspots across key community centers, markets, and public spaces in Accra, bridging the digital divide for thousands of residents.",
-    stats: [{ label: "Hotspots Deployed", value: "5" }, { label: "Daily Users", value: "1,000+" }, { label: "Coverage Area", value: "15 km²" }],
+    stats: [{ label: "Hotspots Deployed", value: "5+" }, { label: "Daily Users", value: "1,000+" }, { label: "Coverage Area", value: "15 km²" }],
     image: projectCommunityWifi,
   },
   {
