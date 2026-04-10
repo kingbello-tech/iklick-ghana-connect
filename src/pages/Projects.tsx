@@ -50,8 +50,8 @@ const projects: Project[] = [
     image: projectFiberNetwork,
   },
   {
-    id: 5, title: "KNUST Hostel WiFi", category: "university", location: "KNUST, Kumasi",
-    description: "Campus-wide high-speed wireless network deployment across student hostels, providing reliable connectivity for academic research, e-learning, and student life.",
+    id: 5, title: "University Network Infrastructure", category: "university", location: "KNUST, Kumasi",
+    description: "We deployed Campus-wide high-speed backbone network for universities across the country, providing reliable connectivity for academic research, e-learning, and student life.",
     stats: [{ label: "Students Served", value: "1,500+" }, { label: "Access Points", value: "200+" }, { label: "Concurrent Users", value: "500+" }],
     image: projectUniversityWifi,
   },
