@@ -18,11 +18,11 @@ const slides = [
   },
   {
     image: slideCity,
-    badge: "Connecting Ghana",
+    badge: "Connecting Networks",
     headline: "Powering a",
     headlineAccent: "Connected Nation",
     subtitle:
-      "Our fiber and wireless infrastructure spans across Accra, Tema, and beyond — linking communities, businesses, and institutions to the digital world.",
+      "Our fiber and wireless infrastructure spans across the country, and beyond, linking communities, businesses, and institutions to the digital world.",
   },
   {
     image: slideHome,
@@ -176,7 +176,7 @@ const Hero = () => {
             }`}
           >
             {[
-              { value: "98.5%", label: "Service Uptime" },
+              { value: "99.9%", label: "Service Uptime" },
               { value: "100+", label: "Businesses Served" },
               { value: "24/7", label: "NOC Support" },
             ].map((stat) => (
