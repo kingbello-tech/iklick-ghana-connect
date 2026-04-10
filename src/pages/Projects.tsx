@@ -39,18 +39,18 @@ const projects: Project[] = [
   },
   {
     id: 3, title: "Accra FTTH Rollout", category: "ftth", location: "Accra, Ghana",
-    description: "Comprehensive fiber-to-the-home deployment serving gated estates and communities a with speeds up to 1Gbps, enabling seamless streaming, remote work, and smart home connectivity.",
+    description: "Comprehensive fiber-to-the-home deployment serving gated estates and communities with speeds up to 1Gbps, for seamless streaming, and smart home connectivity.",
     stats: [{ label: "Homes Connected", value: "500+" }, { label: "Max Speed", value: "1 Gbps" }, { label: "Uptime", value: "99.9%" }],
     image: projectFtth,
   },
   {
     id: 4, title: "Greater Accra Fiber Network", category: "ftth", location: "Greater Accra, Accra",
-    description: "Laid over 30km of fiber optic cable connecting residential communities across Accra with ultra-fast internet for homes and small businesses.",
+    description: "Laid over 300km of fiber optic cable connecting residential communities across Accra with ultra-fast internet for homes and small businesses.",
     stats: [{ label: "Fiber Laid", value: "30+ km" }, { label: "Subscribers", value: "800+" }, { label: "Avg Speed", value: "200 Mbps" }],
     image: projectFiberNetwork,
   },
   {
-    id: 5, title: "University Network Infrastructure", category: "university", location: "KNUST, Kumasi",
+    id: 5, title: "University Network Infrastructure", category: "university", location: "Ghana",
     description: "We deployed Campus-wide high-speed backbone network for universities across the country, providing reliable connectivity for academic research, e-learning, and student life.",
     stats: [{ label: "Students Served", value: "1,500+" }, { label: "Access Points", value: "200+" }, { label: "Concurrent Users", value: "500+" }],
     image: projectUniversityWifi,
