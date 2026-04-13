@@ -92,6 +92,9 @@ export default function IncidentDetail() {
 
   const startEditing = () => {
     if (!incident) return;
+    // Find the department of currently assigned user
+    const assignedProfile = incident.assigned_to ? profiles[incident.assigned_to] : null;
+    setEditDepartment(assignedProfile?.department || "");
     setEditForm({
       title: incident.title,
       description: incident.description,
