@@ -14,6 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      client_satisfaction: {
+        Row: {
+          client_id: string
+          created_at: string
+          feedback: string | null
+          id: string
+          incident_id: string | null
+          rating: number
+          surveyed_by: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          incident_id?: string | null
+          rating: number
+          surveyed_by: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          incident_id?: string | null
+          rating?: number
+          surveyed_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_satisfaction_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_satisfaction_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           created_at: string
