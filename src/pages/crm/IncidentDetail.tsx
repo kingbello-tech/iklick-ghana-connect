@@ -27,6 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const CATEGORIES = ["Connectivity", "Speed", "Hardware", "Billing", "Installation", "Maintenance", "Other"];
+const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "Sales"];
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
