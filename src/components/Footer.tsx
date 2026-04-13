@@ -1,4 +1,4 @@
-import iklickLogo from "@/assets/iklick-logo.jpg";
+import iklickLogo from "@/assets/iklick_logo_full.png";
 
 const Footer = () => {
   return (
