@@ -6,8 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, List, Columns } from "lucide-react";
-import { format } from "date-fns";
+import { Plus, Search, List, Columns, AlertTriangle } from "lucide-react";
+import { format, differenceInMinutes } from "date-fns";
 import { IncidentCreateDialog } from "@/components/crm/IncidentCreateDialog";
 import { IncidentKanban } from "@/components/crm/IncidentKanban";
 import { Link } from "react-router-dom";
@@ -15,6 +15,8 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
 type Client = Database["public"]["Tables"]["clients"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type SlaPolicy = Database["public"]["Tables"]["sla_policies"]["Row"];
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: "hsl(0, 84%, 60%)",
@@ -34,6 +36,8 @@ const STATUS_COLORS: Record<string, string> = {
 export default function IncidentList() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [slaPolicies, setSlaPolicies] = useState<SlaPolicy[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
@@ -43,12 +47,16 @@ export default function IncidentList() {
   const { canManageIncidents } = useAuth();
 
   const fetchData = async () => {
-    const [incRes, clientRes] = await Promise.all([
+    const [incRes, clientRes, profRes, slaRes] = await Promise.all([
       supabase.from("incidents").select("*").order("created_at", { ascending: false }),
       supabase.from("clients").select("*"),
+      supabase.from("profiles").select("*"),
+      supabase.from("sla_policies").select("*"),
     ]);
     if (incRes.data) setIncidents(incRes.data);
     if (clientRes.data) setClients(clientRes.data);
+    if (profRes.data) setProfiles(profRes.data);
+    if (slaRes.data) setSlaPolicies(slaRes.data);
     setLoading(false);
   };
 
@@ -62,6 +70,15 @@ export default function IncidentList() {
   }, []);
 
   const clientMap = Object.fromEntries(clients.map((c) => [c.id, c.name]));
+  const slaMap = Object.fromEntries(slaPolicies.map((p) => [p.priority, p]));
+
+  const isResponseOverdue = (inc: Incident) => {
+    if (inc.status !== "open") return false;
+    const policy = slaMap[inc.priority];
+    if (!policy) return false;
+    const elapsed = differenceInMinutes(new Date(), new Date(inc.created_at));
+    return elapsed > policy.response_time_minutes;
+  };
 
   const filtered = incidents.filter((i) => {
     if (statusFilter !== "all" && i.status !== statusFilter) return false;
@@ -142,32 +159,43 @@ export default function IncidentList() {
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Client</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Priority</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Status</th>
+                      <th className="text-left p-3 text-muted-foreground font-medium text-xs">SLA</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Created</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((inc) => (
-                      <tr key={inc.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                        <td className="p-3">
-                          <Link to={`/crm/incidents/${inc.id}`} className="font-mono text-primary hover:underline text-xs">{inc.incident_number}</Link>
-                        </td>
-                        <td className="p-3 text-foreground">
-                          <Link to={`/crm/incidents/${inc.id}`} className="hover:underline">{inc.title}</Link>
-                        </td>
-                        <td className="p-3 text-muted-foreground">{inc.client_id ? clientMap[inc.client_id] || "—" : "—"}</td>
-                        <td className="p-3">
-                          <Badge className="text-[10px] capitalize" style={{ backgroundColor: `${PRIORITY_COLORS[inc.priority]}20`, color: PRIORITY_COLORS[inc.priority], borderColor: `${PRIORITY_COLORS[inc.priority]}40` }}>
-                            {inc.priority}
-                          </Badge>
-                        </td>
-                        <td className="p-3">
-                          <Badge variant="outline" className="text-[10px] capitalize" style={{ color: STATUS_COLORS[inc.status], borderColor: `${STATUS_COLORS[inc.status]}40` }}>
-                            {inc.status.replace("_", " ")}
-                          </Badge>
-                        </td>
-                        <td className="p-3 text-muted-foreground text-xs">{format(new Date(inc.created_at), "MMM d, HH:mm")}</td>
-                      </tr>
-                    ))}
+                    {filtered.map((inc) => {
+                      const overdue = isResponseOverdue(inc);
+                      return (
+                        <tr key={inc.id} className={`border-b border-border hover:bg-muted/50 transition-colors ${overdue ? "bg-destructive/5" : ""}`}>
+                          <td className="p-3">
+                            <Link to={`/crm/incidents/${inc.id}`} className="font-mono text-primary hover:underline text-xs">{inc.incident_number}</Link>
+                          </td>
+                          <td className="p-3 text-foreground">
+                            <Link to={`/crm/incidents/${inc.id}`} className="hover:underline">{inc.title}</Link>
+                          </td>
+                          <td className="p-3 text-muted-foreground">{inc.client_id ? clientMap[inc.client_id] || "—" : "—"}</td>
+                          <td className="p-3">
+                            <Badge className="text-[10px] capitalize" style={{ backgroundColor: `${PRIORITY_COLORS[inc.priority]}20`, color: PRIORITY_COLORS[inc.priority], borderColor: `${PRIORITY_COLORS[inc.priority]}40` }}>
+                              {inc.priority}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Badge variant="outline" className="text-[10px] capitalize" style={{ color: STATUS_COLORS[inc.status], borderColor: `${STATUS_COLORS[inc.status]}40` }}>
+                              {inc.status.replace("_", " ")}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            {overdue && (
+                              <Badge variant="destructive" className="text-[10px] gap-1">
+                                <AlertTriangle className="h-3 w-3" /> Overdue
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="p-3 text-muted-foreground text-xs">{format(new Date(inc.created_at), "MMM d, HH:mm")}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -176,7 +204,7 @@ export default function IncidentList() {
         </Card>
       )}
 
-      <IncidentCreateDialog open={createOpen} onOpenChange={setCreateOpen} clients={clients} onCreated={fetchData} />
+      <IncidentCreateDialog open={createOpen} onOpenChange={setCreateOpen} clients={clients} profiles={profiles} onCreated={fetchData} />
     </div>
   );
 }

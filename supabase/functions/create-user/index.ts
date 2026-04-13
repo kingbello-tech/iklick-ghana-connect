@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Admin access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { email, password, full_name, role } = await req.json();
+    const { email, password, full_name, role, department } = await req.json();
 
     if (!email || !password || !full_name) {
       return new Response(JSON.stringify({ error: "Email, password, and full name are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -51,6 +51,11 @@ Deno.serve(async (req) => {
     // Assign role if provided
     if (role && newUser.user) {
       await adminClient.from("user_roles").insert({ user_id: newUser.user.id, role });
+    }
+
+    // Set department if provided
+    if (department && newUser.user) {
+      await adminClient.from("profiles").update({ department }).eq("user_id", newUser.user.id);
     }
 
     return new Response(JSON.stringify({ user: newUser.user }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
