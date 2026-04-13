@@ -60,8 +60,8 @@ export function IncidentKanban({ incidents, clientMap, onRefresh }: Props) {
           >
             <div className="flex items-center gap-2 mb-3 px-1">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: col.color }} />
-              <span className="text-xs font-medium text-[hsl(215,20%,65%)] uppercase tracking-wider">{col.label}</span>
-              <span className="text-xs text-[hsl(215,20%,45%)] ml-auto">{items.length}</span>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{col.label}</span>
+              <span className="text-xs text-muted-foreground ml-auto">{items.length}</span>
             </div>
             <div className="space-y-2 min-h-[200px]">
               {items.map((inc) => (
@@ -69,17 +69,17 @@ export function IncidentKanban({ incidents, clientMap, onRefresh }: Props) {
                   key={inc.id}
                   draggable
                   onDragStart={(e) => e.dataTransfer.setData("incidentId", inc.id)}
-                  className="p-3 rounded-lg bg-[hsl(220,30%,8%)] border border-[hsl(220,20%,15%)] hover:border-[hsl(220,20%,22%)] cursor-grab active:cursor-grabbing transition-colors"
+                  className="p-3 rounded-lg bg-card border border-border hover:border-primary/30 cursor-grab active:cursor-grabbing transition-colors"
                 >
                   <Link to={`/crm/incidents/${inc.id}`} className="block">
-                    <p className="text-xs font-mono text-[hsl(215,20%,45%)] mb-1">{inc.incident_number}</p>
-                    <p className="text-sm text-[hsl(210,40%,98%)] mb-2 line-clamp-2">{inc.title}</p>
+                    <p className="text-xs font-mono text-muted-foreground mb-1">{inc.incident_number}</p>
+                    <p className="text-sm text-foreground mb-2 line-clamp-2">{inc.title}</p>
                     <div className="flex items-center justify-between">
                       <Badge className="text-[9px]" style={{ backgroundColor: `${PRIORITY_COLORS[inc.priority]}20`, color: PRIORITY_COLORS[inc.priority], borderColor: `${PRIORITY_COLORS[inc.priority]}40` }}>
                         {inc.priority}
                       </Badge>
                       {inc.client_id && (
-                        <span className="text-[10px] text-[hsl(215,20%,45%)] truncate max-w-[100px]">{clientMap[inc.client_id]}</span>
+                        <span className="text-[10px] text-muted-foreground truncate max-w-[100px]">{clientMap[inc.client_id]}</span>
                       )}
                     </div>
                   </Link>

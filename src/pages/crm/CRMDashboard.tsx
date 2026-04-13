@@ -60,10 +60,10 @@ export default function CRMDashboard() {
   const recentIncidents = incidents.slice(0, 8);
 
   const statCards = [
-    { label: "Active Incidents", value: activeIncidents.length, icon: AlertTriangle, color: "text-[hsl(25,95%,53%)]" },
-    { label: "Critical", value: byPriority("critical"), icon: Zap, color: "text-[hsl(0,84%,60%)]" },
-    { label: "Resolved Today", value: incidents.filter((i) => i.resolved_at && new Date(i.resolved_at).toDateString() === new Date().toDateString()).length, icon: CheckCircle, color: "text-[hsl(142,71%,45%)]" },
-    { label: "Escalated", value: incidents.filter((i) => i.status === "escalated").length, icon: TrendingUp, color: "text-[hsl(45,93%,47%)]" },
+    { label: "Active Incidents", value: activeIncidents.length, icon: AlertTriangle, color: "text-orange-500" },
+    { label: "Critical", value: byPriority("critical"), icon: Zap, color: "text-destructive" },
+    { label: "Resolved Today", value: incidents.filter((i) => i.resolved_at && new Date(i.resolved_at).toDateString() === new Date().toDateString()).length, icon: CheckCircle, color: "text-green-500" },
+    { label: "Escalated", value: incidents.filter((i) => i.status === "escalated").length, icon: TrendingUp, color: "text-yellow-500" },
   ];
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
@@ -71,39 +71,37 @@ export default function CRMDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-[hsl(210,40%,98%)]">NOC Command Center</h1>
-        <p className="text-[hsl(215,20%,65%)] text-sm">Real-time network operations overview</p>
+        <h1 className="text-2xl font-bold text-foreground">NOC Command Center</h1>
+        <p className="text-muted-foreground text-sm">Real-time network operations overview</p>
       </div>
 
-      {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <Card key={s.label} className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)]">
+          <Card key={s.label}>
             <CardContent className="p-4 flex items-center gap-4">
-              <div className={`p-3 rounded-lg bg-[hsl(220,20%,12%)] ${s.color}`}>
+              <div className={`p-3 rounded-lg bg-muted ${s.color}`}>
                 <s.icon className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-[hsl(210,40%,98%)]">{s.value}</p>
-                <p className="text-xs text-[hsl(215,20%,65%)]">{s.label}</p>
+                <p className="text-2xl font-bold text-foreground">{s.value}</p>
+                <p className="text-xs text-muted-foreground">{s.label}</p>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)]">
+        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-[hsl(215,20%,65%)]">Incidents by Status</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Incidents by Status</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={byStatus}>
-                <XAxis dataKey="name" tick={{ fill: "hsl(215,20%,65%)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "hsl(215,20%,65%)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: "hsl(220,30%,10%)", border: "1px solid hsl(220,20%,20%)", borderRadius: 8, color: "hsl(210,40%,98%)" }} />
+                <XAxis dataKey="name" tick={{ fontSize: 11 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" axisLine={false} tickLine={false} />
+                <Tooltip />
                 <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                   {byStatus.map((entry, i) => (
                     <Cell key={i} fill={entry.fill} />
@@ -114,9 +112,9 @@ export default function CRMDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)]">
+        <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-[hsl(215,20%,65%)]">Active by Priority</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Active by Priority</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center">
             <ResponsiveContainer width="100%" height={200}>
@@ -126,51 +124,36 @@ export default function CRMDashboard() {
                     <Cell key={i} fill={entry.fill} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: "hsl(220,30%,10%)", border: "1px solid hsl(220,20%,20%)", borderRadius: 8, color: "hsl(210,40%,98%)" }} />
+                <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
-      {/* Recent Incidents */}
-      <Card className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)]">
+      <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm text-[hsl(215,20%,65%)]">Recent Incidents</CardTitle>
+          <CardTitle className="text-sm text-muted-foreground">Recent Incidents</CardTitle>
         </CardHeader>
         <CardContent>
           {recentIncidents.length === 0 ? (
-            <p className="text-[hsl(215,20%,45%)] text-sm py-8 text-center">No incidents yet</p>
+            <p className="text-muted-foreground text-sm py-8 text-center">No incidents yet</p>
           ) : (
             <div className="space-y-2">
               {recentIncidents.map((inc) => (
-                <div key={inc.id} className="flex items-center justify-between p-3 rounded-lg bg-[hsl(220,20%,10%)] hover:bg-[hsl(220,20%,12%)] transition-colors">
+                <div key={inc.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-mono text-[hsl(215,20%,45%)]">{inc.incident_number}</span>
-                    <span className="text-sm text-[hsl(210,40%,98%)] truncate">{inc.title}</span>
+                    <span className="text-xs font-mono text-muted-foreground">{inc.incident_number}</span>
+                    <span className="text-sm text-foreground truncate">{inc.title}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Badge
-                      className="text-[10px] capitalize"
-                      style={{
-                        backgroundColor: `${PRIORITY_COLORS[inc.priority]}20`,
-                        color: PRIORITY_COLORS[inc.priority],
-                        borderColor: `${PRIORITY_COLORS[inc.priority]}40`,
-                      }}
-                    >
+                    <Badge className="text-[10px] capitalize" style={{ backgroundColor: `${PRIORITY_COLORS[inc.priority]}20`, color: PRIORITY_COLORS[inc.priority], borderColor: `${PRIORITY_COLORS[inc.priority]}40` }}>
                       {inc.priority}
                     </Badge>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] capitalize"
-                      style={{
-                        color: STATUS_COLORS[inc.status],
-                        borderColor: `${STATUS_COLORS[inc.status]}40`,
-                      }}
-                    >
+                    <Badge variant="outline" className="text-[10px] capitalize" style={{ color: STATUS_COLORS[inc.status], borderColor: `${STATUS_COLORS[inc.status]}40` }}>
                       {inc.status.replace("_", " ")}
                     </Badge>
-                    <span className="text-xs text-[hsl(215,20%,45%)]">{format(new Date(inc.created_at), "MMM d")}</span>
+                    <span className="text-xs text-muted-foreground">{format(new Date(inc.created_at), "MMM d")}</span>
                   </div>
                 </div>
               ))}

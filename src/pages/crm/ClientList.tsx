@@ -47,16 +47,14 @@ export default function ClientList() {
     fetchClients();
   };
 
-  const inputClass = "bg-[hsl(220,20%,10%)] border-[hsl(220,20%,18%)] text-[hsl(210,40%,98%)] placeholder:text-[hsl(215,20%,45%)]";
-
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[hsl(210,40%,98%)]">Clients</h1>
-          <p className="text-[hsl(215,20%,65%)] text-sm">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
+          <h1 className="text-2xl font-bold text-foreground">Clients</h1>
+          <p className="text-muted-foreground text-sm">{filtered.length} client{filtered.length !== 1 ? "s" : ""}</p>
         </div>
         {canManageIncidents && (
           <Button onClick={() => setCreateOpen(true)} className="gap-2"><Plus className="h-4 w-4" /> Add Client</Button>
@@ -64,33 +62,33 @@ export default function ClientList() {
       </div>
 
       <div className="relative max-w-sm">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[hsl(215,20%,45%)]" />
-        <Input placeholder="Search clients..." value={search} onChange={(e) => setSearch(e.target.value)} className={`pl-9 ${inputClass}`} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input placeholder="Search clients..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
-      <Card className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)] overflow-hidden">
+      <Card className="overflow-hidden">
         <CardContent className="p-0">
           {filtered.length === 0 ? (
-            <p className="text-[hsl(215,20%,45%)] text-sm py-12 text-center">No clients found</p>
+            <p className="text-muted-foreground text-sm py-12 text-center">No clients found</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-[hsl(220,20%,15%)]">
-                    <th className="text-left p-3 text-[hsl(215,20%,45%)] font-medium text-xs">Name</th>
-                    <th className="text-left p-3 text-[hsl(215,20%,45%)] font-medium text-xs">Email</th>
-                    <th className="text-left p-3 text-[hsl(215,20%,45%)] font-medium text-xs">Phone</th>
-                    <th className="text-left p-3 text-[hsl(215,20%,45%)] font-medium text-xs">Location</th>
-                    <th className="text-left p-3 text-[hsl(215,20%,45%)] font-medium text-xs">Type</th>
+                  <tr className="border-b border-border">
+                    <th className="text-left p-3 text-muted-foreground font-medium text-xs">Name</th>
+                    <th className="text-left p-3 text-muted-foreground font-medium text-xs">Email</th>
+                    <th className="text-left p-3 text-muted-foreground font-medium text-xs">Phone</th>
+                    <th className="text-left p-3 text-muted-foreground font-medium text-xs">Location</th>
+                    <th className="text-left p-3 text-muted-foreground font-medium text-xs">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map((c) => (
-                    <tr key={c.id} className="border-b border-[hsl(220,20%,15%)] hover:bg-[hsl(220,20%,10%)] transition-colors">
-                      <td className="p-3 text-[hsl(210,40%,98%)] font-medium">{c.name}</td>
-                      <td className="p-3 text-[hsl(215,20%,65%)]">{c.email || "—"}</td>
-                      <td className="p-3 text-[hsl(215,20%,65%)]">{c.phone || "—"}</td>
-                      <td className="p-3 text-[hsl(215,20%,65%)]">{c.location || "—"}</td>
+                    <tr key={c.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="p-3 text-foreground font-medium">{c.name}</td>
+                      <td className="p-3 text-muted-foreground">{c.email || "—"}</td>
+                      <td className="p-3 text-muted-foreground">{c.phone || "—"}</td>
+                      <td className="p-3 text-muted-foreground">{c.location || "—"}</td>
                       <td className="p-3"><Badge variant="outline" className="capitalize text-[10px]">{c.service_type}</Badge></td>
                     </tr>
                   ))}
@@ -102,25 +100,25 @@ export default function ClientList() {
       </Card>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)] text-[hsl(210,40%,98%)]">
+        <DialogContent>
           <DialogHeader><DialogTitle>Add Client</DialogTitle></DialogHeader>
           <form onSubmit={handleCreate} className="space-y-4">
-            <Input placeholder="Name *" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} />
+            <Input placeholder="Name *" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className={inputClass} />
-              <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className={inputClass} />
+              <Input placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
             </div>
-            <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={inputClass} />
+            <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
             <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v as any })}>
-              <SelectTrigger className={inputClass}><SelectValue /></SelectTrigger>
-              <SelectContent className="bg-[hsl(220,30%,10%)] border-[hsl(220,20%,18%)]">
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
                 <SelectItem value="home">Home</SelectItem>
                 <SelectItem value="enterprise">Enterprise</SelectItem>
               </SelectContent>
             </Select>
-            <Textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className={inputClass} rows={2} />
+            <Textarea placeholder="Notes" value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
             <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} className="border-[hsl(220,20%,18%)] text-[hsl(215,20%,65%)]">Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
               <Button type="submit">Create</Button>
             </div>
           </form>
