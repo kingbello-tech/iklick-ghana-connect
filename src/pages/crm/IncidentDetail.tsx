@@ -42,7 +42,8 @@ export default function IncidentDetail() {
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<Incident>>({});
+  const [editForm, setEditForm] = useState<Partial<Incident> & { department?: string }>({});
+  const [editDepartment, setEditDepartment] = useState("");
 
   const fetchAll = async () => {
     if (!id) return;
