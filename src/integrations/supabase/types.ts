@@ -50,6 +50,82 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_history: {
+        Row: {
+          created_at: string
+          field_changed: string
+          id: string
+          incident_id: string
+          new_value: string | null
+          old_value: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          field_changed: string
+          id?: string
+          incident_id: string
+          new_value?: string | null
+          old_value?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          field_changed?: string
+          id?: string
+          incident_id?: string
+          new_value?: string | null
+          old_value?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_history_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_notes: {
+        Row: {
+          attachment_url: string | null
+          content: string
+          created_at: string
+          id: string
+          incident_id: string
+          note_type: string
+          user_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          note_type?: string
+          user_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          note_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_notes_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incidents: {
         Row: {
           assigned_to: string | null
