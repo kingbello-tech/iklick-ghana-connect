@@ -18,6 +18,9 @@ import ClientList from "./pages/crm/ClientList";
 import UserManagement from "./pages/crm/UserManagement";
 import SLAPolicies from "./pages/crm/SLAPolicies";
 import AuditLogs from "./pages/crm/AuditLogs";
+import ClientSatisfaction from "./pages/crm/ClientSatisfaction";
+import SLAReports from "./pages/crm/SLAReports";
+import PerformanceReports from "./pages/crm/PerformanceReports";
 
 const queryClient = new QueryClient();
 
@@ -41,8 +44,11 @@ const App = () => (
                 <Route path="incidents" element={<IncidentList />} />
                 <Route path="incidents/:id" element={<IncidentDetail />} />
                 <Route path="clients" element={<ClientList />} />
+                <Route path="satisfaction" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><ClientSatisfaction /></ProtectedRoute>} />
+                <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><SLAReports /></ProtectedRoute>} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
                 <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin"]}><SLAPolicies /></ProtectedRoute>} />
+                <Route path="performance" element={<ProtectedRoute allowedRoles={["admin"]}><PerformanceReports /></ProtectedRoute>} />
                 <Route path="audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>} />
               </Route>
 
