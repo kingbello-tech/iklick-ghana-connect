@@ -59,21 +59,19 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
     }
   };
 
-  const inputClass = "bg-[hsl(220,20%,10%)] border-[hsl(220,20%,18%)] text-[hsl(210,40%,98%)] placeholder:text-[hsl(215,20%,45%)]";
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[hsl(220,30%,8%)] border-[hsl(220,20%,15%)] text-[hsl(210,40%,98%)] max-w-lg">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create Incident</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Input placeholder="Title *" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className={inputClass} />
-          <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className={inputClass} rows={3} />
+          <Input placeholder="Title *" required value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+          <Textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
           <div className="grid grid-cols-2 gap-3">
             <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v as any })}>
-              <SelectTrigger className={inputClass}><SelectValue placeholder="Priority" /></SelectTrigger>
-              <SelectContent className="bg-[hsl(220,30%,10%)] border-[hsl(220,20%,18%)]">
+              <SelectTrigger><SelectValue placeholder="Priority" /></SelectTrigger>
+              <SelectContent>
                 <SelectItem value="low">Low</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="high">High</SelectItem>
@@ -81,8 +79,8 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
               </SelectContent>
             </Select>
             <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v as any })}>
-              <SelectTrigger className={inputClass}><SelectValue placeholder="Service Type" /></SelectTrigger>
-              <SelectContent className="bg-[hsl(220,30%,10%)] border-[hsl(220,20%,18%)]">
+              <SelectTrigger><SelectValue placeholder="Service Type" /></SelectTrigger>
+              <SelectContent>
                 <SelectItem value="home">Home</SelectItem>
                 <SelectItem value="enterprise">Enterprise</SelectItem>
               </SelectContent>
@@ -90,25 +88,25 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Select value={form.client_id} onValueChange={(v) => setForm({ ...form, client_id: v })}>
-              <SelectTrigger className={inputClass}><SelectValue placeholder="Select Client" /></SelectTrigger>
-              <SelectContent className="bg-[hsl(220,30%,10%)] border-[hsl(220,20%,18%)]">
+              <SelectTrigger><SelectValue placeholder="Select Client" /></SelectTrigger>
+              <SelectContent>
                 {clients.map((c) => (
                   <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={form.issue_category} onValueChange={(v) => setForm({ ...form, issue_category: v })}>
-              <SelectTrigger className={inputClass}><SelectValue placeholder="Category" /></SelectTrigger>
-              <SelectContent className="bg-[hsl(220,30%,10%)] border-[hsl(220,20%,18%)]">
+              <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+              <SelectContent>
                 {CATEGORIES.map((c) => (
                   <SelectItem key={c} value={c}>{c}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className={inputClass} />
+          <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="border-[hsl(220,20%,18%)] text-[hsl(215,20%,65%)]">Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={loading}>{loading ? "Creating..." : "Create"}</Button>
           </div>
         </form>
