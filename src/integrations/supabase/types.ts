@@ -50,6 +50,71 @@ export type Database = {
         }
         Relationships: []
       }
+      incidents: {
+        Row: {
+          assigned_to: string | null
+          client_id: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          incident_number: string
+          issue_category: string | null
+          location: string | null
+          priority: Database["public"]["Enums"]["incident_priority"]
+          resolved_at: string | null
+          service_type: Database["public"]["Enums"]["service_type"] | null
+          status: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          client_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          incident_number: string
+          issue_category?: string | null
+          location?: string | null
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          resolved_at?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          client_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          incident_number?: string
+          issue_category?: string | null
+          location?: string | null
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          resolved_at?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+          status?: Database["public"]["Enums"]["incident_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -123,6 +188,13 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "network_engineer" | "support_agent" | "viewer"
+      incident_priority: "low" | "medium" | "high" | "critical"
+      incident_status:
+        | "open"
+        | "in_progress"
+        | "escalated"
+        | "resolved"
+        | "closed"
       service_type: "home" | "enterprise"
     }
     CompositeTypes: {
@@ -252,6 +324,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "network_engineer", "support_agent", "viewer"],
+      incident_priority: ["low", "medium", "high", "critical"],
+      incident_status: [
+        "open",
+        "in_progress",
+        "escalated",
+        "resolved",
+        "closed",
+      ],
       service_type: ["home", "enterprise"],
     },
   },
