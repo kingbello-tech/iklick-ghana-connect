@@ -224,6 +224,33 @@ export type Database = {
         }
         Relationships: []
       }
+      sla_policies: {
+        Row: {
+          created_at: string
+          id: string
+          priority: Database["public"]["Enums"]["incident_priority"]
+          resolution_time_minutes: number
+          response_time_minutes: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          priority: Database["public"]["Enums"]["incident_priority"]
+          resolution_time_minutes: number
+          response_time_minutes: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          resolution_time_minutes?: number
+          response_time_minutes?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
