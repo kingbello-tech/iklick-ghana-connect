@@ -184,14 +184,7 @@ const FeatureTabs = () => {
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                 </div>
-                <div className="text-center py-12">
-                  <div className="text-7xl font-bold gradient-text mb-2">
-                    {active.stat.value}
-                  </div>
-                  <div className="text-xl text-muted-foreground">
-                    {active.stat.label}
-                  </div>
-                </div>
+                <AnimatedStat value={active.stat.value} label={active.stat.label} />
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="h-2 rounded-full bg-primary/20">
