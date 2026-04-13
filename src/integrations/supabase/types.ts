@@ -299,6 +299,54 @@ export type Database = {
         }
         Relationships: []
       }
+      survey_tokens: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          incident_id: string | null
+          token: string
+          used: boolean
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string
+          id?: string
+          incident_id?: string | null
+          token?: string
+          used?: boolean
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          incident_id?: string | null
+          token?: string
+          used?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_tokens_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_tokens_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
