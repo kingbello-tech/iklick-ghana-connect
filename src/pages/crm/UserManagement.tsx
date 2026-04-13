@@ -7,20 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Pencil } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type UserRole = Database["public"]["Tables"]["user_roles"]["Row"];
 type AppRole = Database["public"]["Enums"]["app_role"];
 
+const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "Sales"];
+
 export default function UserManagement() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" as AppRole });
+  const [saving, setSaving] = useState(false);
+  const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" as AppRole, department: "" });
+  const [editUser, setEditUser] = useState<{ profile: Profile; role: AppRole | "" }>({ profile: {} as Profile, role: "" });
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -53,14 +58,13 @@ export default function UserManagement() {
   const createUser = async () => {
     setCreating(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
       const res = await supabase.functions.invoke("create-user", {
-        body: newUser,
+        body: { ...newUser, department: newUser.department || null },
       });
       if (res.error) throw new Error(res.error.message);
       if (res.data?.error) throw new Error(res.data.error);
       toast({ title: "User created", description: `Account created for ${newUser.email}` });
-      setNewUser({ email: "", password: "", full_name: "", role: "viewer" });
+      setNewUser({ email: "", password: "", full_name: "", role: "viewer", department: "" });
       setDialogOpen(false);
       setTimeout(fetchData, 1000);
     } catch (err: any) {
@@ -70,10 +74,40 @@ export default function UserManagement() {
     }
   };
 
+  const openEdit = (profile: Profile) => {
+    const currentRole = roleMap[profile.user_id]?.role || "";
+    setEditUser({ profile: { ...profile }, role: currentRole });
+    setEditDialogOpen(true);
+  };
+
+  const saveEdit = async () => {
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("profiles").update({
+        full_name: editUser.profile.full_name,
+        phone: editUser.profile.phone,
+        department: editUser.profile.department,
+      }).eq("id", editUser.profile.id);
+      if (error) throw error;
+
+      if (editUser.role) {
+        await updateRole(editUser.profile.user_id, editUser.role as AppRole);
+      }
+
+      toast({ title: "User updated" });
+      setEditDialogOpen(false);
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   return (
-    <div className="space-y-4 max-w-3xl">
+    <div className="space-y-4 max-w-4xl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">User Management</h1>
@@ -91,6 +125,12 @@ export default function UserManagement() {
               <Input placeholder="Full Name" value={newUser.full_name} onChange={(e) => setNewUser({ ...newUser, full_name: e.target.value })} />
               <Input type="email" placeholder="Email" value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
               <Input type="password" placeholder="Password (min 6 chars)" value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+              <Select value={newUser.department} onValueChange={(v) => setNewUser({ ...newUser, department: v })}>
+                <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <Select value={newUser.role} onValueChange={(v) => setNewUser({ ...newUser, role: v as AppRole })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -121,6 +161,7 @@ export default function UserManagement() {
                     <th className="text-left p-3 text-muted-foreground font-medium text-xs">User</th>
                     <th className="text-left p-3 text-muted-foreground font-medium text-xs">Department</th>
                     <th className="text-left p-3 text-muted-foreground font-medium text-xs">Role</th>
+                    <th className="text-left p-3 text-muted-foreground font-medium text-xs">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -141,18 +182,14 @@ export default function UserManagement() {
                         </td>
                         <td className="p-3 text-muted-foreground">{p.department || "—"}</td>
                         <td className="p-3">
-                          <Select value={currentRole || ""} onValueChange={(v) => updateRole(p.user_id, v as AppRole)}>
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Assign role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="network_engineer">Network Engineer</SelectItem>
-                              <SelectItem value="support_agent">Support Agent</SelectItem>
-                              <SelectItem value="client_experience">Client Experience</SelectItem>
-                              <SelectItem value="viewer">Viewer</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Badge variant="outline" className="capitalize text-[10px]">
+                            {currentRole?.replace(/_/g, " ") || "No role"}
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
+                            <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -163,6 +200,50 @@ export default function UserManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
+              <Input value={editUser.profile.full_name || ""} onChange={(e) => setEditUser({ ...editUser, profile: { ...editUser.profile, full_name: e.target.value } })} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
+              <Input value={editUser.profile.phone || ""} onChange={(e) => setEditUser({ ...editUser, profile: { ...editUser.profile, phone: e.target.value } })} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Department</label>
+              <Select value={editUser.profile.department || ""} onValueChange={(v) => setEditUser({ ...editUser, profile: { ...editUser.profile, department: v } })}>
+                <SelectTrigger><SelectValue placeholder="Select Department" /></SelectTrigger>
+                <SelectContent>
+                  {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Role</label>
+              <Select value={editUser.role as string} onValueChange={(v) => setEditUser({ ...editUser, role: v as AppRole })}>
+                <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="network_engineer">Network Engineer</SelectItem>
+                  <SelectItem value="support_agent">Support Agent</SelectItem>
+                  <SelectItem value="client_experience">Client Experience</SelectItem>
+                  <SelectItem value="viewer">Viewer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button onClick={saveEdit} disabled={saving} className="w-full">
+              {saving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

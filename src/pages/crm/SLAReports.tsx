@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { format, differenceInMinutes } from "date-fns";
+import { differenceInMinutes } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -34,19 +34,33 @@ export default function SLAReports() {
     if (!policy) return { response: "unknown", resolution: "unknown" };
     const createdAt = new Date(inc.created_at);
     const now = new Date();
-    const resolvedAt = inc.resolved_at ? new Date(inc.resolved_at) : null;
+    const closedAt = inc.closed_at ? new Date(inc.closed_at) : null;
 
-    const resolutionMins = resolvedAt
-      ? differenceInMinutes(resolvedAt, createdAt)
+    // Resolution SLA: from creation to closure
+    const resolutionMins = closedAt
+      ? differenceInMinutes(closedAt, createdAt)
       : differenceInMinutes(now, createdAt);
 
+    // Response SLA: from creation to first status change (open → in_progress)
+    // If still open, check against current time. If not open, response was met when moved.
+    const responseTarget = policy.response_time_minutes;
+    let responseStatus: string;
+    if (inc.status === "open") {
+      const elapsed = differenceInMinutes(now, createdAt);
+      responseStatus = elapsed > responseTarget ? "breached" : "on_track";
+    } else {
+      // Response timer stopped when moved from open — we assume it was met if status changed
+      responseStatus = "met";
+    }
+
     return {
-      response: "—",
-      resolution: resolvedAt
+      response: responseStatus,
+      resolution: closedAt
         ? resolutionMins <= policy.resolution_time_minutes ? "met" : "breached"
         : resolutionMins > policy.resolution_time_minutes ? "at_risk" : "on_track",
       resolutionMins,
       targetMins: policy.resolution_time_minutes,
+      responseTarget,
     };
   };
 
@@ -55,6 +69,7 @@ export default function SLAReports() {
   const atRisk = analyzed.filter((a) => a.sla.resolution === "at_risk").length;
   const met = analyzed.filter((a) => a.sla.resolution === "met").length;
   const onTrack = analyzed.filter((a) => a.sla.resolution === "on_track").length;
+  const responseBreached = analyzed.filter((a) => a.sla.response === "breached").length;
 
   const complianceRate = met + breached > 0 ? ((met / (met + breached)) * 100).toFixed(1) : "—";
 
@@ -79,7 +94,7 @@ export default function SLAReports() {
         <p className="text-muted-foreground text-sm">Service Level Agreement compliance overview</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         <Card><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-foreground">{complianceRate}%</p>
           <p className="text-xs text-muted-foreground">SLA Compliance</p>
@@ -95,6 +110,10 @@ export default function SLAReports() {
         <Card><CardContent className="p-4 text-center">
           <p className="text-3xl font-bold text-yellow-500">{atRisk}</p>
           <p className="text-xs text-muted-foreground">At Risk</p>
+        </CardContent></Card>
+        <Card><CardContent className="p-4 text-center">
+          <p className="text-3xl font-bold text-destructive">{responseBreached}</p>
+          <p className="text-xs text-muted-foreground">Response Overdue</p>
         </CardContent></Card>
       </div>
 
@@ -124,17 +143,24 @@ export default function SLAReports() {
                   <th className="text-left p-3 text-muted-foreground font-medium text-xs">Incident</th>
                   <th className="text-left p-3 text-muted-foreground font-medium text-xs">Priority</th>
                   <th className="text-left p-3 text-muted-foreground font-medium text-xs">Status</th>
-                  <th className="text-left p-3 text-muted-foreground font-medium text-xs">SLA</th>
+                  <th className="text-left p-3 text-muted-foreground font-medium text-xs">Response</th>
+                  <th className="text-left p-3 text-muted-foreground font-medium text-xs">Resolution</th>
                   <th className="text-left p-3 text-muted-foreground font-medium text-xs">Time</th>
                   <th className="text-left p-3 text-muted-foreground font-medium text-xs">Target</th>
                 </tr>
               </thead>
               <tbody>
                 {analyzed.slice(0, 30).map((a) => (
-                  <tr key={a.id} className="border-b border-border hover:bg-muted/50">
+                  <tr key={a.id} className={`border-b border-border hover:bg-muted/50 ${a.sla.response === "breached" ? "bg-destructive/5" : ""}`}>
                     <td className="p-3 font-mono text-xs text-muted-foreground">{a.incident_number}</td>
                     <td className="p-3 text-foreground capitalize">{a.priority}</td>
                     <td className="p-3 text-foreground capitalize">{a.status.replace("_", " ")}</td>
+                    <td className="p-3">
+                      <Badge variant={a.sla.response === "met" ? "default" : a.sla.response === "breached" ? "destructive" : "outline"}
+                        className="text-[10px] capitalize">
+                        {a.sla.response === "on_track" ? "On Track" : a.sla.response}
+                      </Badge>
+                    </td>
                     <td className="p-3">
                       <Badge variant={a.sla.resolution === "met" ? "default" : a.sla.resolution === "breached" ? "destructive" : "outline"}
                         className="text-[10px] capitalize">

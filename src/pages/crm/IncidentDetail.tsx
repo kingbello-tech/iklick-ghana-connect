@@ -27,6 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const CATEGORIES = ["Connectivity", "Speed", "Hardware", "Billing", "Installation", "Maintenance", "Other"];
+const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "Sales"];
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +42,8 @@ export default function IncidentDetail() {
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState<Partial<Incident>>({});
+  const [editForm, setEditForm] = useState<Partial<Incident> & { department?: string }>({});
+  const [editDepartment, setEditDepartment] = useState("");
 
   const fetchAll = async () => {
     if (!id) return;
@@ -90,6 +92,9 @@ export default function IncidentDetail() {
 
   const startEditing = () => {
     if (!incident) return;
+    // Find the department of currently assigned user
+    const assignedProfile = incident.assigned_to ? profiles[incident.assigned_to] : null;
+    setEditDepartment(assignedProfile?.department || "");
     setEditForm({
       title: incident.title,
       description: incident.description,
@@ -154,6 +159,9 @@ export default function IncidentDetail() {
   if (!incident) return <p className="text-center text-muted-foreground">Incident not found</p>;
 
   const staffProfiles = Object.values(profiles);
+  const filteredStaff = editDepartment
+    ? staffProfiles.filter((p) => p.department === editDepartment)
+    : staffProfiles;
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -337,11 +345,24 @@ export default function IncidentDetail() {
                     <Input value={editForm.location || ""} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} />
                   </div>
                   <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Department</label>
+                    <Select value={editDepartment} onValueChange={(v) => { setEditDepartment(v); setEditForm({ ...editForm, assigned_to: "" }); }}>
+                      <SelectTrigger><SelectValue placeholder="Filter by department" /></SelectTrigger>
+                      <SelectContent>
+                        {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Assigned To</label>
                     <Select value={editForm.assigned_to || ""} onValueChange={(v) => setEditForm({ ...editForm, assigned_to: v })}>
                       <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
                       <SelectContent>
-                        {staffProfiles.map((p) => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "User"}</SelectItem>)}
+                        {filteredStaff.length === 0 ? (
+                          <SelectItem value="" disabled>No users in department</SelectItem>
+                        ) : (
+                          filteredStaff.map((p) => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "User"}</SelectItem>)
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
