@@ -345,11 +345,24 @@ export default function IncidentDetail() {
                     <Input value={editForm.location || ""} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} />
                   </div>
                   <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Department</label>
+                    <Select value={editDepartment} onValueChange={(v) => { setEditDepartment(v); setEditForm({ ...editForm, assigned_to: "" }); }}>
+                      <SelectTrigger><SelectValue placeholder="Filter by department" /></SelectTrigger>
+                      <SelectContent>
+                        {DEPARTMENTS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Assigned To</label>
                     <Select value={editForm.assigned_to || ""} onValueChange={(v) => setEditForm({ ...editForm, assigned_to: v })}>
                       <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
                       <SelectContent>
-                        {staffProfiles.map((p) => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "User"}</SelectItem>)}
+                        {filteredStaff.length === 0 ? (
+                          <SelectItem value="" disabled>No users in department</SelectItem>
+                        ) : (
+                          filteredStaff.map((p) => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "User"}</SelectItem>)
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
