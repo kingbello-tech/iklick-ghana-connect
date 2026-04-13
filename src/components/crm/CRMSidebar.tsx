@@ -1,6 +1,7 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3 } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import iklickLogo from "@/assets/iklick_logo_full.png";
 import {
   Sidebar,
   SidebarContent,
@@ -21,9 +22,15 @@ const navItems = [
   { title: "Clients", url: "/crm/clients", icon: Users },
 ];
 
+const cxItems = [
+  { title: "Satisfaction", url: "/crm/satisfaction", icon: Heart },
+  { title: "SLA Reports", url: "/crm/sla-reports", icon: Clock },
+];
+
 const adminItems = [
   { title: "User Management", url: "/crm/settings", icon: Settings },
   { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
+  { title: "Performance", url: "/crm/performance", icon: BarChart3 },
   { title: "Audit Logs", url: "/crm/audit-logs", icon: FileText },
 ];
 
@@ -32,6 +39,7 @@ export function CRMSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const { signOut, isAdmin, profile, role } = useAuth();
   const collapsed = state === "collapsed";
+  const isCX = role === "client_experience" || isAdmin;
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -39,7 +47,7 @@ export function CRMSidebar() {
     <Sidebar collapsible="icon" className="border-r border-border bg-card">
       <SidebarHeader className="p-4 flex flex-row items-center justify-between">
         {!collapsed && (
-          <img src="/iKlick_logo_variations_on_transparent_background_1.PNG" alt="iKlick" className="h-8 object-contain" />
+          <img src={iklickLogo} alt="iKlick" className="h-8 object-contain" />
         )}
         <button onClick={toggleSidebar} className="text-muted-foreground hover:text-foreground transition-colors">
           <ChevronLeft className={`h-4 w-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />
@@ -66,6 +74,28 @@ export function CRMSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isCX && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "Client Experience"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {cxItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {isAdmin && (
           <SidebarGroup>
@@ -98,7 +128,7 @@ export function CRMSidebar() {
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{profile?.full_name || "User"}</p>
-              <p className="text-xs text-muted-foreground truncate capitalize">{role || "—"}</p>
+              <p className="text-xs text-muted-foreground truncate capitalize">{role?.replace("_", " ") || "—"}</p>
             </div>
           )}
           {!collapsed && (
