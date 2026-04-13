@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Building2, Home, Phone, Shield, Check, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -68,6 +68,50 @@ const tabs = [
     stat: { value: "24/7", label: "Monitoring" },
   },
 ];
+
+const AnimatedStat = ({ value, label }: { value: string; label: string }) => {
+  const [displayValue, setDisplayValue] = useState("0");
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setDisplayValue("0");
+    const numericMatch = value.match(/^([\d.]+)(.*)$/);
+    if (!numericMatch) {
+      setDisplayValue(value);
+      return;
+    }
+
+    const target = parseFloat(numericMatch[1]);
+    const suffix = numericMatch[2]; // e.g. "%" or "Mbps"
+    const duration = 1500;
+    const steps = 60;
+    const increment = target / steps;
+    let current = 0;
+    let step = 0;
+
+    const timer = setInterval(() => {
+      step++;
+      current = Math.min(current + increment, target);
+      const decimals = target % 1 !== 0 ? 1 : 0;
+      setDisplayValue(current.toFixed(decimals) + suffix);
+      if (step >= steps) {
+        clearInterval(timer);
+        setDisplayValue(value);
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, [value]);
+
+  return (
+    <div ref={ref} className="text-center py-12">
+      <div className="text-7xl font-bold gradient-text mb-2">
+        {displayValue}
+      </div>
+      <div className="text-xl text-muted-foreground">{label}</div>
+    </div>
+  );
+};
 
 const FeatureTabs = () => {
   const [activeTab, setActiveTab] = useState("enterprise");
@@ -140,14 +184,7 @@ const FeatureTabs = () => {
                   <div className="w-3 h-3 rounded-full bg-yellow-500" />
                   <div className="w-3 h-3 rounded-full bg-green-500" />
                 </div>
-                <div className="text-center py-12">
-                  <div className="text-7xl font-bold gradient-text mb-2">
-                    {active.stat.value}
-                  </div>
-                  <div className="text-xl text-muted-foreground">
-                    {active.stat.label}
-                  </div>
-                </div>
+                <AnimatedStat value={active.stat.value} label={active.stat.label} />
                 <div className="grid grid-cols-3 gap-4 mt-6">
                   {[1, 2, 3].map((i) => (
                     <div key={i} className="h-2 rounded-full bg-primary/20">
