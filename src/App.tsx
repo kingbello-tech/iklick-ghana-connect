@@ -16,6 +16,8 @@ import IncidentList from "./pages/crm/IncidentList";
 import IncidentDetail from "./pages/crm/IncidentDetail";
 import ClientList from "./pages/crm/ClientList";
 import UserManagement from "./pages/crm/UserManagement";
+import SLAPolicies from "./pages/crm/SLAPolicies";
+import AuditLogs from "./pages/crm/AuditLogs";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +42,8 @@ const App = () => (
                 <Route path="incidents/:id" element={<IncidentDetail />} />
                 <Route path="clients" element={<ClientList />} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
+                <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin"]}><SLAPolicies /></ProtectedRoute>} />
+                <Route path="audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
