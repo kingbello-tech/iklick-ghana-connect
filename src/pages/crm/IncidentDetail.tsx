@@ -159,6 +159,9 @@ export default function IncidentDetail() {
   if (!incident) return <p className="text-center text-muted-foreground">Incident not found</p>;
 
   const staffProfiles = Object.values(profiles);
+  const filteredStaff = editDepartment
+    ? staffProfiles.filter((p) => p.department === editDepartment)
+    : staffProfiles;
 
   return (
     <div className="space-y-6 max-w-4xl">
