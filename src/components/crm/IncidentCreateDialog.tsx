@@ -10,17 +10,20 @@ import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
 type Client = Database["public"]["Tables"]["clients"]["Row"];
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   clients: Client[];
+  profiles?: Profile[];
   onCreated: () => void;
 }
 
 const CATEGORIES = ["Connectivity", "Speed", "Hardware", "Billing", "Installation", "Maintenance", "Other"];
+const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "Sales"];
 
-export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }: Props) {
+export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [], onCreated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -32,7 +35,24 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
     service_type: "home" as Database["public"]["Enums"]["service_type"],
     issue_category: "",
     location: "",
+    department: "",
+    assigned_to: "",
   });
+
+  const handleClientChange = (clientId: string) => {
+    const client = clients.find((c) => c.id === clientId);
+    setForm({
+      ...form,
+      client_id: clientId,
+      service_type: client ? client.service_type : form.service_type,
+      department: "",
+      assigned_to: "",
+    });
+  };
+
+  const filteredProfiles = form.department
+    ? profiles.filter((p) => p.department === form.department)
+    : profiles;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,17 +60,21 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
     setLoading(true);
     try {
       const { error } = await supabase.from("incidents").insert({
-        ...form,
+        title: form.title,
+        description: form.description || null,
         client_id: form.client_id || null,
+        priority: form.priority,
+        service_type: form.service_type,
         issue_category: form.issue_category || null,
         location: form.location || null,
+        assigned_to: form.assigned_to || null,
         created_by: user.id,
         incident_number: "TEMP",
       });
       if (error) throw error;
       toast({ title: "Incident created" });
       onOpenChange(false);
-      setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "" });
+      setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", department: "", assigned_to: "" });
       onCreated();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -87,7 +111,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Select value={form.client_id} onValueChange={(v) => setForm({ ...form, client_id: v })}>
+            <Select value={form.client_id} onValueChange={handleClientChange}>
               <SelectTrigger><SelectValue placeholder="Select Client" /></SelectTrigger>
               <SelectContent>
                 {clients.map((c) => (
@@ -105,6 +129,28 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, onCreated }:
             </Select>
           </div>
           <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v, assigned_to: "" })}>
+              <SelectTrigger><SelectValue placeholder="Department" /></SelectTrigger>
+              <SelectContent>
+                {DEPARTMENTS.map((d) => (
+                  <SelectItem key={d} value={d}>{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={form.assigned_to} onValueChange={(v) => setForm({ ...form, assigned_to: v })}>
+              <SelectTrigger><SelectValue placeholder="Assign To" /></SelectTrigger>
+              <SelectContent>
+                {filteredProfiles.length === 0 ? (
+                  <SelectItem value="" disabled>No users in department</SelectItem>
+                ) : (
+                  filteredProfiles.map((p) => (
+                    <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "User"}</SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
             <Button type="submit" disabled={loading}>{loading ? "Creating..." : "Create"}</Button>
