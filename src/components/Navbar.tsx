@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import iklickLogo from "@/assets/IKLICK_LOGO.jpg";
+import iklickLogo from "@/assets/iklick_logo_full.png";
 
 interface NavbarProps {
   visible?: boolean;
