@@ -53,6 +53,8 @@ const App = () => (
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
                 <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin"]}><SLAPolicies /></ProtectedRoute>} />
                 <Route path="performance" element={<ProtectedRoute allowedRoles={["admin"]}><PerformanceReports /></ProtectedRoute>} />
+                <Route path="performance/staff/:userId" element={<ProtectedRoute allowedRoles={["admin"]}><StaffReport /></ProtectedRoute>} />
+                <Route path="performance/client/:clientId" element={<ProtectedRoute allowedRoles={["admin"]}><ClientReport /></ProtectedRoute>} />
                 <Route path="audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>} />
               </Route>
 
