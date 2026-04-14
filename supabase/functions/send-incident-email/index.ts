@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
             subject: `[${incident_number}] Support Ticket Created: ${title}`,
             body: { contentType: 'HTML', content: buildHtml(client_name || 'Valued Customer', true) },
             toRecipients: [{ emailAddress: { address: client_email } }],
-            from: { emailAddress: { address: 'support@iklickgh.com', name: 'Iklick Support' } },
+            from: { emailAddress: { address: 'noc@iklickgh.com', name: 'Iklick Support' } },
           },
         }),
       });
@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
             subject: `[${incident_number}] New Incident Assigned: ${title}`,
             body: { contentType: 'HTML', content: buildHtml(assigned_name || 'Team Member', false) },
             toRecipients: [{ emailAddress: { address: assigned_email } }],
-            from: { emailAddress: { address: 'support@iklickgh.com', name: 'Iklick Support' } },
+            from: { emailAddress: { address: 'noc@iklickgh.com', name: 'Iklick Support' } },
           },
         }),
       });
