@@ -22,6 +22,8 @@ import AuditLogs from "./pages/crm/AuditLogs";
 import ClientSatisfaction from "./pages/crm/ClientSatisfaction";
 import SLAReports from "./pages/crm/SLAReports";
 import PerformanceReports from "./pages/crm/PerformanceReports";
+import StaffReport from "./pages/crm/StaffReport";
+import ClientReport from "./pages/crm/ClientReport";
 
 const queryClient = new QueryClient();
 
