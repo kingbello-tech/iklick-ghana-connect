@@ -36,26 +36,28 @@ export default function SLAReports() {
     const now = new Date();
     const closedAt = inc.closed_at ? new Date(inc.closed_at) : null;
 
-    // Resolution SLA: from creation to closure
-    const resolutionMins = closedAt
-      ? differenceInMinutes(closedAt, createdAt)
+    // Resolution SLA: use resolved_at or closed_at as the end time
+    const resolvedAt = inc.resolved_at ? new Date(inc.resolved_at) : null;
+    const endTime = closedAt || resolvedAt;
+    const resolutionMins = endTime
+      ? differenceInMinutes(endTime, createdAt)
       : differenceInMinutes(now, createdAt);
 
+    const isFinished = inc.status === "resolved" || inc.status === "closed";
+
     // Response SLA: from creation to first status change (open → in_progress)
-    // If still open, check against current time. If not open, response was met when moved.
     const responseTarget = policy.response_time_minutes;
     let responseStatus: string;
     if (inc.status === "open") {
       const elapsed = differenceInMinutes(now, createdAt);
       responseStatus = elapsed > responseTarget ? "breached" : "on_track";
     } else {
-      // Response timer stopped when moved from open — we assume it was met if status changed
       responseStatus = "met";
     }
 
     return {
       response: responseStatus,
-      resolution: closedAt
+      resolution: isFinished
         ? resolutionMins <= policy.resolution_time_minutes ? "met" : "breached"
         : resolutionMins > policy.resolution_time_minutes ? "at_risk" : "on_track",
       resolutionMins,
