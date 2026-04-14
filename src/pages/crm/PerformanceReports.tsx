@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Download } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
 import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 interface UserPerf {
+  userId: string;
   name: string;
   assigned: number;
   resolved: number;
@@ -19,6 +21,7 @@ interface UserPerf {
 }
 
 interface ClientPerf {
+  clientId: string;
   name: string;
   totalIncidents: number;
   openIncidents: number;
@@ -50,9 +53,7 @@ export default function PerformanceReports() {
   }, []);
 
   const profMap = Object.fromEntries(profiles.map((p) => [p.user_id, p.full_name || "Unknown"]));
-  const clientMap = Object.fromEntries(clients.map((c) => [c.id, c.name]));
 
-  // User performance
   const userPerf: UserPerf[] = Object.entries(
     incidents.reduce((acc, inc) => {
       if (!inc.assigned_to) return acc;
@@ -66,13 +67,13 @@ export default function PerformanceReports() {
       return acc;
     }, {} as Record<string, { assigned: number; resolved: number; totalMins: number; resolvedCount: number }>)
   ).map(([uid, data]) => ({
+    userId: uid,
     name: profMap[uid] || "Unknown",
     assigned: data.assigned,
     resolved: data.resolved,
     avgResolutionMins: data.resolvedCount > 0 ? Math.round(data.totalMins / data.resolvedCount) : 0,
   })).sort((a, b) => b.resolved - a.resolved);
 
-  // Client performance
   const satByClient = satisfaction.reduce((acc, s) => {
     if (!acc[s.client_id]) acc[s.client_id] = { total: 0, count: 0 };
     acc[s.client_id].total += s.rating;
@@ -84,6 +85,7 @@ export default function PerformanceReports() {
     const clientIncs = incidents.filter((i) => i.client_id === c.id);
     const sat = satByClient[c.id];
     return {
+      clientId: c.id,
       name: c.name,
       totalIncidents: clientIncs.length,
       openIncidents: clientIncs.filter((i) => !["resolved", "closed"].includes(i.status)).length,
@@ -93,7 +95,7 @@ export default function PerformanceReports() {
 
   const exportCSV = (data: Record<string, any>[], filename: string) => {
     if (data.length === 0) return;
-    const headers = Object.keys(data[0]);
+    const headers = Object.keys(data[0]).filter((h) => h !== "userId" && h !== "clientId");
     const csv = [headers.join(","), ...data.map((row) => headers.map((h) => `"${row[h] ?? ""}"`).join(","))].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -152,16 +154,22 @@ export default function PerformanceReports() {
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Resolved</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Resolution Rate</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Avg Resolution Time</th>
+                      <th className="text-left p-3 text-muted-foreground font-medium text-xs"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {userPerf.map((u) => (
-                      <tr key={u.name} className="border-b border-border hover:bg-muted/50">
+                      <tr key={u.userId} className="border-b border-border hover:bg-muted/50">
                         <td className="p-3 text-foreground font-medium">{u.name}</td>
                         <td className="p-3 text-muted-foreground">{u.assigned}</td>
                         <td className="p-3 text-foreground">{u.resolved}</td>
                         <td className="p-3 text-foreground">{u.assigned > 0 ? `${((u.resolved / u.assigned) * 100).toFixed(0)}%` : "—"}</td>
                         <td className="p-3 text-muted-foreground">{u.avgResolutionMins > 0 ? `${u.avgResolutionMins} min` : "—"}</td>
+                        <td className="p-3">
+                          <Link to={`/crm/performance/staff/${u.userId}`}>
+                            <Button variant="ghost" size="sm"><ExternalLink className="h-3 w-3 mr-1" />View</Button>
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -188,15 +196,21 @@ export default function PerformanceReports() {
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Total Incidents</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Open</th>
                       <th className="text-left p-3 text-muted-foreground font-medium text-xs">Avg Satisfaction</th>
+                      <th className="text-left p-3 text-muted-foreground font-medium text-xs"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {clientPerf.map((c) => (
-                      <tr key={c.name} className="border-b border-border hover:bg-muted/50">
+                      <tr key={c.clientId} className="border-b border-border hover:bg-muted/50">
                         <td className="p-3 text-foreground font-medium">{c.name}</td>
                         <td className="p-3 text-muted-foreground">{c.totalIncidents}</td>
                         <td className="p-3 text-foreground">{c.openIncidents}</td>
                         <td className="p-3 text-foreground">{c.avgRating > 0 ? `${c.avgRating} ★` : "—"}</td>
+                        <td className="p-3">
+                          <Link to={`/crm/performance/client/${c.clientId}`}>
+                            <Button variant="ghost" size="sm"><ExternalLink className="h-3 w-3 mr-1" />View</Button>
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
