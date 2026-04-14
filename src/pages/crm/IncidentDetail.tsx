@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check } from "lucide-react";
+import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check, Trash2 } from "lucide-react";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -31,7 +43,8 @@ const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "S
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user, canManageIncidents } = useAuth();
+  const { user, canManageIncidents, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [incident, setIncident] = useState<Incident | null>(null);
   const [notes, setNotes] = useState<IncidentNote[]>([]);
@@ -218,6 +231,40 @@ export default function IncidentDetail() {
                 <SelectItem value="closed">Closed</SelectItem>
               </SelectContent>
             </Select>
+          )}
+          {isAdmin && !editing && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Incident</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {incident.incident_number}? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      const { error } = await supabase.from("incidents").delete().eq("id", incident.id);
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                      } else {
+                        toast({ title: "Deleted", description: "Incident has been deleted." });
+                        navigate("/crm/incidents");
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </div>
       </div>
