@@ -232,6 +232,40 @@ export default function IncidentDetail() {
               </SelectContent>
             </Select>
           )}
+          {isAdmin && !editing && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm">
+                  <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Incident</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {incident.incident_number}? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={async () => {
+                      const { error } = await supabase.from("incidents").delete().eq("id", incident.id);
+                      if (error) {
+                        toast({ title: "Error", description: error.message, variant: "destructive" });
+                      } else {
+                        toast({ title: "Deleted", description: "Incident has been deleted." });
+                        navigate("/crm/incidents");
+                      }
+                    }}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </div>
 
