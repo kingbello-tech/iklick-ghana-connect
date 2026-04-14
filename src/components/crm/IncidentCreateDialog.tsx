@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -23,6 +27,37 @@ interface Props {
 const CATEGORIES = ["Connectivity", "Speed", "Hardware", "Billing", "Installation", "Maintenance", "Other"];
 const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "Sales"];
 
+function ClientCombobox({ clients, value, onChange }: { clients: Client[]; value: string; onChange: (id: string) => void }) {
+  const [comboOpen, setComboOpen] = useState(false);
+  const selected = clients.find((c) => c.id === value);
+
+  return (
+    <Popover open={comboOpen} onOpenChange={setComboOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" aria-expanded={comboOpen} className="w-full justify-between font-normal h-10">
+          <span className="truncate">{selected ? selected.name : "Select Client"}</span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0">
+        <Command>
+          <CommandInput placeholder="Search clients..." />
+          <CommandList>
+            <CommandEmpty>No client found.</CommandEmpty>
+            <CommandGroup>
+              {clients.map((c) => (
+                <CommandItem key={c.id} value={c.name} onSelect={() => { onChange(c.id); setComboOpen(false); }}>
+                  <Check className={cn("mr-2 h-4 w-4", value === c.id ? "opacity-100" : "opacity-0")} />
+                  {c.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [], onCreated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -136,14 +171,11 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
             </Select>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Select value={form.client_id} onValueChange={handleClientChange}>
-              <SelectTrigger><SelectValue placeholder="Select Client" /></SelectTrigger>
-              <SelectContent>
-                {clients.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ClientCombobox
+              clients={clients}
+              value={form.client_id}
+              onChange={handleClientChange}
+            />
             <Select value={form.issue_category} onValueChange={(v) => setForm({ ...form, issue_category: v })}>
               <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
               <SelectContent>
