@@ -87,6 +87,7 @@ export default function UserManagement() {
         full_name: editUser.profile.full_name,
         phone: editUser.profile.phone,
         department: editUser.profile.department,
+        email: (editUser.profile as any).email,
       }).eq("id", editUser.profile.id);
       if (error) throw error;
 
@@ -176,7 +177,7 @@ export default function UserManagement() {
                             </div>
                             <div>
                               <p className="text-foreground font-medium">{p.full_name || "—"}</p>
-                              <p className="text-[10px] text-muted-foreground">{p.phone || "—"}</p>
+                              <p className="text-[10px] text-muted-foreground">{(p as any).email || p.phone || "—"}</p>
                             </div>
                           </div>
                         </td>
@@ -211,6 +212,10 @@ export default function UserManagement() {
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Full Name</label>
               <Input value={editUser.profile.full_name || ""} onChange={(e) => setEditUser({ ...editUser, profile: { ...editUser.profile, full_name: e.target.value } })} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Email</label>
+              <Input type="email" value={(editUser.profile as any).email || ""} onChange={(e) => setEditUser({ ...editUser, profile: { ...editUser.profile, email: e.target.value } as any })} />
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Phone</label>
