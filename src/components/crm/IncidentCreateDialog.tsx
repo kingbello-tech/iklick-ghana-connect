@@ -77,13 +77,11 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
       const client = clients.find((c) => c.id === form.client_id);
       const assignedProfile = profiles.find((p) => p.user_id === form.assigned_to);
 
-      // Get assigned user's email from auth (we'll use profile info available)
+      // Fetch assigned user's email from profiles
       let assignedEmail: string | null = null;
       if (form.assigned_to) {
-        const { data: authData } = await supabase.from("profiles").select("full_name").eq("user_id", form.assigned_to).single();
-        // We need the email - fetch from the incident's assigned_to user
-        // Since we can't query auth.users, we'll check if profile has email-like info
-        // For now, we'll pass what we have and the edge function handles missing emails gracefully
+        const { data: profData } = await supabase.from("profiles").select("email").eq("user_id", form.assigned_to).single();
+        assignedEmail = profData?.email || null;
       }
 
       supabase.functions.invoke("send-incident-email", {
@@ -94,7 +92,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
           priority: form.priority,
           client_email: client?.email || null,
           client_name: client?.name || null,
-          assigned_email: null, // Staff email not available from client-side profiles table
+          assigned_email: assignedEmail,
           assigned_name: assignedProfile?.full_name || null,
         },
       }).catch((err) => console.error("Email notification failed:", err));
