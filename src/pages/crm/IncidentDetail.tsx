@@ -43,7 +43,8 @@ const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "S
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user, canManageIncidents } = useAuth();
+  const { user, canManageIncidents, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [incident, setIncident] = useState<Incident | null>(null);
   const [notes, setNotes] = useState<IncidentNote[]>([]);
