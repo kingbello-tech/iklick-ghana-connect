@@ -59,7 +59,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
     if (!user) return;
     setLoading(true);
     try {
-      const { error } = await supabase.from("incidents").insert({
+      const { data: inserted, error } = await supabase.from("incidents").insert({
         title: form.title,
         description: form.description || null,
         client_id: form.client_id || null,
@@ -70,8 +70,35 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
         assigned_to: form.assigned_to || null,
         created_by: user.id,
         incident_number: "TEMP",
-      });
+      }).select().single();
       if (error) throw error;
+
+      // Send email notifications
+      const client = clients.find((c) => c.id === form.client_id);
+      const assignedProfile = profiles.find((p) => p.user_id === form.assigned_to);
+
+      // Get assigned user's email from auth (we'll use profile info available)
+      let assignedEmail: string | null = null;
+      if (form.assigned_to) {
+        const { data: authData } = await supabase.from("profiles").select("full_name").eq("user_id", form.assigned_to).single();
+        // We need the email - fetch from the incident's assigned_to user
+        // Since we can't query auth.users, we'll check if profile has email-like info
+        // For now, we'll pass what we have and the edge function handles missing emails gracefully
+      }
+
+      supabase.functions.invoke("send-incident-email", {
+        body: {
+          incident_number: inserted.incident_number,
+          title: form.title,
+          description: form.description,
+          priority: form.priority,
+          client_email: client?.email || null,
+          client_name: client?.name || null,
+          assigned_email: null, // Staff email not available from client-side profiles table
+          assigned_name: assignedProfile?.full_name || null,
+        },
+      }).catch((err) => console.error("Email notification failed:", err));
+
       toast({ title: "Incident created" });
       onOpenChange(false);
       setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", department: "", assigned_to: "" });
