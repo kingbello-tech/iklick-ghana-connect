@@ -52,12 +52,12 @@ const App = () => (
                 <Route path="incidents/:id" element={<IncidentDetail />} />
                 <Route path="clients" element={<ClientList />} />
                 <Route path="satisfaction" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><ClientSatisfaction /></ProtectedRoute>} />
-                <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><SLAReports /></ProtectedRoute>} />
+                <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience", "network_manager"]}><SLAReports /></ProtectedRoute>} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
                 <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin"]}><SLAPolicies /></ProtectedRoute>} />
-                <Route path="performance" element={<ProtectedRoute allowedRoles={["admin"]}><PerformanceReports /></ProtectedRoute>} />
-                <Route path="performance/staff/:userId" element={<ProtectedRoute allowedRoles={["admin"]}><StaffReport /></ProtectedRoute>} />
-                <Route path="performance/client/:clientId" element={<ProtectedRoute allowedRoles={["admin"]}><ClientReport /></ProtectedRoute>} />
+                <Route path="performance" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><PerformanceReports /></ProtectedRoute>} />
+                <Route path="performance/staff/:userId" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><StaffReport /></ProtectedRoute>} />
+                <Route path="performance/client/:clientId" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><ClientReport /></ProtectedRoute>} />
                 <Route path="audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>} />
                 {/* Sales routes */}
                 <Route path="sales/dashboard" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesDashboard /></ProtectedRoute>} />

@@ -45,7 +45,8 @@ export function CRMSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const { signOut, isAdmin, profile, role, hasSalesAccess } = useAuth();
   const collapsed = state === "collapsed";
-  const isCX = role === "client_experience" || isAdmin;
+  const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
+  const isNetworkManager = role === "network_manager";
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
