@@ -99,7 +99,7 @@ export default function SalesDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Pipeline Value</p>
-                <p className="text-2xl font-bold text-foreground">GHS {pipelineValue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-foreground">₵{pipelineValue.toLocaleString()}</p>
               </div>
               <DollarSign className="h-8 w-8 text-primary" />
             </div>
@@ -110,7 +110,7 @@ export default function SalesDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Won Revenue</p>
-                <p className="text-2xl font-bold text-green-400">GHS {wonValue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-green-400">₵{wonValue.toLocaleString()}</p>
               </div>
               <ArrowUpRight className="h-8 w-8 text-green-400" />
             </div>
@@ -121,7 +121,7 @@ export default function SalesDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground">Forecast</p>
-                <p className="text-2xl font-bold text-yellow-400">GHS {Math.round(forecastValue).toLocaleString()}</p>
+                <p className="text-2xl font-bold text-yellow-400">₵{Math.round(forecastValue).toLocaleString()}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-yellow-400" />
             </div>
@@ -191,7 +191,7 @@ export default function SalesDashboard() {
                     <div className="flex-1">
                       <p className="text-sm font-medium text-foreground">{profileMap[userId]}</p>
                     </div>
-                    <span className="text-sm font-semibold text-green-400">GHS {value.toLocaleString()}</span>
+                    <span className="text-sm font-semibold text-green-400">₵{value.toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -207,7 +207,7 @@ export default function SalesDashboard() {
             <div className="flex justify-between"><span className="text-muted-foreground">Total Deals</span><span className="font-semibold text-foreground">{deals.length}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Active Deals</span><span className="font-semibold text-foreground">{deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).length}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Qualified Leads</span><span className="font-semibold text-foreground">{leads.filter((l: any) => l.status === "qualified").length}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Avg Deal Value</span><span className="font-semibold text-foreground">GHS {deals.length > 0 ? Math.round(deals.reduce((s, d) => s + Number(d.value), 0) / deals.length).toLocaleString() : 0}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Avg Deal Value</span><span className="font-semibold text-foreground">₵{deals.length > 0 ? Math.round(deals.reduce((s, d) => s + Number(d.value), 0) / deals.length).toLocaleString() : 0}</span></div>
           </CardContent>
         </Card>
       </div>
