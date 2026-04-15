@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Pencil } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { UserPlus, Pencil, Trash2 } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -26,6 +27,8 @@ export default function UserManagement() {
   const [saving, setSaving] = useState(false);
   const [newUser, setNewUser] = useState({ email: "", password: "", full_name: "", role: "viewer" as AppRole, department: "" });
   const [editUser, setEditUser] = useState<{ profile: Profile; role: AppRole | "" }>({ profile: {} as Profile, role: "" });
+  const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -78,6 +81,25 @@ export default function UserManagement() {
     const currentRole = roleMap[profile.user_id]?.role || "";
     setEditUser({ profile: { ...profile }, role: currentRole });
     setEditDialogOpen(true);
+  };
+
+  const deleteUser = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await supabase.functions.invoke("delete-user", {
+        body: { user_id: deleteTarget.user_id },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "User deleted", description: `${deleteTarget.full_name || "User"} has been removed` });
+      setDeleteTarget(null);
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const saveEdit = async () => {
@@ -187,9 +209,12 @@ export default function UserManagement() {
                             {currentRole?.replace(/_/g, " ") || "No role"}
                           </Badge>
                         </td>
-                        <td className="p-3">
+                        <td className="p-3 flex gap-1">
                           <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
                             <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(p)}>
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
                           </Button>
                         </td>
                       </tr>
@@ -249,6 +274,24 @@ export default function UserManagement() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete <strong>{deleteTarget?.full_name || "this user"}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteUser} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
