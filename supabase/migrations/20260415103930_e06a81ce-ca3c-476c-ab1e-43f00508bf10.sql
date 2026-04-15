@@ -1,0 +1,4 @@
+-- Add new roles to app_role enum
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'sales_representative';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'sales_manager';
+ALTER TYPE public.app_role ADD VALUE IF NOT EXISTS 'network_manager';
