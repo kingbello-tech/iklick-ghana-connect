@@ -677,6 +677,9 @@ export type Database = {
         | "support_agent"
         | "viewer"
         | "client_experience"
+        | "sales_representative"
+        | "sales_manager"
+        | "network_manager"
       deal_service_type: "fiber_home" | "dedicated_business" | "enterprise_link"
       deal_stage:
         | "new_lead"
@@ -835,6 +838,9 @@ export const Constants = {
         "support_agent",
         "viewer",
         "client_experience",
+        "sales_representative",
+        "sales_manager",
+        "network_manager",
       ],
       deal_service_type: [
         "fiber_home",
