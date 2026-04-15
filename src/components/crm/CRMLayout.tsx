@@ -12,7 +12,7 @@ export function CRMLayout() {
           <header className="h-12 flex items-center justify-between border-b border-border px-4 bg-card">
             <div className="flex items-center">
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
-              <span className="ml-3 text-xs text-muted-foreground uppercase tracking-wider">iKlick NOC</span>
+              <span className="ml-3 text-xs text-muted-foreground uppercase tracking-wider">iKlick CRM</span>
             </div>
             <ThemeToggle />
           </header>
