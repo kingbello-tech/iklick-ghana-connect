@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3 } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, DollarSign } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import iklickLogo from "@/assets/iklick_logo_full.png";
@@ -34,10 +34,16 @@ const adminItems = [
   { title: "Audit Logs", url: "/crm/audit-logs", icon: FileText },
 ];
 
+const salesItems = [
+  { title: "Sales Dashboard", url: "/crm/sales/dashboard", icon: DollarSign },
+  { title: "Leads", url: "/crm/sales/leads", icon: Target },
+  { title: "Pipeline", url: "/crm/sales/pipeline", icon: TrendingUp },
+];
+
 export function CRMSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, isAdmin, profile, role } = useAuth();
+  const { signOut, isAdmin, profile, role, hasSalesAccess } = useAuth();
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || isAdmin;
 
@@ -83,6 +89,28 @@ export function CRMSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {cxItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {hasSalesAccess && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "Sales"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {salesItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">

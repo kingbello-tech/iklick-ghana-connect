@@ -24,6 +24,9 @@ import SLAReports from "./pages/crm/SLAReports";
 import PerformanceReports from "./pages/crm/PerformanceReports";
 import StaffReport from "./pages/crm/StaffReport";
 import ClientReport from "./pages/crm/ClientReport";
+import SalesLeads from "./pages/crm/sales/SalesLeads";
+import SalesPipeline from "./pages/crm/sales/SalesPipeline";
+import SalesDashboard from "./pages/crm/sales/SalesDashboard";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +59,10 @@ const App = () => (
                 <Route path="performance/staff/:userId" element={<ProtectedRoute allowedRoles={["admin"]}><StaffReport /></ProtectedRoute>} />
                 <Route path="performance/client/:clientId" element={<ProtectedRoute allowedRoles={["admin"]}><ClientReport /></ProtectedRoute>} />
                 <Route path="audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>} />
+                {/* Sales routes */}
+                <Route path="sales/dashboard" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesDashboard /></ProtectedRoute>} />
+                <Route path="sales/leads" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesLeads /></ProtectedRoute>} />
+                <Route path="sales/pipeline" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesPipeline /></ProtectedRoute>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
