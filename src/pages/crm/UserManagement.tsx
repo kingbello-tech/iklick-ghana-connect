@@ -209,9 +209,12 @@ export default function UserManagement() {
                             {currentRole?.replace(/_/g, " ") || "No role"}
                           </Badge>
                         </td>
-                        <td className="p-3">
+                        <td className="p-3 flex gap-1">
                           <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
                             <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
+                          </Button>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(p)}>
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
                           </Button>
                         </td>
                       </tr>
@@ -271,6 +274,24 @@ export default function UserManagement() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete User Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete <strong>{deleteTarget?.full_name || "this user"}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={deleteUser} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
