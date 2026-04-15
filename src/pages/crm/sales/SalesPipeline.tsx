@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, DollarSign, Calendar, Percent } from "lucide-react";
+import { Plus, Calendar, Percent } from "lucide-react";
 
 const STAGES = [
   { value: "new_lead", label: "New Lead", color: "bg-blue-500" },
@@ -165,7 +165,7 @@ export default function SalesPipeline() {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required /></div>
-        <div><Label>Deal Value (GHS)</Label><Input type="number" step="0.01" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} /></div>
+        <div><Label>Deal Value (₵)</Label><Input type="number" step="0.01" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} /></div>
         <div><Label>Probability (%)</Label><Input type="number" min="0" max="100" value={form.probability} onChange={e => setForm({ ...form, probability: e.target.value })} /></div>
         <div><Label>Expected Close Date</Label><Input type="date" value={form.expected_close_date} onChange={e => setForm({ ...form, expected_close_date: e.target.value })} /></div>
         <div>
@@ -228,8 +228,8 @@ export default function SalesPipeline() {
 
       {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="pt-4 flex items-center gap-3"><DollarSign className="h-8 w-8 text-primary" /><div><p className="text-2xl font-bold text-foreground">GHS {totalPipeline.toLocaleString()}</p><p className="text-xs text-muted-foreground">Pipeline Value</p></div></CardContent></Card>
-        <Card><CardContent className="pt-4 flex items-center gap-3"><DollarSign className="h-8 w-8 text-green-400" /><div><p className="text-2xl font-bold text-foreground">GHS {wonValue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Won Revenue</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-primary">₵</span><div><p className="text-2xl font-bold text-foreground">₵{totalPipeline.toLocaleString()}</p><p className="text-xs text-muted-foreground">Pipeline Value</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-green-400">₵</span><div><p className="text-2xl font-bold text-foreground">₵{wonValue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Won Revenue</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{deals.length > 0 ? Math.round((deals.filter(d => d.stage === "closed_won").length / deals.length) * 100) : 0}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
       </div>
 
@@ -245,14 +245,14 @@ export default function SalesPipeline() {
                 <h3 className="text-sm font-semibold text-foreground">{stage.label}</h3>
                 <Badge variant="secondary" className="ml-auto">{stageDeals.length}</Badge>
               </div>
-              <p className="text-xs text-muted-foreground mb-3">GHS {stageValue.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground mb-3">₵{stageValue.toLocaleString()}</p>
               <div className="space-y-2">
                 {stageDeals.map(deal => (
                   <Card key={deal.id} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => openEdit(deal)}>
                     <CardContent className="p-3 space-y-2">
                       <p className="font-medium text-sm text-foreground">{deal.title}</p>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-primary">GHS {Number(deal.value).toLocaleString()}</span>
+                        <span className="text-sm font-semibold text-primary">₵{Number(deal.value).toLocaleString()}</span>
                         <span className="text-xs text-muted-foreground">{deal.probability}%</span>
                       </div>
                       {deal.service_type && <Badge variant="outline" className="text-xs">{deal.service_type.replace("_", " ")}</Badge>}
@@ -279,7 +279,7 @@ export default function SalesPipeline() {
             {deals.filter(d => d.stage === "closed_won").map(d => (
               <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
                 <span className="text-sm text-foreground">{d.title}</span>
-                <span className="text-sm font-semibold text-green-400">GHS {Number(d.value).toLocaleString()}</span>
+                <span className="text-sm font-semibold text-green-400">₵{Number(d.value).toLocaleString()}</span>
               </div>
             ))}
           </CardContent>

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { TrendingUp, Users, Target, ArrowUpRight, ArrowDownRight } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const STAGE_LABELS: Record<string, string> = {
@@ -101,7 +101,7 @@ export default function SalesDashboard() {
                 <p className="text-xs text-muted-foreground">Pipeline Value</p>
                 <p className="text-2xl font-bold text-foreground">₵{pipelineValue.toLocaleString()}</p>
               </div>
-              <DollarSign className="h-8 w-8 text-primary" />
+              <span className="text-2xl font-bold text-primary">₵</span>
             </div>
           </CardContent>
         </Card>
