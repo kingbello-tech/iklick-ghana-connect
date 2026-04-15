@@ -29,6 +29,7 @@ export default function UserManagement() {
   const [editUser, setEditUser] = useState<{ profile: Profile; role: AppRole | "" }>({ profile: {} as Profile, role: "" });
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const { toast } = useToast();
 
   const fetchData = async () => {
     const [profRes, roleRes] = await Promise.all([
