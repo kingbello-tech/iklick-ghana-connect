@@ -158,9 +158,12 @@ export default function UserManagement() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="network_manager">Network Manager</SelectItem>
                   <SelectItem value="network_engineer">Network Engineer</SelectItem>
                   <SelectItem value="support_agent">Support Agent</SelectItem>
                   <SelectItem value="client_experience">Client Experience</SelectItem>
+                  <SelectItem value="sales_manager">Sales Manager</SelectItem>
+                  <SelectItem value="sales_representative">Sales Representative</SelectItem>
                   <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
@@ -261,9 +264,12 @@ export default function UserManagement() {
                 <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="network_manager">Network Manager</SelectItem>
                   <SelectItem value="network_engineer">Network Engineer</SelectItem>
                   <SelectItem value="support_agent">Support Agent</SelectItem>
                   <SelectItem value="client_experience">Client Experience</SelectItem>
+                  <SelectItem value="sales_manager">Sales Manager</SelectItem>
+                  <SelectItem value="sales_representative">Sales Representative</SelectItem>
                   <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
