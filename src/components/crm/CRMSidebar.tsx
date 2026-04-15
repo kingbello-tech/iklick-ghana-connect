@@ -45,7 +45,8 @@ export function CRMSidebar() {
   const { state, toggleSidebar } = useSidebar();
   const { signOut, isAdmin, profile, role, hasSalesAccess } = useAuth();
   const collapsed = state === "collapsed";
-  const isCX = role === "client_experience" || isAdmin;
+  const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
+  const isNetworkManager = role === "network_manager";
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -111,6 +112,30 @@ export function CRMSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {salesItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {isNetworkManager && !isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "Management"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {[
+                  { title: "Performance", url: "/crm/performance", icon: BarChart3 },
+                ].map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
