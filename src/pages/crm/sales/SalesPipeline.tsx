@@ -290,7 +290,7 @@ export default function SalesPipeline() {
             {deals.filter(d => d.stage === "closed_lost").map(d => (
               <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
                 <span className="text-sm text-foreground">{d.title}</span>
-                <span className="text-sm font-semibold text-red-400">GHS {Number(d.value).toLocaleString()}</span>
+                <span className="text-sm font-semibold text-red-400">₵{Number(d.value).toLocaleString()}</span>
               </div>
             ))}
           </CardContent>
