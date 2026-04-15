@@ -98,6 +98,135 @@ export type Database = {
         }
         Relationships: []
       }
+      deal_activities: {
+        Row: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          completed_at: string | null
+          created_at: string
+          deal_id: string | null
+          description: string | null
+          id: string
+          lead_id: string | null
+          scheduled_at: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_type: Database["public"]["Enums"]["activity_type"]
+          completed_at?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          scheduled_at?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_type?: Database["public"]["Enums"]["activity_type"]
+          completed_at?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          id?: string
+          lead_id?: string | null
+          scheduled_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deal_activities_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          assigned_to: string | null
+          bandwidth: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string
+          expected_close_date: string | null
+          id: string
+          installation_complexity:
+            | Database["public"]["Enums"]["installation_complexity"]
+            | null
+          lead_id: string | null
+          notes: string | null
+          probability: number | null
+          service_type: Database["public"]["Enums"]["deal_service_type"] | null
+          stage: Database["public"]["Enums"]["deal_stage"]
+          title: string
+          updated_at: string
+          value: number | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          bandwidth?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by: string
+          expected_close_date?: string | null
+          id?: string
+          installation_complexity?:
+            | Database["public"]["Enums"]["installation_complexity"]
+            | null
+          lead_id?: string | null
+          notes?: string | null
+          probability?: number | null
+          service_type?: Database["public"]["Enums"]["deal_service_type"] | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          title: string
+          updated_at?: string
+          value?: number | null
+        }
+        Update: {
+          assigned_to?: string | null
+          bandwidth?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string
+          expected_close_date?: string | null
+          id?: string
+          installation_complexity?:
+            | Database["public"]["Enums"]["installation_complexity"]
+            | null
+          lead_id?: string | null
+          notes?: string | null
+          probability?: number | null
+          service_type?: Database["public"]["Enums"]["deal_service_type"] | null
+          stage?: Database["public"]["Enums"]["deal_stage"]
+          title?: string
+          updated_at?: string
+          value?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deals_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "deals_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_history: {
         Row: {
           created_at: string
@@ -239,6 +368,60 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          assigned_to: string | null
+          company_name: string | null
+          converted_deal_id: string | null
+          created_at: string
+          created_by: string
+          email: string | null
+          id: string
+          lead_type: Database["public"]["Enums"]["lead_type"]
+          location: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          source: Database["public"]["Enums"]["lead_source"]
+          status: Database["public"]["Enums"]["lead_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          company_name?: string | null
+          converted_deal_id?: string | null
+          created_at?: string
+          created_by: string
+          email?: string | null
+          id?: string
+          lead_type?: Database["public"]["Enums"]["lead_type"]
+          location?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          company_name?: string | null
+          converted_deal_id?: string | null
+          created_at?: string
+          created_by?: string
+          email?: string | null
+          id?: string
+          lead_type?: Database["public"]["Enums"]["lead_type"]
+          location?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          source?: Database["public"]["Enums"]["lead_source"]
+          status?: Database["public"]["Enums"]["lead_status"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -274,6 +457,103 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      quotations: {
+        Row: {
+          created_at: string
+          created_by: string
+          deal_id: string
+          document_url: string | null
+          id: string
+          installation_cost: number | null
+          monthly_cost: number | null
+          notes: string | null
+          status: Database["public"]["Enums"]["quotation_status"]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deal_id: string
+          document_url?: string | null
+          id?: string
+          installation_cost?: number | null
+          monthly_cost?: number | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["quotation_status"]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deal_id?: string
+          document_url?: string | null
+          id?: string
+          installation_cost?: number | null
+          monthly_cost?: number | null
+          notes?: string | null
+          status?: Database["public"]["Enums"]["quotation_status"]
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotations_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_surveys: {
+        Row: {
+          assigned_to: string | null
+          cost_estimate: number | null
+          created_at: string
+          deal_id: string
+          feasibility: Database["public"]["Enums"]["survey_feasibility"]
+          id: string
+          infrastructure_notes: string | null
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["survey_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          cost_estimate?: number | null
+          created_at?: string
+          deal_id: string
+          feasibility?: Database["public"]["Enums"]["survey_feasibility"]
+          id?: string
+          infrastructure_notes?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["survey_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          cost_estimate?: number | null
+          created_at?: string
+          deal_id?: string
+          feasibility?: Database["public"]["Enums"]["survey_feasibility"]
+          id?: string
+          infrastructure_notes?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["survey_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_surveys_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sla_policies: {
         Row: {
@@ -387,14 +667,25 @@ export type Database = {
         }
         Returns: boolean
       }
+      has_sales_access: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
+      activity_type: "call" | "email" | "meeting" | "follow_up"
       app_role:
         | "admin"
         | "network_engineer"
         | "support_agent"
         | "viewer"
         | "client_experience"
+      deal_service_type: "fiber_home" | "dedicated_business" | "enterprise_link"
+      deal_stage:
+        | "new_lead"
+        | "qualification"
+        | "site_survey"
+        | "proposal_sent"
+        | "negotiation"
+        | "closed_won"
+        | "closed_lost"
       incident_priority: "low" | "medium" | "high" | "critical"
       incident_status:
         | "open"
@@ -402,7 +693,14 @@ export type Database = {
         | "escalated"
         | "resolved"
         | "closed"
+      installation_complexity: "low" | "medium" | "high"
+      lead_source: "referral" | "website" | "walk_in" | "campaign"
+      lead_status: "new" | "contacted" | "qualified" | "unqualified"
+      lead_type: "home" | "sme" | "enterprise"
+      quotation_status: "draft" | "sent" | "accepted" | "rejected"
       service_type: "home" | "enterprise"
+      survey_feasibility: "pending" | "yes" | "no"
+      survey_status: "scheduled" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -530,12 +828,27 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_type: ["call", "email", "meeting", "follow_up"],
       app_role: [
         "admin",
         "network_engineer",
         "support_agent",
         "viewer",
         "client_experience",
+      ],
+      deal_service_type: [
+        "fiber_home",
+        "dedicated_business",
+        "enterprise_link",
+      ],
+      deal_stage: [
+        "new_lead",
+        "qualification",
+        "site_survey",
+        "proposal_sent",
+        "negotiation",
+        "closed_won",
+        "closed_lost",
       ],
       incident_priority: ["low", "medium", "high", "critical"],
       incident_status: [
@@ -545,7 +858,14 @@ export const Constants = {
         "resolved",
         "closed",
       ],
+      installation_complexity: ["low", "medium", "high"],
+      lead_source: ["referral", "website", "walk_in", "campaign"],
+      lead_status: ["new", "contacted", "qualified", "unqualified"],
+      lead_type: ["home", "sme", "enterprise"],
+      quotation_status: ["draft", "sent", "accepted", "rejected"],
       service_type: ["home", "enterprise"],
+      survey_feasibility: ["pending", "yes", "no"],
+      survey_status: ["scheduled", "completed", "cancelled"],
     },
   },
 } as const
