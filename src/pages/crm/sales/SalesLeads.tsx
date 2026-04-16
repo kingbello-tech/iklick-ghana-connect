@@ -106,7 +106,7 @@ export default function SalesLeads() {
       lead_type: form.lead_type as any,
       source: form.source as any,
       status: form.status as any,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
       created_by: user.id,
     });
@@ -132,7 +132,7 @@ export default function SalesLeads() {
       lead_type: form.lead_type as any,
       source: form.source as any,
       status: form.status as any,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
     }).eq("id", selected.id);
     if (error) {
@@ -155,7 +155,7 @@ export default function SalesLeads() {
       lead_type: lead.lead_type,
       source: lead.source,
       status: lead.status,
-      assigned_to: lead.assigned_to || "",
+      assigned_to: lead.assigned_to || "__unassigned__",
       notes: lead.notes || "",
     });
     setEditOpen(true);
