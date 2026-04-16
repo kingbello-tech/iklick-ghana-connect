@@ -62,7 +62,7 @@ const emptyForm = {
   lead_type: "home" as string,
   source: "website" as string,
   status: "new" as string,
-  assigned_to: "",
+  assigned_to: "__unassigned__",
   notes: "",
 };
 

@@ -57,7 +57,7 @@ const emptyForm = {
   service_type: "",
   bandwidth: "",
   installation_complexity: "low",
-  assigned_to: "",
+  assigned_to: "__unassigned__",
   notes: "",
 };
 
