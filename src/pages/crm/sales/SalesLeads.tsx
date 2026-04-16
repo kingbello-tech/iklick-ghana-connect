@@ -62,7 +62,7 @@ const emptyForm = {
   lead_type: "home" as string,
   source: "website" as string,
   status: "new" as string,
-  assigned_to: "",
+  assigned_to: "__unassigned__",
   notes: "",
 };
 
@@ -106,7 +106,7 @@ export default function SalesLeads() {
       lead_type: form.lead_type as any,
       source: form.source as any,
       status: form.status as any,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
       created_by: user.id,
     });
@@ -132,7 +132,7 @@ export default function SalesLeads() {
       lead_type: form.lead_type as any,
       source: form.source as any,
       status: form.status as any,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
     }).eq("id", selected.id);
     if (error) {
@@ -155,7 +155,7 @@ export default function SalesLeads() {
       lead_type: lead.lead_type,
       source: lead.source,
       status: lead.status,
-      assigned_to: lead.assigned_to || "",
+      assigned_to: lead.assigned_to || "__unassigned__",
       notes: lead.notes || "",
     });
     setEditOpen(true);
@@ -209,7 +209,7 @@ export default function SalesLeads() {
           <Select value={form.assigned_to} onValueChange={v => setForm({ ...form, assigned_to: v })}>
             <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="__unassigned__">Unassigned</SelectItem>
               {profiles.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unknown"}</SelectItem>)}
             </SelectContent>
           </Select>

@@ -57,7 +57,7 @@ const emptyForm = {
   service_type: "",
   bandwidth: "",
   installation_complexity: "low",
-  assigned_to: "",
+  assigned_to: "__unassigned__",
   notes: "",
 };
 
@@ -98,7 +98,7 @@ export default function SalesPipeline() {
       service_type: (form.service_type || null) as any,
       bandwidth: form.bandwidth || null,
       installation_complexity: form.installation_complexity as any,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
       created_by: user.id,
     });
@@ -124,7 +124,7 @@ export default function SalesPipeline() {
       service_type: (form.service_type || null) as any,
       bandwidth: form.bandwidth || null,
       installation_complexity: form.installation_complexity as any,
-      assigned_to: form.assigned_to || null,
+      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
     }).eq("id", selected.id);
     if (error) {
@@ -147,7 +147,7 @@ export default function SalesPipeline() {
       service_type: deal.service_type || "",
       bandwidth: deal.bandwidth || "",
       installation_complexity: deal.installation_complexity,
-      assigned_to: deal.assigned_to || "",
+      assigned_to: deal.assigned_to || "__unassigned__",
       notes: deal.notes || "",
     });
     setEditOpen(true);
@@ -195,7 +195,7 @@ export default function SalesPipeline() {
           <Select value={form.assigned_to} onValueChange={v => setForm({ ...form, assigned_to: v })}>
             <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="__unassigned__">Unassigned</SelectItem>
               {profiles.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unknown"}</SelectItem>)}
             </SelectContent>
           </Select>

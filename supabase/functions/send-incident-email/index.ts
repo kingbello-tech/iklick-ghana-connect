@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const OUTLOOK_API_KEY = Deno.env.get('MICROSOFT_OUTLOOK_API_KEY');
     if (!OUTLOOK_API_KEY) throw new Error('MICROSOFT_OUTLOOK_API_KEY is not configured');
 
-    const { incident_number, title, description, priority, client_email, client_name, assigned_email, assigned_name } = await req.json();
+    const { incident_number, title, description, priority, client_email, client_name, assigned_email, assigned_name, is_note_update } = await req.json();
 
     if (!title || !incident_number) {
       return new Response(JSON.stringify({ error: 'Missing required fields: title, incident_number' }), {
@@ -27,16 +27,18 @@ Deno.serve(async (req) => {
 
     const results: { client?: string; assigned?: string } = {};
 
-    const buildHtml = (recipientName: string, isClient: boolean) => `
+    const buildHtml = (recipientName: string, isClient: boolean, isUpdate: boolean = false) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: #1a1a2e; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-          <h1 style="margin: 0; font-size: 20px;">Incident Notification</h1>
+          <h1 style="margin: 0; font-size: 20px;">${isUpdate ? 'Ticket Update' : 'Incident Notification'}</h1>
         </div>
         <div style="border: 1px solid #e0e0e0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
           <p>Dear ${recipientName},</p>
-          <p>${isClient
-            ? 'A new support ticket has been created for your account. Our team is working on it.'
-            : 'A new incident has been assigned to you. Please review and take action.'
+          <p>${isUpdate
+            ? 'There has been a new update on your support ticket.'
+            : isClient
+              ? 'A new support ticket has been created for your account. Our team is working on it.'
+              : 'A new incident has been assigned to you. Please review and take action.'
           }</p>
           <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
             <tr style="background: #f5f5f5;">
@@ -53,7 +55,7 @@ Deno.serve(async (req) => {
             </tr>
             ${description ? `
             <tr>
-              <td style="padding: 10px; font-weight: bold; border: 1px solid #e0e0e0;">Description</td>
+              <td style="padding: 10px; font-weight: bold; border: 1px solid #e0e0e0;">${isUpdate ? 'Update' : 'Description'}</td>
               <td style="padding: 10px; border: 1px solid #e0e0e0;">${description}</td>
             </tr>` : ''}
           </table>
@@ -64,6 +66,9 @@ Deno.serve(async (req) => {
 
     // Send to client
     if (client_email) {
+      const emailSubject = is_note_update
+        ? `[${incident_number}] Update on Your Support Ticket: ${title}`
+        : `[${incident_number}] Support Ticket Created: ${title}`;
       const resp = await fetch(`${GATEWAY_URL}/me/sendMail`, {
         method: 'POST',
         headers: {
@@ -73,8 +78,8 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           message: {
-            subject: `[${incident_number}] Support Ticket Created: ${title}`,
-            body: { contentType: 'HTML', content: buildHtml(client_name || 'Valued Customer', true) },
+            subject: emailSubject,
+            body: { contentType: 'HTML', content: buildHtml(client_name || 'Valued Customer', true, !!is_note_update) },
             toRecipients: [{ emailAddress: { address: client_email } }],
             from: { emailAddress: { address: 'noc@iklickgh.com', name: 'Iklick Support' } },
           },

@@ -153,6 +153,31 @@ export default function IncidentDetail() {
       await trackChange(ch.field, ch.old, ch.new);
     }
 
+    // Send reassignment email if assigned_to changed
+    if (editForm.assigned_to && editForm.assigned_to !== incident.assigned_to) {
+      const assignedProfile = profiles[editForm.assigned_to];
+      let assignedEmail: string | null = null;
+      if (assignedProfile?.email) {
+        assignedEmail = assignedProfile.email;
+      } else {
+        const { data: profData } = await supabase.from("profiles").select("email").eq("user_id", editForm.assigned_to).single();
+        assignedEmail = profData?.email || null;
+      }
+
+      if (assignedEmail) {
+        supabase.functions.invoke("send-incident-email", {
+          body: {
+            incident_number: incident.incident_number,
+            title: editForm.title || incident.title,
+            description: editForm.description || incident.description,
+            priority: editForm.priority || incident.priority,
+            assigned_email: assignedEmail,
+            assigned_name: assignedProfile?.full_name || null,
+          },
+        }).catch((err) => console.error("Reassignment email failed:", err));
+      }
+    }
+
     toast({ title: "Incident updated" });
     setEditing(false);
     fetchAll();
@@ -164,6 +189,25 @@ export default function IncidentDetail() {
       incident_id: incident.id, user_id: user.id, content: newNote, note_type: "note",
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+
+    // Notify client about the new note
+    if (incident.client_id) {
+      const client = clients.find((c) => c.id === incident.client_id);
+      if (client?.email) {
+        supabase.functions.invoke("send-incident-email", {
+          body: {
+            incident_number: incident.incident_number,
+            title: incident.title,
+            description: `A new update has been added to your ticket:\n\n"${newNote}"`,
+            priority: incident.priority,
+            client_email: client.email,
+            client_name: client.name,
+            is_note_update: true,
+          },
+        }).catch((err) => console.error("Client note notification failed:", err));
+      }
+    }
+
     setNewNote("");
     fetchAll();
   };
