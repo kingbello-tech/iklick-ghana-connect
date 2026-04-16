@@ -54,7 +54,7 @@ const emptyForm = {
   expected_close_date: "",
   probability: "50",
   stage: "new_lead",
-  service_type: "",
+  service_type: "__none__",
   bandwidth: "",
   installation_complexity: "low",
   assigned_to: "__unassigned__",
@@ -95,7 +95,7 @@ export default function SalesPipeline() {
       expected_close_date: form.expected_close_date || null,
       probability: parseInt(form.probability) || 50,
       stage: form.stage as any,
-      service_type: (form.service_type || null) as any,
+      service_type: (form.service_type && form.service_type !== "__none__" ? form.service_type : null) as any,
       bandwidth: form.bandwidth || null,
       installation_complexity: form.installation_complexity as any,
       assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
@@ -121,7 +121,7 @@ export default function SalesPipeline() {
       expected_close_date: form.expected_close_date || null,
       probability: parseInt(form.probability) || 50,
       stage: form.stage as any,
-      service_type: (form.service_type || null) as any,
+      service_type: (form.service_type && form.service_type !== "__none__" ? form.service_type : null) as any,
       bandwidth: form.bandwidth || null,
       installation_complexity: form.installation_complexity as any,
       assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
@@ -144,7 +144,7 @@ export default function SalesPipeline() {
       expected_close_date: deal.expected_close_date || "",
       probability: String(deal.probability),
       stage: deal.stage,
-      service_type: deal.service_type || "",
+      service_type: deal.service_type || "__none__",
       bandwidth: deal.bandwidth || "",
       installation_complexity: deal.installation_complexity,
       assigned_to: deal.assigned_to || "__unassigned__",
@@ -179,7 +179,10 @@ export default function SalesPipeline() {
           <Label>Service Type</Label>
           <Select value={form.service_type} onValueChange={v => setForm({ ...form, service_type: v })}>
             <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent>{SERVICE_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t.replace("_", " ")}</SelectItem>)}</SelectContent>
+            <SelectContent>
+              <SelectItem value="__none__">None</SelectItem>
+              {SERVICE_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t.replace("_", " ")}</SelectItem>)}
+            </SelectContent>
           </Select>
         </div>
         <div><Label>Bandwidth</Label><Input value={form.bandwidth} onChange={e => setForm({ ...form, bandwidth: e.target.value })} placeholder="e.g. 100Mbps" /></div>
