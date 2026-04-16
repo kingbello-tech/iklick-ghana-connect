@@ -54,7 +54,7 @@ const emptyForm = {
   expected_close_date: "",
   probability: "50",
   stage: "new_lead",
-  service_type: "",
+  service_type: "__none__",
   bandwidth: "",
   installation_complexity: "low",
   assigned_to: "__unassigned__",
