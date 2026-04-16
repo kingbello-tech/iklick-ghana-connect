@@ -195,7 +195,7 @@ export default function SalesPipeline() {
           <Select value={form.assigned_to} onValueChange={v => setForm({ ...form, assigned_to: v })}>
             <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Unassigned</SelectItem>
+              <SelectItem value="__unassigned__">Unassigned</SelectItem>
               {profiles.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unknown"}</SelectItem>)}
             </SelectContent>
           </Select>
