@@ -179,7 +179,10 @@ export default function SalesPipeline() {
           <Label>Service Type</Label>
           <Select value={form.service_type} onValueChange={v => setForm({ ...form, service_type: v })}>
             <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent>{SERVICE_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t.replace("_", " ")}</SelectItem>)}</SelectContent>
+            <SelectContent>
+              <SelectItem value="__none__">None</SelectItem>
+              {SERVICE_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t.replace("_", " ")}</SelectItem>)}
+            </SelectContent>
           </Select>
         </div>
         <div><Label>Bandwidth</Label><Input value={form.bandwidth} onChange={e => setForm({ ...form, bandwidth: e.target.value })} placeholder="e.g. 100Mbps" /></div>
