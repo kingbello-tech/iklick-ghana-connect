@@ -1,4 +1,8 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, DollarSign } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp } from "lucide-react";
+
+const CediSign = ({ className }: { className?: string }) => (
+  <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
+);
 import { useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import iklickLogo from "@/assets/iklick_logo_full.png";
@@ -35,7 +39,7 @@ const adminItems = [
 ];
 
 const salesItems = [
-  { title: "Sales Dashboard", url: "/crm/sales/dashboard", icon: DollarSign },
+  { title: "Sales Dashboard", url: "/crm/sales/dashboard", icon: CediSign },
   { title: "Leads", url: "/crm/sales/leads", icon: Target },
   { title: "Pipeline", url: "/crm/sales/pipeline", icon: TrendingUp },
 ];
