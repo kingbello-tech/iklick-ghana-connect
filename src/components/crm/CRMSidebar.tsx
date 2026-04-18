@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -51,10 +51,15 @@ const technologyItems = [
   { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
 ];
 
+const financeItems = [
+  { title: "Finance Dashboard", url: "/crm/finance/dashboard", icon: Wallet },
+  { title: "Invoices", url: "/crm/finance/invoices", icon: Receipt },
+];
+
 export function CRMSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess } = useAuth();
+  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess } = useAuth();
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
   const isNetworkManager = role === "network_manager";
@@ -145,6 +150,28 @@ export function CRMSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {technologyItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {hasFinanceAccess && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "Finance"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {financeItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
