@@ -10,53 +10,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Calendar, Percent } from "lucide-react";
+import { Plus, Calendar, Percent, ClipboardCheck } from "lucide-react";
 
 const STAGES = [
-  { value: "new_lead", label: "New Lead", color: "bg-blue-500" },
+  { value: "new_lead", label: "Lead", color: "bg-blue-500" },
   { value: "qualification", label: "Qualification", color: "bg-purple-500" },
   { value: "site_survey", label: "Site Survey", color: "bg-yellow-500" },
-  { value: "proposal_sent", label: "Proposal Sent", color: "bg-orange-500" },
+  { value: "proposal_sent", label: "Proposal/Costing", color: "bg-orange-500" },
   { value: "negotiation", label: "Negotiation", color: "bg-pink-500" },
   { value: "closed_won", label: "Closed Won", color: "bg-green-500" },
   { value: "closed_lost", label: "Closed Lost", color: "bg-red-500" },
 ] as const;
 
-const SERVICE_TYPES = ["fiber_home", "dedicated_business", "enterprise_link"] as const;
-const COMPLEXITIES = ["low", "medium", "high"] as const;
+const ISP_CATEGORIES = [
+  { value: "community_wifi", label: "Community Wi-Fi" },
+  { value: "ftth", label: "FTTH" },
+  { value: "voip", label: "VOIP" },
+  { value: "dia", label: "DIA" },
+] as const;
 
 interface Deal {
   id: string;
-  lead_id: string | null;
   title: string;
   value: number;
+  mrc: number;
+  nrc: number;
+  contract_duration_months: number;
+  tcv: number;
+  acv: number;
+  isp_category: string | null;
   expected_close_date: string | null;
   probability: number;
   stage: string;
-  service_type: string | null;
-  bandwidth: string | null;
-  installation_complexity: string;
   assigned_to: string | null;
   notes: string | null;
-  client_id: string | null;
   created_by: string;
   created_at: string;
 }
 
-interface Profile {
-  user_id: string;
-  full_name: string | null;
-}
+interface Profile { user_id: string; full_name: string | null; }
 
 const emptyForm = {
   title: "",
-  value: "",
+  mrc: "",
+  nrc: "",
+  contract_duration_months: "12",
+  isp_category: "__none__",
   expected_close_date: "",
   probability: "50",
   stage: "new_lead",
-  service_type: "__none__",
-  bandwidth: "",
-  installation_complexity: "low",
   assigned_to: "__unassigned__",
   notes: "",
 };
@@ -86,52 +88,54 @@ export default function SalesPipeline() {
 
   const profileMap = Object.fromEntries(profiles.map(p => [p.user_id, p.full_name || "Unknown"]));
 
+  const mrc = parseFloat(form.mrc) || 0;
+  const nrc = parseFloat(form.nrc) || 0;
+  const months = parseInt(form.contract_duration_months) || 0;
+  const previewTcv = mrc * months + nrc;
+  const previewAcv = mrc * 12;
+
+  const buildPayload = () => ({
+    title: form.title,
+    mrc,
+    nrc,
+    contract_duration_months: months,
+    value: previewTcv, // keep `value` in sync as TCV for backwards compatibility
+    isp_category: (form.isp_category && form.isp_category !== "__none__" ? form.isp_category : null) as any,
+    expected_close_date: form.expected_close_date || null,
+    probability: parseInt(form.probability) || 50,
+    stage: form.stage as any,
+    assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
+    notes: form.notes || null,
+  });
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-    const { error } = await supabase.from("deals").insert({
-      title: form.title,
-      value: parseFloat(form.value) || 0,
-      expected_close_date: form.expected_close_date || null,
-      probability: parseInt(form.probability) || 50,
-      stage: form.stage as any,
-      service_type: (form.service_type && form.service_type !== "__none__" ? form.service_type : null) as any,
-      bandwidth: form.bandwidth || null,
-      installation_complexity: form.installation_complexity as any,
-      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
-      notes: form.notes || null,
-      created_by: user.id,
-    });
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Deal created" });
-      setCreateOpen(false);
-      setForm(emptyForm);
-      fetchData();
-    }
+    const { error } = await supabase.from("deals").insert({ ...buildPayload(), created_by: user.id });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deal created" }); setCreateOpen(false); setForm(emptyForm); fetchData(); }
   };
 
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    const { error } = await supabase.from("deals").update({
-      title: form.title,
-      value: parseFloat(form.value) || 0,
-      expected_close_date: form.expected_close_date || null,
-      probability: parseInt(form.probability) || 50,
-      stage: form.stage as any,
-      service_type: (form.service_type && form.service_type !== "__none__" ? form.service_type : null) as any,
-      bandwidth: form.bandwidth || null,
-      installation_complexity: form.installation_complexity as any,
-      assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
-      notes: form.notes || null,
-    }).eq("id", selected.id);
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Deal updated" });
-      setEditOpen(false);
+    const { error } = await supabase.from("deals").update(buildPayload()).eq("id", selected.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deal updated" }); setEditOpen(false); fetchData(); }
+  };
+
+  const requestSurvey = async (deal: Deal) => {
+    if (!user) return;
+    const { error } = await supabase.from("site_surveys").insert({
+      deal_id: deal.id,
+      requested_by: user.id,
+      requested_at: new Date().toISOString(),
+      status: "scheduled" as any,
+    });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      await supabase.from("deals").update({ stage: "site_survey" as any }).eq("id", deal.id);
+      toast({ title: "Site survey requested", description: "Sent to Technology team" });
       fetchData();
     }
   };
@@ -140,34 +144,36 @@ export default function SalesPipeline() {
     setSelected(deal);
     setForm({
       title: deal.title,
-      value: String(deal.value),
+      mrc: String(deal.mrc || 0),
+      nrc: String(deal.nrc || 0),
+      contract_duration_months: String(deal.contract_duration_months || 12),
+      isp_category: deal.isp_category || "__none__",
       expected_close_date: deal.expected_close_date || "",
       probability: String(deal.probability),
       stage: deal.stage,
-      service_type: deal.service_type || "__none__",
-      bandwidth: deal.bandwidth || "",
-      installation_complexity: deal.installation_complexity,
       assigned_to: deal.assigned_to || "__unassigned__",
       notes: deal.notes || "",
     });
     setEditOpen(true);
   };
 
-  const moveDeal = async (dealId: string, newStage: string) => {
-    const { error } = await supabase.from("deals").update({ stage: newStage as any }).eq("id", dealId);
-    if (!error) fetchData();
-  };
-
-  const totalPipeline = deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((sum, d) => sum + Number(d.value), 0);
-  const wonValue = deals.filter(d => d.stage === "closed_won").reduce((sum, d) => sum + Number(d.value), 0);
+  const totalPipeline = deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((s, d) => s + Number(d.tcv || d.value), 0);
+  const wonValue = deals.filter(d => d.stage === "closed_won").reduce((s, d) => s + Number(d.tcv || d.value), 0);
 
   const DealForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string }) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required /></div>
-        <div><Label>Deal Value (₵)</Label><Input type="number" step="0.01" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} /></div>
-        <div><Label>Probability (%)</Label><Input type="number" min="0" max="100" value={form.probability} onChange={e => setForm({ ...form, probability: e.target.value })} /></div>
-        <div><Label>Expected Close Date</Label><Input type="date" value={form.expected_close_date} onChange={e => setForm({ ...form, expected_close_date: e.target.value })} /></div>
+        <div>
+          <Label>Service Category *</Label>
+          <Select value={form.isp_category} onValueChange={v => setForm({ ...form, isp_category: v })}>
+            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">None</SelectItem>
+              {ISP_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
         <div>
           <Label>Stage</Label>
           <Select value={form.stage} onValueChange={v => setForm({ ...form, stage: v })}>
@@ -175,26 +181,17 @@ export default function SalesPipeline() {
             <SelectContent>{STAGES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
           </Select>
         </div>
-        <div>
-          <Label>Service Type</Label>
-          <Select value={form.service_type} onValueChange={v => setForm({ ...form, service_type: v })}>
-            <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="__none__">None</SelectItem>
-              {SERVICE_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t.replace("_", " ")}</SelectItem>)}
-            </SelectContent>
-          </Select>
+        <div><Label>MRC (₵) — Monthly</Label><Input type="number" step="0.01" value={form.mrc} onChange={e => setForm({ ...form, mrc: e.target.value })} /></div>
+        <div><Label>NRC (₵) — One-off</Label><Input type="number" step="0.01" value={form.nrc} onChange={e => setForm({ ...form, nrc: e.target.value })} /></div>
+        <div><Label>Contract Duration (months)</Label><Input type="number" min="1" value={form.contract_duration_months} onChange={e => setForm({ ...form, contract_duration_months: e.target.value })} /></div>
+        <div><Label>Probability (%)</Label><Input type="number" min="0" max="100" value={form.probability} onChange={e => setForm({ ...form, probability: e.target.value })} /></div>
+        <div className="col-span-2 grid grid-cols-2 gap-4 p-3 rounded-lg bg-muted/30 border border-border">
+          <div><p className="text-xs text-muted-foreground">TCV (auto)</p><p className="text-lg font-bold text-primary">₵{previewTcv.toLocaleString()}</p></div>
+          <div><p className="text-xs text-muted-foreground">ACV (auto)</p><p className="text-lg font-bold text-primary">₵{previewAcv.toLocaleString()}</p></div>
         </div>
-        <div><Label>Bandwidth</Label><Input value={form.bandwidth} onChange={e => setForm({ ...form, bandwidth: e.target.value })} placeholder="e.g. 100Mbps" /></div>
+        <div><Label>Expected Close Date</Label><Input type="date" value={form.expected_close_date} onChange={e => setForm({ ...form, expected_close_date: e.target.value })} /></div>
         <div>
-          <Label>Installation Complexity</Label>
-          <Select value={form.installation_complexity} onValueChange={v => setForm({ ...form, installation_complexity: v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>{COMPLEXITIES.map(c => <SelectItem key={c} value={c} className="capitalize">{c}</SelectItem>)}</SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>Assign To</Label>
+          <Label>Assigned Sales Rep</Label>
           <Select value={form.assigned_to} onValueChange={v => setForm({ ...form, assigned_to: v })}>
             <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
             <SelectContent>
@@ -212,35 +209,34 @@ export default function SalesPipeline() {
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   const activeStages = STAGES.filter(s => !["closed_won", "closed_lost"].includes(s.value));
+  const categoryLabel = (k: string | null) => ISP_CATEGORIES.find(c => c.value === k)?.label || "—";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Sales Pipeline</h1>
-          <p className="text-muted-foreground text-sm">Track and manage deals through the sales process</p>
+          <p className="text-muted-foreground text-sm">Lead → Survey → Proposal → Closure</p>
         </div>
         <Dialog open={createOpen} onOpenChange={setCreateOpen}>
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />New Deal</Button></DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Create Deal</DialogTitle></DialogHeader>
             <DealForm onSubmit={handleCreate} submitLabel="Create Deal" />
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-primary">₵</span><div><p className="text-2xl font-bold text-foreground">₵{totalPipeline.toLocaleString()}</p><p className="text-xs text-muted-foreground">Pipeline Value</p></div></CardContent></Card>
-        <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-green-400">₵</span><div><p className="text-2xl font-bold text-foreground">₵{wonValue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Won Revenue</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-primary">₵</span><div><p className="text-2xl font-bold text-foreground">₵{totalPipeline.toLocaleString()}</p><p className="text-xs text-muted-foreground">Pipeline TCV</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-green-400">₵</span><div><p className="text-2xl font-bold text-foreground">₵{wonValue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Won TCV</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{deals.length > 0 ? Math.round((deals.filter(d => d.stage === "closed_won").length / deals.length) * 100) : 0}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
       </div>
 
-      {/* Kanban Board */}
       <div className="flex gap-4 overflow-x-auto pb-4">
         {activeStages.map(stage => {
           const stageDeals = deals.filter(d => d.stage === stage.value);
-          const stageValue = stageDeals.reduce((sum, d) => sum + Number(d.value), 0);
+          const stageValue = stageDeals.reduce((s, d) => s + Number(d.tcv || d.value), 0);
           return (
             <div key={stage.value} className="min-w-[280px] flex-shrink-0">
               <div className="flex items-center gap-2 mb-3">
@@ -251,19 +247,27 @@ export default function SalesPipeline() {
               <p className="text-xs text-muted-foreground mb-3">₵{stageValue.toLocaleString()}</p>
               <div className="space-y-2">
                 {stageDeals.map(deal => (
-                  <Card key={deal.id} className="cursor-pointer hover:border-primary/50 transition-colors" onClick={() => openEdit(deal)}>
+                  <Card key={deal.id} className="hover:border-primary/50 transition-colors">
                     <CardContent className="p-3 space-y-2">
-                      <p className="font-medium text-sm text-foreground">{deal.title}</p>
+                      <p className="font-medium text-sm text-foreground cursor-pointer" onClick={() => openEdit(deal)}>{deal.title}</p>
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-primary">₵{Number(deal.value).toLocaleString()}</span>
+                        <span className="text-sm font-semibold text-primary">₵{Number(deal.tcv || deal.value).toLocaleString()}</span>
                         <span className="text-xs text-muted-foreground">{deal.probability}%</span>
                       </div>
-                      {deal.service_type && <Badge variant="outline" className="text-xs">{deal.service_type.replace("_", " ")}</Badge>}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {deal.isp_category && <Badge variant="outline" className="text-xs">{categoryLabel(deal.isp_category)}</Badge>}
+                        {deal.mrc > 0 && <Badge variant="secondary" className="text-xs">MRC ₵{Number(deal.mrc).toLocaleString()}</Badge>}
+                      </div>
                       {deal.assigned_to && <p className="text-xs text-muted-foreground">{profileMap[deal.assigned_to] || "Unknown"}</p>}
                       {deal.expected_close_date && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />{deal.expected_close_date}
                         </div>
+                      )}
+                      {["qualification", "new_lead"].includes(deal.stage) && (
+                        <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => requestSurvey(deal)}>
+                          <ClipboardCheck className="h-3 w-3 mr-1" />Request Site Survey
+                        </Button>
                       )}
                     </CardContent>
                   </Card>
@@ -274,7 +278,6 @@ export default function SalesPipeline() {
         })}
       </div>
 
-      {/* Closed Deals Summary */}
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardHeader><CardTitle className="text-green-400 text-sm">Closed Won ({deals.filter(d => d.stage === "closed_won").length})</CardTitle></CardHeader>
@@ -282,7 +285,7 @@ export default function SalesPipeline() {
             {deals.filter(d => d.stage === "closed_won").map(d => (
               <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
                 <span className="text-sm text-foreground">{d.title}</span>
-                <span className="text-sm font-semibold text-green-400">₵{Number(d.value).toLocaleString()}</span>
+                <span className="text-sm font-semibold text-green-400">₵{Number(d.tcv || d.value).toLocaleString()}</span>
               </div>
             ))}
           </CardContent>
@@ -293,16 +296,15 @@ export default function SalesPipeline() {
             {deals.filter(d => d.stage === "closed_lost").map(d => (
               <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
                 <span className="text-sm text-foreground">{d.title}</span>
-                <span className="text-sm font-semibold text-red-400">₵{Number(d.value).toLocaleString()}</span>
+                <span className="text-sm font-semibold text-red-400">₵{Number(d.tcv || d.value).toLocaleString()}</span>
               </div>
             ))}
           </CardContent>
         </Card>
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Deal</DialogTitle></DialogHeader>
           <DealForm onSubmit={handleEdit} submitLabel="Save Changes" />
         </DialogContent>

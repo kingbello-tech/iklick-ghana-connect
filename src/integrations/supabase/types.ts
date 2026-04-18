@@ -151,9 +151,11 @@ export type Database = {
       }
       deals: {
         Row: {
+          acv: number | null
           assigned_to: string | null
           bandwidth: string | null
           client_id: string | null
+          contract_duration_months: number | null
           created_at: string
           created_by: string
           expected_close_date: string | null
@@ -161,19 +163,27 @@ export type Database = {
           installation_complexity:
             | Database["public"]["Enums"]["installation_complexity"]
             | null
+          isp_category:
+            | Database["public"]["Enums"]["isp_service_category"]
+            | null
           lead_id: string | null
+          mrc: number | null
           notes: string | null
+          nrc: number | null
           probability: number | null
           service_type: Database["public"]["Enums"]["deal_service_type"] | null
           stage: Database["public"]["Enums"]["deal_stage"]
+          tcv: number | null
           title: string
           updated_at: string
           value: number | null
         }
         Insert: {
+          acv?: number | null
           assigned_to?: string | null
           bandwidth?: string | null
           client_id?: string | null
+          contract_duration_months?: number | null
           created_at?: string
           created_by: string
           expected_close_date?: string | null
@@ -181,19 +191,27 @@ export type Database = {
           installation_complexity?:
             | Database["public"]["Enums"]["installation_complexity"]
             | null
+          isp_category?:
+            | Database["public"]["Enums"]["isp_service_category"]
+            | null
           lead_id?: string | null
+          mrc?: number | null
           notes?: string | null
+          nrc?: number | null
           probability?: number | null
           service_type?: Database["public"]["Enums"]["deal_service_type"] | null
           stage?: Database["public"]["Enums"]["deal_stage"]
+          tcv?: number | null
           title: string
           updated_at?: string
           value?: number | null
         }
         Update: {
+          acv?: number | null
           assigned_to?: string | null
           bandwidth?: string | null
           client_id?: string | null
+          contract_duration_months?: number | null
           created_at?: string
           created_by?: string
           expected_close_date?: string | null
@@ -201,11 +219,17 @@ export type Database = {
           installation_complexity?:
             | Database["public"]["Enums"]["installation_complexity"]
             | null
+          isp_category?:
+            | Database["public"]["Enums"]["isp_service_category"]
+            | null
           lead_id?: string | null
+          mrc?: number | null
           notes?: string | null
+          nrc?: number | null
           probability?: number | null
           service_type?: Database["public"]["Enums"]["deal_service_type"] | null
           stage?: Database["public"]["Enums"]["deal_stage"]
+          tcv?: number | null
           title?: string
           updated_at?: string
           value?: number | null
@@ -368,6 +392,53 @@ export type Database = {
           },
         ]
       }
+      installations: {
+        Row: {
+          assigned_by: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          deal_id: string
+          id: string
+          notes: string | null
+          scheduled_date: string | null
+          status: Database["public"]["Enums"]["installation_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_id: string
+          id?: string
+          notes?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["installation_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          deal_id?: string
+          id?: string
+          notes?: string | null
+          scheduled_date?: string | null
+          status?: Database["public"]["Enums"]["installation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "installations_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
@@ -508,39 +579,96 @@ export type Database = {
           },
         ]
       }
+      sales_targets: {
+        Row: {
+          carryover_amount: number
+          category: Database["public"]["Enums"]["isp_service_category"]
+          created_at: string
+          created_by: string
+          id: string
+          notes: string | null
+          target_amount: number
+          target_month: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          carryover_amount?: number
+          category: Database["public"]["Enums"]["isp_service_category"]
+          created_at?: string
+          created_by: string
+          id?: string
+          notes?: string | null
+          target_amount?: number
+          target_month: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          carryover_amount?: number
+          category?: Database["public"]["Enums"]["isp_service_category"]
+          created_at?: string
+          created_by?: string
+          id?: string
+          notes?: string | null
+          target_amount?: number
+          target_month?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       site_surveys: {
         Row: {
+          assigned_at: string | null
           assigned_to: string | null
+          completed_at: string | null
           cost_estimate: number | null
           created_at: string
           deal_id: string
+          engineer_notes: string | null
           feasibility: Database["public"]["Enums"]["survey_feasibility"]
           id: string
           infrastructure_notes: string | null
+          photos_url: Json | null
+          requested_at: string | null
+          requested_by: string | null
           scheduled_date: string | null
           status: Database["public"]["Enums"]["survey_status"]
           updated_at: string
         }
         Insert: {
+          assigned_at?: string | null
           assigned_to?: string | null
+          completed_at?: string | null
           cost_estimate?: number | null
           created_at?: string
           deal_id: string
+          engineer_notes?: string | null
           feasibility?: Database["public"]["Enums"]["survey_feasibility"]
           id?: string
           infrastructure_notes?: string | null
+          photos_url?: Json | null
+          requested_at?: string | null
+          requested_by?: string | null
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["survey_status"]
           updated_at?: string
         }
         Update: {
+          assigned_at?: string | null
           assigned_to?: string | null
+          completed_at?: string | null
           cost_estimate?: number | null
           created_at?: string
           deal_id?: string
+          engineer_notes?: string | null
           feasibility?: Database["public"]["Enums"]["survey_feasibility"]
           id?: string
           infrastructure_notes?: string | null
+          photos_url?: Json | null
+          requested_at?: string | null
+          requested_by?: string | null
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["survey_status"]
           updated_at?: string
@@ -668,6 +796,11 @@ export type Database = {
         Returns: boolean
       }
       has_sales_access: { Args: { _user_id: string }; Returns: boolean }
+      has_technology_access: { Args: { _user_id: string }; Returns: boolean }
+      is_sales_manager_or_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       activity_type: "call" | "email" | "meeting" | "follow_up"
@@ -700,6 +833,8 @@ export type Database = {
         | "resolved"
         | "closed"
       installation_complexity: "low" | "medium" | "high"
+      installation_status: "pending" | "in_progress" | "completed" | "cancelled"
+      isp_service_category: "community_wifi" | "ftth" | "voip" | "dia"
       lead_source: "referral" | "website" | "walk_in" | "campaign"
       lead_status: "new" | "contacted" | "qualified" | "unqualified"
       lead_type: "home" | "sme" | "enterprise"
@@ -871,6 +1006,8 @@ export const Constants = {
         "closed",
       ],
       installation_complexity: ["low", "medium", "high"],
+      installation_status: ["pending", "in_progress", "completed", "cancelled"],
+      isp_service_category: ["community_wifi", "ftth", "voip", "dia"],
       lead_source: ["referral", "website", "walk_in", "campaign"],
       lead_status: ["new", "contacted", "qualified", "unqualified"],
       lead_type: ["home", "sme", "enterprise"],

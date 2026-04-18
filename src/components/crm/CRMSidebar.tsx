@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -42,12 +42,19 @@ const salesItems = [
   { title: "Sales Dashboard", url: "/crm/sales/dashboard", icon: CediSign },
   { title: "Leads", url: "/crm/sales/leads", icon: Target },
   { title: "Pipeline", url: "/crm/sales/pipeline", icon: TrendingUp },
+  { title: "Targets", url: "/crm/sales/targets", icon: BarChart3 },
+];
+
+const technologyItems = [
+  { title: "Tech Dashboard", url: "/crm/technology/dashboard", icon: Wifi },
+  { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
+  { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
 ];
 
 export function CRMSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, isAdmin, profile, role, hasSalesAccess } = useAuth();
+  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess } = useAuth();
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
   const isNetworkManager = role === "network_manager";
@@ -116,6 +123,28 @@ export function CRMSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {salesItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {hasTechnologyAccess && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "Technology"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {technologyItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
