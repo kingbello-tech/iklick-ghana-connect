@@ -62,7 +62,7 @@ export default function InvoiceDetail() {
   const updateStatus = async (status: string) => {
     if (!invoice) return;
     setUpdating(true);
-    const { error } = await supabase.from("invoices").update({ status }).eq("id", invoice.id);
+    const { error } = await supabase.from("invoices").update({ status: status as any }).eq("id", invoice.id);
     setUpdating(false);
     if (error) {
       toast({ title: "Failed", description: error.message, variant: "destructive" });
