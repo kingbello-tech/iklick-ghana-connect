@@ -121,6 +121,7 @@ export default function SalesPipeline() {
     if (!selected) return;
     const payload = buildPayload();
     const enteringSurveyStage = payload.stage === "site_survey" && selected.stage !== "site_survey";
+    const enteringClosedWon = payload.stage === "closed_won" && selected.stage !== "closed_won";
     const { error } = await supabase.from("deals").update(payload).eq("id", selected.id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
@@ -133,6 +134,18 @@ export default function SalesPipeline() {
             isp_category: payload.isp_category,
           },
         }).catch(err => console.error("tech email failed", err));
+      }
+      if (enteringClosedWon) {
+        // Notify tech alias of new installation request
+        supabase.functions.invoke("send-tech-email", {
+          body: {
+            type: "deal_won_to_tech",
+            deal_title: selected.title,
+            deal_id: selected.id,
+            isp_category: payload.isp_category,
+            service_type: (payload as any).service_type ?? undefined,
+          },
+        }).catch(err => console.error("deal won email failed", err));
       }
       toast({ title: "Deal updated" }); setEditOpen(false); fetchData();
     }

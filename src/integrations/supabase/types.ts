@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          field_changed: string | null
+          id: string
+          metadata: Json | null
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          field_changed?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          field_changed?: string | null
+          id?: string
+          metadata?: Json | null
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: []
+      }
       client_satisfaction: {
         Row: {
           client_id: string
@@ -154,12 +193,14 @@ export type Database = {
           acv: number | null
           assigned_to: string | null
           bandwidth: string | null
+          billing_active_at: string | null
           client_id: string | null
           contract_duration_months: number | null
           created_at: string
           created_by: string
           expected_close_date: string | null
           id: string
+          installation_completed_at: string | null
           installation_complexity:
             | Database["public"]["Enums"]["installation_complexity"]
             | null
@@ -173,6 +214,7 @@ export type Database = {
           probability: number | null
           service_type: Database["public"]["Enums"]["deal_service_type"] | null
           stage: Database["public"]["Enums"]["deal_stage"]
+          survey_completed_at: string | null
           tcv: number | null
           title: string
           updated_at: string
@@ -182,12 +224,14 @@ export type Database = {
           acv?: number | null
           assigned_to?: string | null
           bandwidth?: string | null
+          billing_active_at?: string | null
           client_id?: string | null
           contract_duration_months?: number | null
           created_at?: string
           created_by: string
           expected_close_date?: string | null
           id?: string
+          installation_completed_at?: string | null
           installation_complexity?:
             | Database["public"]["Enums"]["installation_complexity"]
             | null
@@ -201,6 +245,7 @@ export type Database = {
           probability?: number | null
           service_type?: Database["public"]["Enums"]["deal_service_type"] | null
           stage?: Database["public"]["Enums"]["deal_stage"]
+          survey_completed_at?: string | null
           tcv?: number | null
           title: string
           updated_at?: string
@@ -210,12 +255,14 @@ export type Database = {
           acv?: number | null
           assigned_to?: string | null
           bandwidth?: string | null
+          billing_active_at?: string | null
           client_id?: string | null
           contract_duration_months?: number | null
           created_at?: string
           created_by?: string
           expected_close_date?: string | null
           id?: string
+          installation_completed_at?: string | null
           installation_complexity?:
             | Database["public"]["Enums"]["installation_complexity"]
             | null
@@ -229,6 +276,7 @@ export type Database = {
           probability?: number | null
           service_type?: Database["public"]["Enums"]["deal_service_type"] | null
           stage?: Database["public"]["Enums"]["deal_stage"]
+          survey_completed_at?: string | null
           tcv?: number | null
           title?: string
           updated_at?: string
@@ -490,6 +538,42 @@ export type Database = {
           source?: Database["public"]["Enums"]["lead_source"]
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json | null
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json | null
+          read?: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json | null
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -788,6 +872,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      has_finance_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -800,6 +885,40 @@ export type Database = {
       is_sales_manager_or_admin: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      log_audit: {
+        Args: {
+          _action: string
+          _entity_id: string
+          _entity_type: string
+          _field?: string
+          _metadata?: Json
+          _new?: string
+          _old?: string
+        }
+        Returns: undefined
+      }
+      notify_role: {
+        Args: {
+          _body?: string
+          _link?: string
+          _metadata?: Json
+          _role: string
+          _title: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      notify_user: {
+        Args: {
+          _body?: string
+          _link?: string
+          _metadata?: Json
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {

@@ -13,13 +13,17 @@ const corsHeaders = {
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
 const TECH_ALIAS = 'technology@iklickgh.com';
+const FINANCE_ALIAS = 'finance@iklickgh.com';
 
 type NotifyType =
   | 'survey_requested'
   | 'survey_assigned'
   | 'survey_closed'
+  | 'survey_completed_to_sales'
   | 'install_assigned'
-  | 'install_closed';
+  | 'install_closed'
+  | 'install_completed_to_finance'
+  | 'deal_won_to_tech';
 
 interface Payload {
   type: NotifyType;
@@ -32,9 +36,14 @@ interface Payload {
   notes?: string;
   engineer_name?: string;
   engineer_email?: string;
+  sales_rep_name?: string;
+  sales_rep_email?: string;
   assigned_by_name?: string;
   feasibility?: string;
   cost_estimate?: number | null;
+  mrc?: number | null;
+  nrc?: number | null;
+  service_type?: string;
 }
 
 const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boolean } => {
@@ -112,6 +121,42 @@ const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boole
           'Service is now ready for handover to operations.'
         ),
       };
+    case 'survey_completed_to_sales': {
+      const feas = p.feasibility ? `<br/><strong>Feasibility:</strong> ${p.feasibility}` : '';
+      const cost = p.cost_estimate ? `<br/><strong>Cost Estimate:</strong> ₵${p.cost_estimate}` : '';
+      return {
+        toAlias: false,
+        subject: `[Site Survey Completed - Action Required] ${p.deal_title ?? ''}`,
+        html: wrap(
+          `Hello ${p.sales_rep_name ?? 'Sales Representative'},`,
+          `The site survey for your deal has been <strong>completed</strong>. The deal is now ready for <strong>negotiation</strong>.`,
+          'Login to the CRM to review survey results and continue the deal.'
+        ).replace('</div>\n      ', `${feas}${cost}</div>\n      `),
+      };
+    }
+    case 'install_completed_to_finance': {
+      const mrcLine = p.mrc ? `<br/><strong>MRC:</strong> ₵${p.mrc}` : '';
+      const nrcLine = p.nrc ? `<br/><strong>NRC:</strong> ₵${p.nrc}` : '';
+      return {
+        toAlias: false, // route to finance alias separately
+        subject: `[Installation Completed - Billing Required] ${p.deal_title ?? ''}`,
+        html: wrap(
+          'Installation Completed - Ready for Invoicing',
+          `Installation has been completed and the service is now active. Please proceed with invoicing.`,
+          'Login to the Finance module to generate the invoice.'
+        ).replace('</div>\n      ', `${mrcLine}${nrcLine}</div>\n      `),
+      };
+    }
+    case 'deal_won_to_tech':
+      return {
+        toAlias: true,
+        subject: `[New Installation Request] ${p.deal_title ?? ''}`,
+        html: wrap(
+          'New Installation Request',
+          `A deal has been <strong>won</strong> and requires installation. Please assign an engineer.`,
+          'Open the Installation Queue to assign and schedule.'
+        ),
+      };
   }
 };
 
@@ -158,8 +203,20 @@ Deno.serve(async (req) => {
     const { subject, html, toAlias } = buildEmail(payload);
     const recipients: string[] = [];
 
-    if (toAlias) recipients.push(TECH_ALIAS);
-    if (!toAlias && payload.engineer_email) recipients.push(payload.engineer_email);
+    // Routing:
+    // - install_completed_to_finance → FINANCE_ALIAS
+    // - survey_completed_to_sales → specific sales rep
+    // - toAlias=true → TECH_ALIAS
+    // - toAlias=false + engineer_email → that engineer
+    if (payload.type === 'install_completed_to_finance') {
+      recipients.push(FINANCE_ALIAS);
+    } else if (payload.type === 'survey_completed_to_sales') {
+      if (payload.sales_rep_email) recipients.push(payload.sales_rep_email);
+    } else if (toAlias) {
+      recipients.push(TECH_ALIAS);
+    } else if (payload.engineer_email) {
+      recipients.push(payload.engineer_email);
+    }
 
     if (recipients.length === 0) {
       return new Response(JSON.stringify({ success: false, error: 'No recipient resolved' }), {

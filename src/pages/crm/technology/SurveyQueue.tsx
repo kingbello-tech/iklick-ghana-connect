@@ -135,9 +135,10 @@ export default function SurveyQueue() {
       }
     }
 
-    // Closure notification to tech alias
+    // Closure notification to tech alias + sales rep
     if (justCompleted) {
       const eng = selected.assigned_to ? profileMap[selected.assigned_to] : undefined;
+      // Tech alias
       supabase.functions.invoke("send-tech-email", {
         body: {
           type: "survey_closed",
@@ -147,6 +148,27 @@ export default function SurveyQueue() {
           cost_estimate: form.cost_estimate ? parseFloat(form.cost_estimate) : null,
         },
       }).catch(err => console.error("survey close email failed", err));
+
+      // Sales rep — fetch deal owner profile (assigned_to or created_by)
+      const { data: dealRow } = await supabase
+        .from("deals").select("assigned_to, created_by").eq("id", selected.deal_id).maybeSingle();
+      const repUserId = dealRow?.assigned_to || dealRow?.created_by;
+      if (repUserId) {
+        const { data: repProfile } = await supabase
+          .from("profiles").select("email, full_name").eq("user_id", repUserId).maybeSingle();
+        if (repProfile?.email) {
+          supabase.functions.invoke("send-tech-email", {
+            body: {
+              type: "survey_completed_to_sales",
+              deal_title: dealTitle,
+              sales_rep_name: repProfile.full_name || "Sales Representative",
+              sales_rep_email: repProfile.email,
+              feasibility: form.feasibility,
+              cost_estimate: form.cost_estimate ? parseFloat(form.cost_estimate) : null,
+            },
+          }).catch(err => console.error("survey→sales email failed", err));
+        }
+      }
     }
 
     toast({ title: "Survey updated" });
