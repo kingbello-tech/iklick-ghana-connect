@@ -119,9 +119,23 @@ export default function SalesPipeline() {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    const { error } = await supabase.from("deals").update(buildPayload()).eq("id", selected.id);
+    const payload = buildPayload();
+    const enteringSurveyStage = payload.stage === "site_survey" && selected.stage !== "site_survey";
+    const { error } = await supabase.from("deals").update(payload).eq("id", selected.id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Deal updated" }); setEditOpen(false); fetchData(); }
+    else {
+      if (enteringSurveyStage) {
+        supabase.functions.invoke("send-tech-email", {
+          body: {
+            type: "survey_requested",
+            deal_title: selected.title,
+            deal_id: selected.id,
+            isp_category: payload.isp_category,
+          },
+        }).catch(err => console.error("tech email failed", err));
+      }
+      toast({ title: "Deal updated" }); setEditOpen(false); fetchData();
+    }
   };
 
   const requestSurvey = async (deal: Deal) => {
@@ -135,6 +149,15 @@ export default function SalesPipeline() {
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
       await supabase.from("deals").update({ stage: "site_survey" as any }).eq("id", deal.id);
+      // Notify technology alias
+      supabase.functions.invoke("send-tech-email", {
+        body: {
+          type: "survey_requested",
+          deal_title: deal.title,
+          deal_id: deal.id,
+          isp_category: deal.isp_category,
+        },
+      }).catch(err => console.error("tech email failed", err));
       toast({ title: "Site survey requested", description: "Sent to Technology team" });
       fetchData();
     }

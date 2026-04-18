@@ -77,18 +77,61 @@ export default function InstallationQueue() {
 
   const save = async () => {
     if (!selected || !user) return;
+    const newAssignee = form.assigned_to !== "__unassigned__" ? form.assigned_to : null;
+    const reassigned = newAssignee && newAssignee !== selected.assigned_to;
+    const justCompleted = form.status === "completed" && selected.status !== "completed";
     const update: any = {
-      assigned_to: form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
+      assigned_to: newAssignee,
       scheduled_date: form.scheduled_date || null,
       status: form.status as any,
       notes: form.notes || null,
-      assigned_by: form.assigned_to !== "__unassigned__" && !selected.assigned_to ? user.id : undefined,
-      completed_at: form.status === "completed" && selected.status !== "completed" ? new Date().toISOString() : undefined,
+      assigned_by: reassigned ? user.id : undefined,
+      completed_at: justCompleted ? new Date().toISOString() : undefined,
     };
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
     const { error } = await supabase.from("installations").update(update).eq("id", selected.id);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Installation updated" }); setOpen(false); fetchData(); }
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    const deal = dealMap[selected.deal_id];
+    const dealTitle = deal?.title;
+    const assignedByName = profiles.find(p => p.user_id === user.id)?.full_name || undefined;
+
+    if (reassigned && newAssignee) {
+      const { data: engProfile } = await supabase
+        .from("profiles").select("email, full_name").eq("user_id", newAssignee).maybeSingle();
+      if (engProfile?.email) {
+        supabase.functions.invoke("send-tech-email", {
+          body: {
+            type: "install_assigned",
+            deal_title: dealTitle,
+            engineer_name: engProfile.full_name || "Engineer",
+            engineer_email: engProfile.email,
+            assigned_by_name: assignedByName,
+            scheduled_date: form.scheduled_date || undefined,
+            notes: form.notes || undefined,
+          },
+        }).catch(err => console.error("install assign email failed", err));
+      }
+    }
+
+    if (justCompleted) {
+      const eng = selected.assigned_to ? profileMap[selected.assigned_to] : undefined;
+      supabase.functions.invoke("send-tech-email", {
+        body: {
+          type: "install_closed",
+          deal_title: dealTitle,
+          engineer_name: eng,
+          notes: form.notes || undefined,
+        },
+      }).catch(err => console.error("install close email failed", err));
+    }
+
+    toast({ title: "Installation updated" });
+    setOpen(false);
+    fetchData();
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
