@@ -121,6 +121,42 @@ const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boole
           'Service is now ready for handover to operations.'
         ),
       };
+    case 'survey_completed_to_sales': {
+      const feas = p.feasibility ? `<br/><strong>Feasibility:</strong> ${p.feasibility}` : '';
+      const cost = p.cost_estimate ? `<br/><strong>Cost Estimate:</strong> ₵${p.cost_estimate}` : '';
+      return {
+        toAlias: false,
+        subject: `[Site Survey Completed - Action Required] ${p.deal_title ?? ''}`,
+        html: wrap(
+          `Hello ${p.sales_rep_name ?? 'Sales Representative'},`,
+          `The site survey for your deal has been <strong>completed</strong>. The deal is now ready for <strong>negotiation</strong>.`,
+          'Login to the CRM to review survey results and continue the deal.'
+        ).replace('</div>\n      ', `${feas}${cost}</div>\n      `),
+      };
+    }
+    case 'install_completed_to_finance': {
+      const mrcLine = p.mrc ? `<br/><strong>MRC:</strong> ₵${p.mrc}` : '';
+      const nrcLine = p.nrc ? `<br/><strong>NRC:</strong> ₵${p.nrc}` : '';
+      return {
+        toAlias: false, // route to finance alias separately
+        subject: `[Installation Completed - Billing Required] ${p.deal_title ?? ''}`,
+        html: wrap(
+          'Installation Completed - Ready for Invoicing',
+          `Installation has been completed and the service is now active. Please proceed with invoicing.`,
+          'Login to the Finance module to generate the invoice.'
+        ).replace('</div>\n      ', `${mrcLine}${nrcLine}</div>\n      `),
+      };
+    }
+    case 'deal_won_to_tech':
+      return {
+        toAlias: true,
+        subject: `[New Installation Request] ${p.deal_title ?? ''}`,
+        html: wrap(
+          'New Installation Request',
+          `A deal has been <strong>won</strong> and requires installation. Please assign an engineer.`,
+          'Open the Installation Queue to assign and schedule.'
+        ),
+      };
   }
 };
 
