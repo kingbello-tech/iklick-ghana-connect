@@ -31,11 +31,15 @@ import SalesTargets from "./pages/crm/sales/SalesTargets";
 import TechnologyDashboard from "./pages/crm/technology/TechnologyDashboard";
 import SurveyQueue from "./pages/crm/technology/SurveyQueue";
 import InstallationQueue from "./pages/crm/technology/InstallationQueue";
+import FinanceDashboard from "./pages/crm/finance/FinanceDashboard";
+import InvoiceList from "./pages/crm/finance/InvoiceList";
+import InvoiceDetail from "./pages/crm/finance/InvoiceDetail";
 
 const queryClient = new QueryClient();
 
 const SALES_ROLES = ["admin", "sales_representative", "sales_manager"] as any;
 const TECH_ROLES = ["admin", "technology_engineer", "technology_manager"] as any;
+const FINANCE_ROLES = ["admin", "finance_officer"] as any;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -77,6 +81,11 @@ const App = () => (
                 <Route path="technology/dashboard" element={<ProtectedRoute allowedRoles={TECH_ROLES}><TechnologyDashboard /></ProtectedRoute>} />
                 <Route path="technology/surveys" element={<ProtectedRoute allowedRoles={TECH_ROLES}><SurveyQueue /></ProtectedRoute>} />
                 <Route path="technology/installations" element={<ProtectedRoute allowedRoles={TECH_ROLES}><InstallationQueue /></ProtectedRoute>} />
+
+                {/* Finance routes */}
+                <Route path="finance/dashboard" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><FinanceDashboard /></ProtectedRoute>} />
+                <Route path="finance/invoices" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceList /></ProtectedRoute>} />
+                <Route path="finance/invoices/:id" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceDetail /></ProtectedRoute>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
