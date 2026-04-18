@@ -34,6 +34,7 @@ import InstallationQueue from "./pages/crm/technology/InstallationQueue";
 import FinanceDashboard from "./pages/crm/finance/FinanceDashboard";
 import InvoiceList from "./pages/crm/finance/InvoiceList";
 import InvoiceDetail from "./pages/crm/finance/InvoiceDetail";
+import FinanceClients from "./pages/crm/finance/FinanceClients";
 
 const queryClient = new QueryClient();
 
@@ -86,6 +87,7 @@ const App = () => (
                 <Route path="finance/dashboard" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><FinanceDashboard /></ProtectedRoute>} />
                 <Route path="finance/invoices" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceList /></ProtectedRoute>} />
                 <Route path="finance/invoices/:id" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceDetail /></ProtectedRoute>} />
+                <Route path="finance/clients" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><FinanceClients /></ProtectedRoute>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

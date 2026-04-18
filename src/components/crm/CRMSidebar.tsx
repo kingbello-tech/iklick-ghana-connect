@@ -54,6 +54,7 @@ const technologyItems = [
 const financeItems = [
   { title: "Finance Dashboard", url: "/crm/finance/dashboard", icon: Wallet },
   { title: "Invoices", url: "/crm/finance/invoices", icon: Receipt },
+  { title: "Clients", url: "/crm/finance/clients", icon: Users },
 ];
 
 export function CRMSidebar() {
