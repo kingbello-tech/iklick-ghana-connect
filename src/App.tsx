@@ -35,6 +35,7 @@ import FinanceDashboard from "./pages/crm/finance/FinanceDashboard";
 import InvoiceList from "./pages/crm/finance/InvoiceList";
 import InvoiceDetail from "./pages/crm/finance/InvoiceDetail";
 import FinanceClients from "./pages/crm/finance/FinanceClients";
+import Help from "./pages/crm/Help";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,7 @@ const App = () => (
               {/* CRM routes */}
               <Route path="/crm" element={<ProtectedRoute><CRMLayout /></ProtectedRoute>}>
                 <Route path="dashboard" element={<CRMDashboard />} />
+                <Route path="help" element={<Help />} />
                 <Route path="incidents" element={<IncidentList />} />
                 <Route path="incidents/:id" element={<IncidentDetail />} />
                 <Route path="clients" element={<ClientList />} />

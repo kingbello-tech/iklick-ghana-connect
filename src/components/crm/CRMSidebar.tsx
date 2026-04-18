@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -24,6 +24,7 @@ const navItems = [
   { title: "Dashboard", url: "/crm/dashboard", icon: LayoutDashboard },
   { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
   { title: "Clients", url: "/crm/clients", icon: Users },
+  { title: "Help & Workflow", url: "/crm/help", icon: BookOpen },
 ];
 
 const cxItems = [
