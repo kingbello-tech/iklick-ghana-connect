@@ -487,6 +487,112 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          amount_paid: number
+          balance_due: number
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          deal_id: string | null
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          kind: Database["public"]["Enums"]["invoice_kind"]
+          mrc_amount: number
+          notes: string | null
+          nrc_amount: number
+          paid_at: string | null
+          parent_invoice_id: string | null
+          period_end: string | null
+          period_start: string | null
+          sent_at: string | null
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal: number
+          total: number
+          updated_at: string
+          vat_amount: number
+          vat_rate: number
+        }
+        Insert: {
+          amount_paid?: number
+          balance_due?: number
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          due_date?: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          kind?: Database["public"]["Enums"]["invoice_kind"]
+          mrc_amount?: number
+          notes?: string | null
+          nrc_amount?: number
+          paid_at?: string | null
+          parent_invoice_id?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_rate?: number
+        }
+        Update: {
+          amount_paid?: number
+          balance_due?: number
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_id?: string | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          kind?: Database["public"]["Enums"]["invoice_kind"]
+          mrc_amount?: number
+          notes?: string | null
+          nrc_amount?: number
+          paid_at?: string | null
+          parent_invoice_id?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal?: number
+          total?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_parent_invoice_id_fkey"
+            columns: ["parent_invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           assigned_to: string | null
@@ -576,6 +682,50 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          method: Database["public"]["Enums"]["payment_method"]
+          notes: string | null
+          paid_at: string
+          recorded_by: string | null
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          paid_at?: string
+          recorded_by?: string | null
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          method?: Database["public"]["Enums"]["payment_method"]
+          notes?: string | null
+          paid_at?: string
+          recorded_by?: string | null
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -868,6 +1018,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_monthly_recurring_invoices: { Args: never; Returns: number }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
@@ -953,10 +1104,25 @@ export type Database = {
         | "closed"
       installation_complexity: "low" | "medium" | "high"
       installation_status: "pending" | "in_progress" | "completed" | "cancelled"
+      invoice_kind: "initial" | "recurring" | "one_off" | "credit_note"
+      invoice_status:
+        | "draft"
+        | "sent"
+        | "paid"
+        | "partially_paid"
+        | "overdue"
+        | "cancelled"
       isp_service_category: "community_wifi" | "ftth" | "voip" | "dia"
       lead_source: "referral" | "website" | "walk_in" | "campaign"
       lead_status: "new" | "contacted" | "qualified" | "unqualified"
       lead_type: "home" | "sme" | "enterprise"
+      payment_method:
+        | "bank_transfer"
+        | "mobile_money"
+        | "cash"
+        | "cheque"
+        | "card"
+        | "other"
       quotation_status: "draft" | "sent" | "accepted" | "rejected"
       service_type: "home" | "enterprise"
       survey_feasibility: "pending" | "yes" | "no"
@@ -1126,10 +1292,27 @@ export const Constants = {
       ],
       installation_complexity: ["low", "medium", "high"],
       installation_status: ["pending", "in_progress", "completed", "cancelled"],
+      invoice_kind: ["initial", "recurring", "one_off", "credit_note"],
+      invoice_status: [
+        "draft",
+        "sent",
+        "paid",
+        "partially_paid",
+        "overdue",
+        "cancelled",
+      ],
       isp_service_category: ["community_wifi", "ftth", "voip", "dia"],
       lead_source: ["referral", "website", "walk_in", "campaign"],
       lead_status: ["new", "contacted", "qualified", "unqualified"],
       lead_type: ["home", "sme", "enterprise"],
+      payment_method: [
+        "bank_transfer",
+        "mobile_money",
+        "cash",
+        "cheque",
+        "card",
+        "other",
+      ],
       quotation_status: ["draft", "sent", "accepted", "rejected"],
       service_type: ["home", "enterprise"],
       survey_feasibility: ["pending", "yes", "no"],
