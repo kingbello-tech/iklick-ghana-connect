@@ -27,8 +27,15 @@ import ClientReport from "./pages/crm/ClientReport";
 import SalesLeads from "./pages/crm/sales/SalesLeads";
 import SalesPipeline from "./pages/crm/sales/SalesPipeline";
 import SalesDashboard from "./pages/crm/sales/SalesDashboard";
+import SalesTargets from "./pages/crm/sales/SalesTargets";
+import TechnologyDashboard from "./pages/crm/technology/TechnologyDashboard";
+import SurveyQueue from "./pages/crm/technology/SurveyQueue";
+import InstallationQueue from "./pages/crm/technology/InstallationQueue";
 
 const queryClient = new QueryClient();
+
+const SALES_ROLES = ["admin", "sales_representative", "sales_manager"] as any;
+const TECH_ROLES = ["admin", "technology_engineer", "technology_manager"] as any;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -59,10 +66,17 @@ const App = () => (
                 <Route path="performance/staff/:userId" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><StaffReport /></ProtectedRoute>} />
                 <Route path="performance/client/:clientId" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><ClientReport /></ProtectedRoute>} />
                 <Route path="audit-logs" element={<ProtectedRoute allowedRoles={["admin"]}><AuditLogs /></ProtectedRoute>} />
+
                 {/* Sales routes */}
-                <Route path="sales/dashboard" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesDashboard /></ProtectedRoute>} />
-                <Route path="sales/leads" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesLeads /></ProtectedRoute>} />
-                <Route path="sales/pipeline" element={<ProtectedRoute allowedRoles={["admin", "sales_representative" as any, "sales_manager" as any]}><SalesPipeline /></ProtectedRoute>} />
+                <Route path="sales/dashboard" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesDashboard /></ProtectedRoute>} />
+                <Route path="sales/leads" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesLeads /></ProtectedRoute>} />
+                <Route path="sales/pipeline" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesPipeline /></ProtectedRoute>} />
+                <Route path="sales/targets" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesTargets /></ProtectedRoute>} />
+
+                {/* Technology routes */}
+                <Route path="technology/dashboard" element={<ProtectedRoute allowedRoles={TECH_ROLES}><TechnologyDashboard /></ProtectedRoute>} />
+                <Route path="technology/surveys" element={<ProtectedRoute allowedRoles={TECH_ROLES}><SurveyQueue /></ProtectedRoute>} />
+                <Route path="technology/installations" element={<ProtectedRoute allowedRoles={TECH_ROLES}><InstallationQueue /></ProtectedRoute>} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
