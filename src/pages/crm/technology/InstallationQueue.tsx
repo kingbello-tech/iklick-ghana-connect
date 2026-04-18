@@ -24,7 +24,7 @@ interface Installation {
   created_at: string;
 }
 
-interface Deal { id: string; title: string; isp_category: string | null; client_id: string | null; }
+interface Deal { id: string; title: string; isp_category: string | null; client_id: string | null; mrc: number | null; nrc: number | null; service_type: string | null; }
 interface Profile { user_id: string; full_name: string | null; }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -50,7 +50,7 @@ export default function InstallationQueue() {
   const fetchData = async () => {
     const [iRes, dRes, pRes] = await Promise.all([
       supabase.from("installations").select("*").order("created_at", { ascending: false }),
-      supabase.from("deals").select("id, title, isp_category, client_id"),
+      supabase.from("deals").select("id, title, isp_category, client_id, mrc, nrc, service_type"),
       supabase.from("profiles").select("user_id, full_name"),
     ]);
     if (iRes.data) setInstallations(iRes.data as any);
@@ -119,6 +119,7 @@ export default function InstallationQueue() {
 
     if (justCompleted) {
       const eng = selected.assigned_to ? profileMap[selected.assigned_to] : undefined;
+      // Tech alias notification
       supabase.functions.invoke("send-tech-email", {
         body: {
           type: "install_closed",
@@ -127,6 +128,16 @@ export default function InstallationQueue() {
           notes: form.notes || undefined,
         },
       }).catch(err => console.error("install close email failed", err));
+      // Finance alias notification (Installation Completed → Billing Required)
+      supabase.functions.invoke("send-tech-email", {
+        body: {
+          type: "install_completed_to_finance",
+          deal_title: dealTitle,
+          mrc: deal?.mrc ?? null,
+          nrc: deal?.nrc ?? null,
+          service_type: deal?.service_type ?? undefined,
+        },
+      }).catch(err => console.error("install→finance email failed", err));
     }
 
     toast({ title: "Installation updated" });
