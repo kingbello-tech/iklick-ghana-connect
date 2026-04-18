@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { CRMSidebar } from "./CRMSidebar";
 import ThemeToggle from "@/components/ThemeToggle";
+import { NotificationBell } from "./NotificationBell";
 
 export function CRMLayout() {
   return (
@@ -14,7 +15,10 @@ export function CRMLayout() {
               <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
               <span className="ml-3 text-xs text-muted-foreground uppercase tracking-wider">iKlick CRM</span>
             </div>
-            <ThemeToggle />
+            <div className="flex items-center gap-1">
+              <NotificationBell />
+              <ThemeToggle />
+            </div>
           </header>
           <main className="flex-1 overflow-auto p-6">
             <Outlet />
