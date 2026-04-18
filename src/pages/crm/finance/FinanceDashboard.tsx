@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Wallet, AlertCircle, Repeat, Loader2 } from "lucide-react";
+import { FileText, Wallet, AlertCircle, Repeat, Loader2, Plus } from "lucide-react";
 import { format } from "date-fns";
+import { NewInvoiceDialog } from "@/components/crm/NewInvoiceDialog";
 
 interface InvoiceRow {
   id: string;
@@ -33,6 +34,7 @@ export default function FinanceDashboard() {
   const [invoices, setInvoices] = useState<InvoiceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [newInvoiceOpen, setNewInvoiceOpen] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -74,12 +76,15 @@ export default function FinanceDashboard() {
           <h1 className="text-2xl font-semibold">Finance Dashboard</h1>
           <p className="text-sm text-muted-foreground">Invoicing, collections, and recurring billing.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={() => setNewInvoiceOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" /> New Invoice
+          </Button>
           <Button onClick={runRecurring} disabled={generating} variant="outline">
             {generating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Repeat className="h-4 w-4 mr-2" />}
             Generate Monthly Recurring
           </Button>
-          <Button asChild>
+          <Button asChild variant="outline">
             <Link to="/crm/finance/invoices">All Invoices</Link>
           </Button>
         </div>
@@ -130,6 +135,7 @@ export default function FinanceDashboard() {
           )}
         </CardContent>
       </Card>
+      <NewInvoiceDialog open={newInvoiceOpen} onOpenChange={setNewInvoiceOpen} onCreated={() => load()} />
     </div>
   );
 }
