@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -42,12 +42,19 @@ const salesItems = [
   { title: "Sales Dashboard", url: "/crm/sales/dashboard", icon: CediSign },
   { title: "Leads", url: "/crm/sales/leads", icon: Target },
   { title: "Pipeline", url: "/crm/sales/pipeline", icon: TrendingUp },
+  { title: "Targets", url: "/crm/sales/targets", icon: BarChart3 },
+];
+
+const technologyItems = [
+  { title: "Tech Dashboard", url: "/crm/technology/dashboard", icon: Wifi },
+  { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
+  { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
 ];
 
 export function CRMSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, isAdmin, profile, role, hasSalesAccess } = useAuth();
+  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess } = useAuth();
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
   const isNetworkManager = role === "network_manager";
