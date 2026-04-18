@@ -13,13 +13,17 @@ const corsHeaders = {
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
 const TECH_ALIAS = 'technology@iklickgh.com';
+const FINANCE_ALIAS = 'finance@iklickgh.com';
 
 type NotifyType =
   | 'survey_requested'
   | 'survey_assigned'
   | 'survey_closed'
+  | 'survey_completed_to_sales'
   | 'install_assigned'
-  | 'install_closed';
+  | 'install_closed'
+  | 'install_completed_to_finance'
+  | 'deal_won_to_tech';
 
 interface Payload {
   type: NotifyType;
@@ -32,9 +36,14 @@ interface Payload {
   notes?: string;
   engineer_name?: string;
   engineer_email?: string;
+  sales_rep_name?: string;
+  sales_rep_email?: string;
   assigned_by_name?: string;
   feasibility?: string;
   cost_estimate?: number | null;
+  mrc?: number | null;
+  nrc?: number | null;
+  service_type?: string;
 }
 
 const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boolean } => {
