@@ -203,8 +203,20 @@ Deno.serve(async (req) => {
     const { subject, html, toAlias } = buildEmail(payload);
     const recipients: string[] = [];
 
-    if (toAlias) recipients.push(TECH_ALIAS);
-    if (!toAlias && payload.engineer_email) recipients.push(payload.engineer_email);
+    // Routing:
+    // - install_completed_to_finance → FINANCE_ALIAS
+    // - survey_completed_to_sales → specific sales rep
+    // - toAlias=true → TECH_ALIAS
+    // - toAlias=false + engineer_email → that engineer
+    if (payload.type === 'install_completed_to_finance') {
+      recipients.push(FINANCE_ALIAS);
+    } else if (payload.type === 'survey_completed_to_sales') {
+      if (payload.sales_rep_email) recipients.push(payload.sales_rep_email);
+    } else if (toAlias) {
+      recipients.push(TECH_ALIAS);
+    } else if (payload.engineer_email) {
+      recipients.push(payload.engineer_email);
+    }
 
     if (recipients.length === 0) {
       return new Response(JSON.stringify({ success: false, error: 'No recipient resolved' }), {
