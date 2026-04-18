@@ -159,6 +159,7 @@ export function CRMSidebar() {
           </SidebarGroup>
         )}
 
+        {isNetworkManager && !isAdmin && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
               {!collapsed && "Management"}
