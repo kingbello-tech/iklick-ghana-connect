@@ -90,21 +90,68 @@ export default function SurveyQueue() {
 
   const save = async () => {
     if (!selected) return;
+    const newAssignee = form.assigned_to !== "__unassigned__" ? form.assigned_to : null;
+    const reassigned = newAssignee && newAssignee !== selected.assigned_to;
+    const justCompleted = form.status === "completed" && selected.status !== "completed";
     const update: any = {
-      assigned_to: form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
+      assigned_to: newAssignee,
       scheduled_date: form.scheduled_date || null,
       feasibility: form.feasibility as any,
       cost_estimate: form.cost_estimate ? parseFloat(form.cost_estimate) : null,
       infrastructure_notes: form.infrastructure_notes || null,
       engineer_notes: form.engineer_notes || null,
       status: form.status as any,
-      assigned_at: form.assigned_to !== "__unassigned__" && !selected.assigned_to ? new Date().toISOString() : undefined,
-      completed_at: form.status === "completed" && selected.status !== "completed" ? new Date().toISOString() : undefined,
+      assigned_at: reassigned ? new Date().toISOString() : undefined,
+      completed_at: justCompleted ? new Date().toISOString() : undefined,
     };
     Object.keys(update).forEach(k => update[k] === undefined && delete update[k]);
     const { error } = await supabase.from("site_surveys").update(update).eq("id", selected.id);
-    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
-    else { toast({ title: "Survey updated" }); setOpen(false); fetchData(); }
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    const deal = dealMap[selected.deal_id];
+    const dealTitle = deal?.title;
+    const assignedByName = profiles.find(p => p.user_id === user?.id)?.full_name || undefined;
+
+    // Engineer assignment notification
+    if (reassigned && newAssignee) {
+      const eng = profiles.find(p => p.user_id === newAssignee);
+      // fetch engineer email from profiles table (profiles list here lacks email, refetch)
+      const { data: engProfile } = await supabase
+        .from("profiles").select("email, full_name").eq("user_id", newAssignee).maybeSingle();
+      if (engProfile?.email) {
+        supabase.functions.invoke("send-tech-email", {
+          body: {
+            type: "survey_assigned",
+            deal_title: dealTitle,
+            engineer_name: engProfile.full_name || eng?.full_name || "Engineer",
+            engineer_email: engProfile.email,
+            assigned_by_name: assignedByName,
+            scheduled_date: form.scheduled_date || undefined,
+          },
+        }).catch(err => console.error("survey assign email failed", err));
+      }
+    }
+
+    // Closure notification to tech alias
+    if (justCompleted) {
+      const eng = selected.assigned_to ? profileMap[selected.assigned_to] : undefined;
+      supabase.functions.invoke("send-tech-email", {
+        body: {
+          type: "survey_closed",
+          deal_title: dealTitle,
+          engineer_name: eng,
+          feasibility: form.feasibility,
+          cost_estimate: form.cost_estimate ? parseFloat(form.cost_estimate) : null,
+        },
+      }).catch(err => console.error("survey close email failed", err));
+    }
+
+    toast({ title: "Survey updated" });
+    setOpen(false);
+    fetchData();
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
