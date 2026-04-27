@@ -33,8 +33,8 @@ const ChallengeCard = ({ challenge, index }: { challenge: typeof challenges[0]; 
       }}
     >
       {/* Icon */}
-      <div className="w-10 h-10 rounded-lg bg-destructive/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:mx-auto group-hover:w-14 group-hover:h-14 group-hover:rounded-xl">
-        <challenge.icon className="w-5 h-5 text-destructive transition-all duration-500 group-hover:w-7 group-hover:h-7" />
+      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 transition-all duration-500 group-hover:mx-auto group-hover:w-14 group-hover:h-14 group-hover:rounded-xl">
+        <challenge.icon className="w-5 h-5 text-primary transition-all duration-500 group-hover:w-7 group-hover:h-7" />
       </div>
 
       {/* Title */}
@@ -55,17 +55,17 @@ const ChallengeCard = ({ challenge, index }: { challenge: typeof challenges[0]; 
 const ProblemSection = () => {
   return (
     <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-destructive/3 to-background" />
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/3 to-background" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Centered header text */}
         <div className="text-center max-w-3xl mx-auto space-y-6 mb-16 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-destructive/10 border border-destructive/20">
-            <span className="text-sm font-medium text-destructive uppercase tracking-wider">The Challenge</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary bg-primary">
+            <span className="text-sm font-medium uppercase tracking-wider text-secondary-foreground">The Challenge</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold leading-tight">
             Connectivity Gaps in a{" "}
-            <span className="text-destructive">Rapidly Growing</span> Digital Economy
+            <span className="text-primary">Rapidly Growing</span> Digital Economy
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
             Despite strong growth in mobile penetration and digital services, Ghana's internet infrastructure faces structural challenges that limit nationwide connectivity and service quality for both homes and businesses.
