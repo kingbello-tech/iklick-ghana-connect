@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/crm/ProtectedRoute";
 import { CRMLayout } from "@/components/crm/CRMLayout";
 import Home from "./pages/Home";
+import ComingSoon from "./pages/ComingSoon";
 import SurveyPage from "./pages/SurveyPage";
 import Projects from "./pages/Projects";
 import NotFound from "./pages/NotFound";
@@ -53,7 +54,8 @@ const App = () => (
           <AuthProvider>
             <Routes>
               {/* Public website */}
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<ComingSoon />} />
+              <Route path="/preview" element={<Home />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/survey/:token" element={<SurveyPage />} />
