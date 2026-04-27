@@ -32,7 +32,7 @@ const Clients = () => {
               <img
                 src={client.logo}
                 alt={client.name}
-                className="h-10 md:h-12 object-contain opacity-80 transition-all duration-500 hover:scale-110"
+                className="h-10 md:h-12 object-contain opacity-70 grayscale transition-all duration-500 hover:opacity-100 hover:grayscale-0 hover:scale-110 dark:invert dark:brightness-200 dark:contrast-100 dark:hover:invert-0 dark:hover:brightness-100"
               />
             </div>
           ))}
