@@ -74,7 +74,7 @@ export default function ComingSoon() {
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            We're building Ghana's most reliable internet experience — for homes,
+            We're building the most reliable internet experience for homes,
             enterprises, and everything in between. Stay tuned.
           </p>
 
