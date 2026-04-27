@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import iklickLogo from "@/assets/iklick_logo_full.png";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -32,7 +33,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <img src="/iKlick_logo_variations_on_transparent_background_1.PNG" alt="iKlick" className="h-12 mx-auto mb-4 object-contain" />
+          <img src={iklickLogo} alt="iKlick Communications" className="h-16 mx-auto mb-4 object-contain" />
           <CardTitle className="text-2xl">Sign In</CardTitle>
           <CardDescription>Access the iKlick CRM platform</CardDescription>
         </CardHeader>

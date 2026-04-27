@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Wifi, Mail, Phone, ArrowRight } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
+import iklickLogo from "@/assets/iklick_logo_full.png";
 
 const LAUNCH_DATE = new Date();
-LAUNCH_DATE.setDate(LAUNCH_DATE.getDate() + 30);
+LAUNCH_DATE.setDate(LAUNCH_DATE.getDate() + 1);
 
 function useCountdown(target: Date) {
   const [now, setNow] = useState(Date.now());
@@ -51,12 +50,11 @@ export default function ComingSoon() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-10">
         {/* Header */}
         <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[hsl(195,100%,55%)] to-[hsl(180,100%,45%)]">
-              <Wifi className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-base font-semibold tracking-tight">iKlick</span>
-          </div>
+          <img
+            src={iklickLogo}
+            alt="iKlick Communications"
+            className="h-12 w-auto object-contain sm:h-14"
+          />
         </header>
 
         {/* Hero */}
@@ -122,19 +120,8 @@ export default function ComingSoon() {
         </main>
 
         {/* Footer / discreet board access */}
-        <footer className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row">
+        <footer className="mt-10 flex items-center justify-center border-t border-white/10 pt-6 text-xs text-white/40">
           <span>© {new Date().getFullYear()} iKlick Communications Ltd. All rights reserved.</span>
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="h-auto gap-1 px-2 py-1 text-xs text-white/40 hover:bg-white/5 hover:text-white/80"
-          >
-            <Link to="/login">
-              Board access
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </Button>
         </footer>
       </div>
     </div>
