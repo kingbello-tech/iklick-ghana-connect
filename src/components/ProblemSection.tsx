@@ -26,7 +26,7 @@ const challenges = [
 const ChallengeCard = ({ challenge, index }: { challenge: typeof challenges[0]; index: number }) => {
   return (
     <div
-      className="group relative cursor-default rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-destructive/40 hover:shadow-lg hover:shadow-destructive/10 hover:scale-105 hover:z-10 p-6 transition-all duration-500 animate-fade-in-up overflow-hidden"
+      className="group relative cursor-default rounded-xl bg-card/50 backdrop-blur-sm border border-border hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:scale-105 hover:z-10 p-6 transition-all duration-500 animate-fade-in-up overflow-hidden"
       style={{
         animationDelay: `${index * 100}ms`,
         perspective: "800px",
