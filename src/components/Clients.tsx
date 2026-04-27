@@ -2,7 +2,6 @@ import ruijie from "@/assets/logos/ruijie.png";
 import ubiquiti from "@/assets/logos/ubiquiti.png";
 import furukawa from "@/assets/logos/furukawa.png";
 import vsol from "@/assets/logos/vsol.jpg";
-import nedco from "@/assets/logos/nedco.jpg";
 import mikrotik from "@/assets/logos/mikrotik.jpg";
 import vobiss from "@/assets/logos/vobiss.png";
 
@@ -11,7 +10,6 @@ const allClients = [
   { name: "Ubiquiti Networks", logo: ubiquiti },
   { name: "Furukawa Electric", logo: furukawa },
   { name: "V-SOL", logo: vsol },
-  { name: "NEDCo", logo: nedco },
   { name: "MikroTik", logo: mikrotik },
   { name: "VOBISS Solutions", logo: vobiss },
 ];
