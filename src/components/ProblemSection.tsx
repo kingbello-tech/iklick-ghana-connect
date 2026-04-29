@@ -1,7 +1,7 @@
 const ProblemSection = () => {
   return (
-    <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/3 to-background" />
+    <section className="pt-24 pb-12 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-primary/5 to-transparent" />
 
       <div className="container mx-auto px-4 relative z-10">
         {/* Centered header text */}
@@ -20,8 +20,13 @@ const ProblemSection = () => {
             The result is a growing gap between the demand for reliable internet and the infrastructure needed to support everyday life, education, healthcare, and business operations.
           </p>
         </div>
-      </div>
 
+        {/* Seamless transition connector to Solution section */}
+        <div className="flex flex-col items-center mt-12 animate-fade-in">
+          <div className="h-24 w-px bg-gradient-to-b from-transparent via-primary/40 to-primary" />
+          <div className="w-3 h-3 rounded-full bg-primary shadow-[0_0_20px_hsl(var(--primary))] animate-pulse" />
+        </div>
+      </div>
     </section>
   );
 };
