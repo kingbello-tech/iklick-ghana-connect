@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import type { Database } from "@/integrations/supabase/types";
+import LogoLoader from "@/components/LogoLoader";
 
 type AppRole = Database["public"]["Enums"]["app_role"];
 
@@ -13,11 +14,7 @@ export function ProtectedRoute({ children, allowedRoles }: Props) {
   const { user, role, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <LogoLoader />;
   }
 
   if (!user) return <Navigate to="/login" replace />;
