@@ -23,23 +23,23 @@ const AboutSection = () => {
 
         {/* Mission & Vision cards */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          <div className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-primary/40 transition-all duration-300 glow-card animate-fade-in-up">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6">
-              <Target className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes, businesses, and communities to thrive in a connected world — improving service quality and driving digital inclusion across Ghana.
-            </p>
-          </div>
-
-          <div className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-accent/40 transition-all duration-300 glow-card animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-accent/40 transition-all duration-300 glow-card animate-fade-in-up">
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center mb-6">
               <Eye className="w-7 h-7 text-primary-foreground" />
             </div>
             <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
             <p className="text-muted-foreground leading-relaxed">
               To be Ghana's most trusted Internet Service Provider, recognized for exceptional reliability, customer-first support, and our contribution to connecting every corner of the nation with world-class internet.
+            </p>
+          </div>
+
+          <div className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-primary/40 transition-all duration-300 glow-card animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6">
+              <Target className="w-7 h-7 text-primary-foreground" />
+            </div>
+            <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes, businesses, and communities to thrive in a connected world — improving service quality and driving digital inclusion across Ghana.
             </p>
           </div>
         </div>
