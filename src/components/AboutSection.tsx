@@ -13,11 +13,12 @@ const AboutSection = () => {
             <span className="text-sm font-medium text-primary uppercase tracking-wider">About Us</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6 max-w-3xl mx-auto leading-tight">
-            Built to Bridge Ghana's{" "}
-            <span className="gradient-text">Digital Divide</span>
+            Built to Bridge Ghana's <span className="gradient-text">Digital Divide</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            iKlick Communications Ltd was founded to address the critical need for reliable, affordable internet connectivity across Ghana. We bring enterprise-grade fiber and wireless solutions to homes, businesses, and institutions nationwide.
+            iKlick Communications Ltd was founded to address the critical need for reliable, affordable internet
+            connectivity across Ghana. We bring enterprise-grade fiber and wireless solutions to homes, businesses, and
+            institutions nationwide.
           </p>
         </div>
 
@@ -27,19 +28,26 @@ const AboutSection = () => {
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center mb-6">
               <Eye className="w-7 h-7 text-primary-foreground" />
             </div>
-            <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
+            <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
             <p className="text-muted-foreground leading-relaxed">
-              To be Ghana's most trusted Internet Service Provider, recognized for exceptional reliability, customer-first support, and our contribution to connecting every corner of the nation with world-class internet.
+              To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes,
+              businesses, and communities to thrive in a connected world — improving service quality and driving digital
+              inclusion across Ghana.
             </p>
           </div>
 
-          <div className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-primary/40 transition-all duration-300 glow-card animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div
+            className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-primary/40 transition-all duration-300 glow-card animate-fade-in-up"
+            style={{ animationDelay: "0.1s" }}
+          >
             <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6">
               <Target className="w-7 h-7 text-primary-foreground" />
             </div>
             <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
             <p className="text-muted-foreground leading-relaxed">
-              To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes, businesses, and communities to thrive in a connected world — improving service quality and driving digital inclusion across Ghana.
+              To be Ghana's most trusted Internet Service Provider, recognized for exceptional reliability,
+              customer-first support, and our contribution to connecting every corner of the nation with world-class
+              internet.
             </p>
           </div>
         </div>
