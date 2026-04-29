@@ -25,7 +25,11 @@ export default function ComingSoon() {
   useEffect(() => {
     document.title = "iKlick Communications — Coming Soon";
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute("content", "iKlick Communications is launching soon. Connecting Ghana with reliable fiber and wireless internet.");
+    if (meta)
+      meta.setAttribute(
+        "content",
+        "iKlick Communications is launching soon. Connecting Ghana with reliable fiber and wireless internet.",
+      );
   }, []);
 
   return (
@@ -33,8 +37,14 @@ export default function ComingSoon() {
       {/* Soft brand gradient orbs */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-[hsl(195,100%,55%)]/15 blur-3xl animate-pulse" />
-        <div className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-[hsl(180,100%,45%)]/10 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-        <div className="absolute -bottom-40 left-1/4 h-[500px] w-[500px] rounded-full bg-[hsl(220,90%,50%)]/10 blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+        <div
+          className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full bg-[hsl(180,100%,45%)]/10 blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+        <div
+          className="absolute -bottom-40 left-1/4 h-[500px] w-[500px] rounded-full bg-[hsl(220,90%,50%)]/10 blur-3xl animate-pulse"
+          style={{ animationDelay: "2s" }}
+        />
       </div>
 
       {/* Subtle grid */}
@@ -50,11 +60,7 @@ export default function ComingSoon() {
       <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-10">
         {/* Header */}
         <header className="flex items-center justify-between">
-          <img
-            src={iklickLogo}
-            alt="iKlick Communications"
-            className="h-12 w-auto object-contain sm:h-14"
-          />
+          <img src={iklickLogo} alt="iKlick Communications" className="h-12 w-auto object-contain sm:h-14" />
         </header>
 
         {/* Hero */}
@@ -74,8 +80,8 @@ export default function ComingSoon() {
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            We're building the most reliable internet experience for homes,
-            enterprises, and everything in between. Stay tuned.
+            We're building the most reliable internet experience for homes, enterprises, and everything in between. Stay
+            tuned.
           </p>
 
           {/* Countdown */}
@@ -93,9 +99,7 @@ export default function ComingSoon() {
                 <div className="bg-gradient-to-b from-[hsl(220,90%,25%)] to-[hsl(195,100%,40%)] bg-clip-text text-3xl font-bold tabular-nums text-transparent sm:text-5xl">
                   {String(unit.value).padStart(2, "0")}
                 </div>
-                <div className="mt-1 text-[10px] uppercase tracking-widest text-slate-500 sm:text-xs">
-                  {unit.label}
-                </div>
+                <div className="mt-1 text-[10px] uppercase tracking-widest text-slate-500 sm:text-xs">{unit.label}</div>
               </div>
             ))}
           </div>
@@ -110,7 +114,7 @@ export default function ComingSoon() {
               info@iklickgh.com
             </a>
             <a
-              href="tel:+233000000000"
+              href="tel:+233-242-548-764"
               className="inline-flex items-center gap-2 text-sm text-slate-600 transition-colors hover:text-slate-900"
             >
               <Phone className="h-4 w-4" />
