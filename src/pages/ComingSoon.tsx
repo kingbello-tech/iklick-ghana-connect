@@ -23,7 +23,7 @@ export default function ComingSoon() {
   const { days, hours, minutes, seconds } = useCountdown(LAUNCH_DATE);
 
   useEffect(() => {
-    document.title = "iKlick Communications — Coming Soon";
+    document.title = "iKlick Communications... Coming Soon";
     const meta = document.querySelector('meta[name="description"]');
     if (meta)
       meta.setAttribute(
