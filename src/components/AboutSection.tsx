@@ -1,7 +1,51 @@
 import { Target, Eye, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+
+const pillars = [
+  {
+    icon: Eye,
+    label: "Our Vision",
+    title: "A Connected Ghana",
+    description:
+      "To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes, businesses, and communities to thrive in a connected world — improving service quality and driving digital inclusion across Ghana.",
+  },
+  {
+    icon: Target,
+    label: "Our Mission",
+    title: "Trusted, Customer-First Connectivity",
+    description:
+      "To be Ghana's most trusted Internet Service Provider, recognized for exceptional reliability, customer-first support, and our contribution to connecting every corner of the nation with world-class internet.",
+  },
+];
 
 const AboutSection = () => {
+  const [visible, setVisible] = useState<boolean[]>(() => pillars.map(() => false));
+  const refs = useRef<(HTMLDivElement | null)[]>([]);
+
+  useEffect(() => {
+    const observers: IntersectionObserver[] = [];
+    refs.current.forEach((el, i) => {
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setVisible((prev) => {
+              if (prev[i]) return prev;
+              const next = [...prev];
+              next[i] = true;
+              return next;
+            });
+          }
+        },
+        { threshold: 0.3 },
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
+  }, []);
+
   return (
     <section id="about" className="py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
@@ -22,33 +66,76 @@ const AboutSection = () => {
           </p>
         </div>
 
-        {/* Mission & Vision cards */}
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16">
-          <div className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-accent/40 transition-all duration-300 glow-card animate-fade-in-up">
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-accent to-primary flex items-center justify-center mb-6">
-              <Eye className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              To deliver innovative, reliable, and affordable fiber-optic and wireless internet that empowers homes,
-              businesses, and communities to thrive in a connected world — improving service quality and driving digital
-              inclusion across Ghana.
-            </p>
-          </div>
+        {/* Storytelling timeline */}
+        <div className="max-w-4xl mx-auto relative mb-16">
+          {/* Vertical line */}
+          <div className="absolute left-6 sm:left-1/2 top-0 bottom-0 w-0.5 bg-gradient-to-b from-transparent via-primary/30 to-transparent sm:-translate-x-1/2" />
 
-          <div
-            className="p-8 rounded-2xl bg-card/60 backdrop-blur-sm border border-border hover:border-primary/40 transition-all duration-300 glow-card animate-fade-in-up"
-            style={{ animationDelay: "0.1s" }}
-          >
-            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mb-6">
-              <Target className="w-7 h-7 text-primary-foreground" />
-            </div>
-            <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              To be Ghana's most trusted Internet Service Provider, recognized for exceptional reliability,
-              customer-first support, and our contribution to connecting every corner of the nation with world-class
-              internet.
-            </p>
+          <div className="space-y-16">
+            {pillars.map((pillar, index) => {
+              const isVisible = visible[index];
+              const fromLeft = index % 2 === 0;
+              return (
+                <div
+                  key={index}
+                  ref={(el) => (refs.current[index] = el)}
+                  className="relative"
+                >
+                  {/* Step dot on the line */}
+                  <div
+                    className={`absolute left-6 sm:left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-primary to-accent shadow-lg shadow-primary/40 ring-4 ring-background z-10 transition-all duration-500 ${
+                      isVisible ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                    }`}
+                  />
+
+                  <div
+                    className={`flex flex-col sm:flex-row items-start gap-6 sm:gap-12 pl-16 sm:pl-0 transition-all duration-700 ease-out ${
+                      isVisible
+                        ? "opacity-100 translate-x-0"
+                        : `opacity-0 ${fromLeft ? "-translate-x-10" : "translate-x-10"}`
+                    } ${fromLeft ? "" : "sm:flex-row-reverse"}`}
+                  >
+                    {/* Content side */}
+                    <div className={`flex-1 sm:w-1/2 ${fromLeft ? "sm:text-right sm:pr-4" : "sm:text-left sm:pl-4"}`}>
+                      <div
+                        className={`inline-flex items-center gap-2 mb-3 transition-all duration-700 delay-100 ${
+                          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                        }`}
+                      >
+                        <span className="text-xs font-bold uppercase tracking-widest text-primary">
+                          {pillar.label}
+                        </span>
+                      </div>
+                      <h3
+                        className={`text-2xl md:text-3xl font-bold mb-3 text-foreground transition-all duration-700 delay-200 ${
+                          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                        }`}
+                      >
+                        {pillar.title}
+                      </h3>
+                      <p
+                        className={`text-base text-muted-foreground leading-relaxed transition-all duration-700 delay-300 ${
+                          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                        }`}
+                      >
+                        {pillar.description}
+                      </p>
+                    </div>
+
+                    {/* Icon side */}
+                    <div className="hidden sm:flex sm:w-1/2 items-center justify-center">
+                      <div
+                        className={`w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/30 backdrop-blur-sm flex items-center justify-center shadow-lg shadow-primary/10 transition-all duration-700 delay-200 ${
+                          isVisible ? "opacity-100 scale-100 rotate-0" : "opacity-0 scale-75 rotate-12"
+                        }`}
+                      >
+                        <pillar.icon className="w-10 h-10 text-primary" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
