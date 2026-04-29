@@ -5,22 +5,26 @@ const solutions = [
   {
     icon: Zap,
     title: "High-Speed Fiber & Wireless",
-    description: "Enterprise-grade fiber-optic lines and reliable wireless connectivity delivered directly to homes and businesses for fast, dependable internet.",
+    description:
+      "Enterprise-grade fiber-optic lines and reliable wireless connectivity delivered directly to homes and businesses for fast, dependable internet.",
   },
   {
     icon: Shield,
     title: "98.5% Service Reliability",
-    description: "Redundant network architecture across fiber and wireless — with proactive monitoring to ensure consistent uptime you can depend on.",
+    description:
+      "Redundant network architecture across fiber and wireless — with proactive monitoring to ensure consistent uptime you can depend on.",
   },
   {
     icon: Globe,
     title: "Expanding Coverage Across Ghana",
-    description: "Aggressive network expansion into Accra, Tema, and beyond — using fiber and wireless to connect communities that were previously underserved.",
+    description:
+      "Aggressive network expansion into Accra, Tema, and beyond — using fiber and wireless to connect communities that were previously underserved.",
   },
   {
     icon: TrendingUp,
     title: "60% Cost Savings",
-    description: "Competitive pricing with transparent plans — delivering superior speeds via fiber or wireless at significantly lower costs than competitors.",
+    description:
+      "Competitive pricing with transparent plans — delivering superior speeds via fiber or wireless at significantly lower costs than competitors.",
   },
 ];
 
@@ -43,7 +47,7 @@ const SolutionSection = () => {
             });
           }
         },
-        { threshold: 0.3 }
+        { threshold: 0.3 },
       );
       obs.observe(el);
       observers.push(obs);
@@ -62,11 +66,12 @@ const SolutionSection = () => {
             <span className="text-sm font-medium text-primary uppercase tracking-wider">Our Solution</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-bold leading-tight">
-            Fiber & Wireless Internet{" "}
-            <span className="gradient-text">For Everyone</span>
+            Fiber & Wireless Internet <span className="gradient-text">For Everyone</span>
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            iKlick Communications delivers reliable, high-speed internet through fiber-optic and wireless solutions — to homes, businesses, and institutions — bridging Ghana's digital divide with infrastructure built for the future.
+            iKlick Communications delivers reliable, high-speed internet through fiber-optic and wireless solutions to
+            homes, businesses, and institutions, bridging Ghana's digital divide with infrastructure built for the
+            future.
           </p>
         </div>
 
