@@ -8,7 +8,7 @@ const Footer = () => {
           {/* Company */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <img src={iklickLogo} alt="iKlick Communications" className="h-10 w-auto object-contain rounded" />
+              <img src={iklickLogo} alt="iKlick Communications" className="h-16 md:h-20 w-auto object-contain rounded" />
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Forward-thinking ISP delivering reliable, high-speed connectivity across Ghana.
