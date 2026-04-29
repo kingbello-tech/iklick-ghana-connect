@@ -14,7 +14,7 @@ const slides = [
     headline: "Internet",
     headlineAccent: "at a Click",
     subtitle:
-      "We're building Ghana's most reliable network — delivering high-speed fiber and wireless internet to homes and enterprises across the nation.",
+      "We're building Ghana's most reliable network, delivering high-speed fiber and wireless internet to homes and enterprises across the nation.",
   },
   {
     image: slideCity,
@@ -30,7 +30,7 @@ const slides = [
     headline: "Seamless Internet",
     headlineAccent: "for Every Home",
     subtitle:
-      "Stream, learn, and stay connected with blazing-fast fiber broadband or reliable wireless — internet you can count on, every day.",
+      "Stream, learn, and stay connected with blazing-fast fiber broadband or reliable wireless. Internet you can count on, every day.",
   },
   {
     image: slideEnterprise,
@@ -55,14 +55,11 @@ const Hero = () => {
         setTimeout(() => setIsTransitioning(false), 100);
       }, 500);
     },
-    [isTransitioning]
+    [isTransitioning],
   );
 
   const next = useCallback(() => goTo((current + 1) % slides.length), [current, goTo]);
-  const prev = useCallback(
-    () => goTo((current - 1 + slides.length) % slides.length),
-    [current, goTo]
-  );
+  const prev = useCallback(() => goTo((current - 1 + slides.length) % slides.length), [current, goTo]);
 
   useEffect(() => {
     const timer = setInterval(next, 6000);
@@ -110,17 +107,13 @@ const Hero = () => {
               isTransitioning ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"
             }`}
           >
-            <span className="text-sm font-semibold tracking-wider uppercase text-white/90">
-              {slide.badge}
-            </span>
+            <span className="text-sm font-semibold tracking-wider uppercase text-white/90">{slide.badge}</span>
           </div>
 
           {/* Headline */}
           <h1
             className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.1] text-white mb-6 transition-all duration-700 delay-100 ${
-              isTransitioning
-                ? "opacity-0 translate-y-6"
-                : "opacity-100 translate-y-0"
+              isTransitioning ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"
             }`}
           >
             {slide.headline}{" "}
@@ -132,9 +125,7 @@ const Hero = () => {
           {/* Subtitle */}
           <p
             className={`text-lg md:text-xl text-white/80 max-w-2xl mx-auto leading-relaxed mb-10 transition-all duration-700 delay-200 ${
-              isTransitioning
-                ? "opacity-0 translate-y-6"
-                : "opacity-100 translate-y-0"
+              isTransitioning ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"
             }`}
           >
             {slide.subtitle}
@@ -143,9 +134,7 @@ const Hero = () => {
           {/* CTA Buttons */}
           <div
             className={`flex flex-col sm:flex-row gap-4 justify-center mb-12 transition-all duration-700 delay-300 ${
-              isTransitioning
-                ? "opacity-0 translate-y-6"
-                : "opacity-100 translate-y-0"
+              isTransitioning ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"
             }`}
           >
             <a href="mailto:sales@iklickgh.com">
@@ -170,9 +159,7 @@ const Hero = () => {
           {/* Stats */}
           <div
             className={`grid grid-cols-3 gap-8 max-w-xl mx-auto transition-all duration-700 delay-[400ms] ${
-              isTransitioning
-                ? "opacity-0 translate-y-6"
-                : "opacity-100 translate-y-0"
+              isTransitioning ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0"
             }`}
           >
             {[
