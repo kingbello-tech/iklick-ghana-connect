@@ -12,19 +12,19 @@ const solutions = [
     icon: Shield,
     title: "98.5% Service Reliability",
     description:
-      "Redundant network architecture across fiber and wireless — with proactive monitoring to ensure consistent uptime you can depend on.",
+      "Redundant network architecture across fiber and wireless with proactive monitoring to ensure consistent uptime you can depend on.",
   },
   {
     icon: Globe,
     title: "Expanding Coverage Across Ghana",
     description:
-      "Aggressive network expansion into Accra, Tema, and beyond — using fiber and wireless to connect communities that were previously underserved.",
+      "Aggressive network expansion into Accra, Tema, and beyond using fiber and wireless to connect communities that were previously underserved.",
   },
   {
     icon: TrendingUp,
     title: "60% Cost Savings",
     description:
-      "Competitive pricing with transparent plans — delivering superior speeds via fiber or wireless at significantly lower costs than competitors.",
+      "Competitive pricing with transparent plans delivering superior speeds via fiber or wireless at significantly lower costs than competitors.",
   },
 ];
 
