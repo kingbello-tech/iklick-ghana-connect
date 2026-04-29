@@ -27,7 +27,7 @@ const Navbar = ({ visible = true }: NavbarProps) => {
       }`}
     >
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <a href="#" className="flex items-center justify-center gap-2 group">
             <img src={iklickLogo} alt="iKlick Communications" className="h-14 md:h-16 w-auto object-contain rounded align-middle" />
