@@ -36,12 +36,20 @@ import InvoiceList from "./pages/crm/finance/InvoiceList";
 import InvoiceDetail from "./pages/crm/finance/InvoiceDetail";
 import FinanceClients from "./pages/crm/finance/FinanceClients";
 import Help from "./pages/crm/Help";
+import EmployeesList from "./pages/crm/hr/EmployeesList";
+import EmployeeDetail from "./pages/crm/hr/EmployeeDetail";
+import PayItems from "./pages/crm/hr/PayItems";
+import StatutorySettings from "./pages/crm/hr/StatutorySettings";
+import PayrollRunsStub from "./pages/crm/hr/PayrollRunsStub";
+import StatutoryReportsStub from "./pages/crm/hr/StatutoryReportsStub";
+import MyPayslipsStub from "./pages/crm/MyPayslipsStub";
 
 const queryClient = new QueryClient();
 
 const SALES_ROLES = ["admin", "sales_representative", "sales_manager"] as any;
 const TECH_ROLES = ["admin", "technology_engineer", "technology_manager"] as any;
 const FINANCE_ROLES = ["admin", "finance_officer"] as any;
+const HR_ROLES = ["admin", "finance_officer", "hr_officer"] as any;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -90,6 +98,15 @@ const App = () => (
                 <Route path="finance/invoices" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceList /></ProtectedRoute>} />
                 <Route path="finance/invoices/:id" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceDetail /></ProtectedRoute>} />
                 <Route path="finance/clients" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><FinanceClients /></ProtectedRoute>} />
+
+                {/* HR & Payroll */}
+                <Route path="hr/employees" element={<ProtectedRoute allowedRoles={HR_ROLES}><EmployeesList /></ProtectedRoute>} />
+                <Route path="hr/employees/:id" element={<ProtectedRoute allowedRoles={HR_ROLES}><EmployeeDetail /></ProtectedRoute>} />
+                <Route path="hr/pay-items" element={<ProtectedRoute allowedRoles={HR_ROLES}><PayItems /></ProtectedRoute>} />
+                <Route path="hr/statutory-settings" element={<ProtectedRoute allowedRoles={["admin"] as any}><StatutorySettings /></ProtectedRoute>} />
+                <Route path="hr/payroll-runs" element={<ProtectedRoute allowedRoles={HR_ROLES}><PayrollRunsStub /></ProtectedRoute>} />
+                <Route path="hr/statutory-reports" element={<ProtectedRoute allowedRoles={HR_ROLES}><StatutoryReportsStub /></ProtectedRoute>} />
+                <Route path="me/payslips" element={<MyPayslipsStub />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
