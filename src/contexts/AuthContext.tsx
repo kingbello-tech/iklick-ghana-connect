@@ -21,6 +21,7 @@ interface AuthContextType {
   hasTechnologyAccess: boolean;
   hasFinanceAccess: boolean;
   isSalesManagerOrAdmin: boolean;
+  hasHRAccess: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,9 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasTechnologyAccess = role === "admin" || role === "technology_engineer" || role === "technology_manager";
   const hasFinanceAccess = role === "admin" || role === "finance_officer";
   const isSalesManagerOrAdmin = role === "admin" || role === "sales_manager";
+  const hasHRAccess = role === "admin" || role === "finance_officer" || role === "hr_officer";
 
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, loading, signIn, signUp, signOut, hasRole, canManageIncidents, isAdmin, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, isSalesManagerOrAdmin }}>
+    <AuthContext.Provider value={{ session, user, role, profile, loading, signIn, signUp, signOut, hasRole, canManageIncidents, isAdmin, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, isSalesManagerOrAdmin, hasHRAccess }}>
       {children}
     </AuthContext.Provider>
   );
