@@ -299,6 +299,138 @@ export type Database = {
           },
         ]
       }
+      employee_pay_items: {
+        Row: {
+          active: boolean
+          amount: number
+          created_at: string
+          employee_id: string
+          id: string
+          notes: string | null
+          pay_item_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          amount?: number
+          created_at?: string
+          employee_id: string
+          id?: string
+          notes?: string | null
+          pay_item_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          amount?: number
+          created_at?: string
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          pay_item_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_pay_items_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_pay_items_pay_item_id_fkey"
+            columns: ["pay_item_id"]
+            isOneToOne: false
+            referencedRelation: "pay_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          bank_account: string | null
+          bank_branch: string | null
+          bank_name: string | null
+          basic_salary: number
+          created_at: string
+          created_by: string | null
+          department: string | null
+          email: string | null
+          employment_type: Database["public"]["Enums"]["employment_type"]
+          full_name: string
+          ghana_card_number: string | null
+          hire_date: string | null
+          id: string
+          job_title: string | null
+          momo_network: string | null
+          momo_number: string | null
+          notes: string | null
+          phone: string | null
+          ssnit_number: string | null
+          status: Database["public"]["Enums"]["employment_status"]
+          termination_date: string | null
+          tier2_trustee: string | null
+          tin: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          bank_account?: string | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          basic_salary?: number
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          full_name: string
+          ghana_card_number?: string | null
+          hire_date?: string | null
+          id?: string
+          job_title?: string | null
+          momo_network?: string | null
+          momo_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          ssnit_number?: string | null
+          status?: Database["public"]["Enums"]["employment_status"]
+          termination_date?: string | null
+          tier2_trustee?: string | null
+          tin?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          bank_account?: string | null
+          bank_branch?: string | null
+          bank_name?: string | null
+          basic_salary?: number
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          employment_type?: Database["public"]["Enums"]["employment_type"]
+          full_name?: string
+          ghana_card_number?: string | null
+          hire_date?: string | null
+          id?: string
+          job_title?: string | null
+          momo_network?: string | null
+          momo_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          ssnit_number?: string | null
+          status?: Database["public"]["Enums"]["employment_status"]
+          termination_date?: string | null
+          tier2_trustee?: string | null
+          tin?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       incident_history: {
         Row: {
           created_at: string
@@ -683,6 +815,78 @@ export type Database = {
         }
         Relationships: []
       }
+      pay_items: {
+        Row: {
+          active: boolean
+          calc_method: Database["public"]["Enums"]["pay_item_calc"]
+          created_at: string
+          default_value: number
+          description: string | null
+          id: string
+          item_type: Database["public"]["Enums"]["pay_item_type"]
+          name: string
+          pension_qualifying: boolean
+          taxable: boolean
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          calc_method?: Database["public"]["Enums"]["pay_item_calc"]
+          created_at?: string
+          default_value?: number
+          description?: string | null
+          id?: string
+          item_type?: Database["public"]["Enums"]["pay_item_type"]
+          name: string
+          pension_qualifying?: boolean
+          taxable?: boolean
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          calc_method?: Database["public"]["Enums"]["pay_item_calc"]
+          created_at?: string
+          default_value?: number
+          description?: string | null
+          id?: string
+          item_type?: Database["public"]["Enums"]["pay_item_type"]
+          name?: string
+          pension_qualifying?: boolean
+          taxable?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      paye_bands: {
+        Row: {
+          band_order: number
+          created_at: string
+          effective_from: string
+          id: string
+          lower_bound: number
+          rate_percent: number
+          upper_bound: number | null
+        }
+        Insert: {
+          band_order: number
+          created_at?: string
+          effective_from: string
+          id?: string
+          lower_bound: number
+          rate_percent: number
+          upper_bound?: number | null
+        }
+        Update: {
+          band_order?: number
+          created_at?: string
+          effective_from?: string
+          id?: string
+          lower_bound?: number
+          rate_percent?: number
+          upper_bound?: number | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -944,6 +1148,39 @@ export type Database = {
         }
         Relationships: []
       }
+      statutory_rates: {
+        Row: {
+          created_at: string
+          effective_from: string
+          id: string
+          notes: string | null
+          ssnit_employee_pct: number
+          ssnit_employer_pct: number
+          tier2_pct: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_from: string
+          id?: string
+          notes?: string | null
+          ssnit_employee_pct?: number
+          ssnit_employer_pct?: number
+          tier2_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          id?: string
+          notes?: string | null
+          ssnit_employee_pct?: number
+          ssnit_employer_pct?: number
+          tier2_pct?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       survey_tokens: {
         Row: {
           client_id: string
@@ -1024,6 +1261,7 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       has_finance_access: { Args: { _user_id: string }; Returns: boolean }
+      has_hr_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1086,6 +1324,7 @@ export type Database = {
         | "technology_engineer"
         | "technology_manager"
         | "finance_officer"
+        | "hr_officer"
       deal_service_type: "fiber_home" | "dedicated_business" | "enterprise_link"
       deal_stage:
         | "new_lead"
@@ -1095,6 +1334,8 @@ export type Database = {
         | "negotiation"
         | "closed_won"
         | "closed_lost"
+      employment_status: "active" | "on_leave" | "terminated"
+      employment_type: "permanent" | "contract" | "probation" | "intern"
       incident_priority: "low" | "medium" | "high" | "critical"
       incident_status:
         | "open"
@@ -1116,6 +1357,8 @@ export type Database = {
       lead_source: "referral" | "website" | "walk_in" | "campaign"
       lead_status: "new" | "contacted" | "qualified" | "unqualified"
       lead_type: "home" | "sme" | "enterprise"
+      pay_item_calc: "fixed" | "percent_of_basic"
+      pay_item_type: "allowance" | "deduction" | "employer_cost"
       payment_method:
         | "bank_transfer"
         | "mobile_money"
@@ -1123,6 +1366,7 @@ export type Database = {
         | "cheque"
         | "card"
         | "other"
+      payroll_run_status: "draft" | "approved" | "paid"
       quotation_status: "draft" | "sent" | "accepted" | "rejected"
       service_type: "home" | "enterprise"
       survey_feasibility: "pending" | "yes" | "no"
@@ -1267,6 +1511,7 @@ export const Constants = {
         "technology_engineer",
         "technology_manager",
         "finance_officer",
+        "hr_officer",
       ],
       deal_service_type: [
         "fiber_home",
@@ -1282,6 +1527,8 @@ export const Constants = {
         "closed_won",
         "closed_lost",
       ],
+      employment_status: ["active", "on_leave", "terminated"],
+      employment_type: ["permanent", "contract", "probation", "intern"],
       incident_priority: ["low", "medium", "high", "critical"],
       incident_status: [
         "open",
@@ -1305,6 +1552,8 @@ export const Constants = {
       lead_source: ["referral", "website", "walk_in", "campaign"],
       lead_status: ["new", "contacted", "qualified", "unqualified"],
       lead_type: ["home", "sme", "enterprise"],
+      pay_item_calc: ["fixed", "percent_of_basic"],
+      pay_item_type: ["allowance", "deduction", "employer_cost"],
       payment_method: [
         "bank_transfer",
         "mobile_money",
@@ -1313,6 +1562,7 @@ export const Constants = {
         "card",
         "other",
       ],
+      payroll_run_status: ["draft", "approved", "paid"],
       quotation_status: ["draft", "sent", "accepted", "rejected"],
       service_type: ["home", "enterprise"],
       survey_feasibility: ["pending", "yes", "no"],

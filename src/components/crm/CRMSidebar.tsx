@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -58,10 +58,21 @@ const financeItems = [
   { title: "Clients", url: "/crm/finance/clients", icon: Users },
 ];
 
+const hrItems = [
+  { title: "Employees", url: "/crm/hr/employees", icon: UserCog },
+  { title: "Pay Items", url: "/crm/hr/pay-items", icon: Coins },
+  { title: "Payroll Runs", url: "/crm/hr/payroll-runs", icon: CalendarClock },
+  { title: "Statutory Reports", url: "/crm/hr/statutory-reports", icon: FileSpreadsheet },
+];
+
+const hrAdminItems = [
+  { title: "Statutory Settings", url: "/crm/hr/statutory-settings", icon: ScrollText },
+];
+
 export function CRMSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess } = useAuth();
+  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, hasHRAccess, user } = useAuth();
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
   const isNetworkManager = role === "network_manager";
@@ -183,6 +194,58 @@ export function CRMSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {hasHRAccess && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "HR & Payroll"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {hrItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {isAdmin && hrAdminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                        <item.icon className="h-4 w-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {user && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-muted-foreground text-xs uppercase tracking-wider">
+              {!collapsed && "Me"}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/crm/me/payslips")}>
+                    <Link to="/crm/me/payslips" className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                      <Receipt className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span>My Payslips</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
