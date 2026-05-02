@@ -164,6 +164,10 @@ export default function UserManagement() {
                   <SelectItem value="client_experience">Client Experience</SelectItem>
                   <SelectItem value="sales_manager">Sales Manager</SelectItem>
                   <SelectItem value="sales_representative">Sales Representative</SelectItem>
+                  <SelectItem value="technology_manager">Technology Manager</SelectItem>
+                  <SelectItem value="technology_engineer">Technology Engineer</SelectItem>
+                  <SelectItem value="finance_officer">Finance Officer</SelectItem>
+                  <SelectItem value="hr_officer">HR Officer</SelectItem>
                   <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
@@ -270,6 +274,10 @@ export default function UserManagement() {
                   <SelectItem value="client_experience">Client Experience</SelectItem>
                   <SelectItem value="sales_manager">Sales Manager</SelectItem>
                   <SelectItem value="sales_representative">Sales Representative</SelectItem>
+                  <SelectItem value="technology_manager">Technology Manager</SelectItem>
+                  <SelectItem value="technology_engineer">Technology Engineer</SelectItem>
+                  <SelectItem value="finance_officer">Finance Officer</SelectItem>
+                  <SelectItem value="hr_officer">HR Officer</SelectItem>
                   <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
