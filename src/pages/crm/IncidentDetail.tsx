@@ -386,6 +386,9 @@ export default function IncidentDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Attachments */}
+          <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
         </div>
 
         {/* Sidebar Details */}
