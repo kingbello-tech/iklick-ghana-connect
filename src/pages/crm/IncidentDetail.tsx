@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check, Trash2 } from "lucide-react";
+import { Attachments } from "@/components/crm/Attachments";
 
 import {
   AlertDialog,
@@ -343,6 +344,9 @@ export default function IncidentDetail() {
                     <span className="text-[10px] text-muted-foreground">{format(new Date(note.created_at), "MMM d, HH:mm")}</span>
                   </div>
                   <p className="text-sm text-foreground">{note.content}</p>
+                  <div className="mt-2">
+                    <Attachments entityType="incident_note" entityId={note.id} compact canUpload={note.user_id === user?.id || canManageIncidents} />
+                  </div>
                 </div>
               ))}
               {canManageIncidents && (
@@ -382,6 +386,9 @@ export default function IncidentDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Attachments */}
+          <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
         </div>
 
         {/* Sidebar Details */}

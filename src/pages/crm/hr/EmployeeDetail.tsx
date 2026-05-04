@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import EmployeeDialog from "@/components/crm/hr/EmployeeDialog";
+import { Attachments } from "@/components/crm/Attachments";
 
 export default function EmployeeDetail() {
   const { id } = useParams();
@@ -148,6 +149,8 @@ export default function EmployeeDetail() {
       </Card>
 
       <EmployeeDialog open={editOpen} onOpenChange={setEditOpen} employee={emp} onSaved={load} />
+
+      <Attachments entityType="employee" entityId={emp.id} title="Employee Documents" />
     </div>
   );
 }
