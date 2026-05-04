@@ -175,7 +175,7 @@ export default function SalesLeads() {
     new: leads.filter(l => l.status === "new").length,
   };
 
-  const LeadForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string }) => (
+  const renderLeadForm = (onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div><Label>Name *</Label><Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} required /></div>
@@ -233,7 +233,7 @@ export default function SalesLeads() {
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />New Lead</Button></DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader><DialogTitle>Create Lead</DialogTitle></DialogHeader>
-            <LeadForm onSubmit={handleCreate} submitLabel="Create Lead" />
+            {renderLeadForm(handleCreate, "Create Lead")}
           </DialogContent>
         </Dialog>
       </div>
@@ -313,7 +313,7 @@ export default function SalesLeads() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>Edit Lead</DialogTitle></DialogHeader>
-          <LeadForm onSubmit={handleEdit} submitLabel="Save Changes" />
+          {renderLeadForm(handleEdit, "Save Changes")}
         </DialogContent>
       </Dialog>
     </div>
