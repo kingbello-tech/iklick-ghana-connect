@@ -344,6 +344,9 @@ export default function IncidentDetail() {
                     <span className="text-[10px] text-muted-foreground">{format(new Date(note.created_at), "MMM d, HH:mm")}</span>
                   </div>
                   <p className="text-sm text-foreground">{note.content}</p>
+                  <div className="mt-2">
+                    <Attachments entityType="incident_note" entityId={note.id} compact canUpload={note.user_id === user?.id || canManageIncidents} />
+                  </div>
                 </div>
               ))}
               {canManageIncidents && (
