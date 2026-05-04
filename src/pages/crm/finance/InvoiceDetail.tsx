@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Loader2, ArrowLeft, Send, Plus, Printer } from "lucide-react";
 import { format } from "date-fns";
+import { Attachments } from "@/components/crm/Attachments";
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -230,6 +231,10 @@ export default function InvoiceDetail() {
           )}
         </CardContent>
       </Card>
+
+      <div className="print:hidden">
+        <Attachments entityType="invoice" entityId={invoice.id} title="Invoice Attachments" />
+      </div>
     </div>
   );
 }
