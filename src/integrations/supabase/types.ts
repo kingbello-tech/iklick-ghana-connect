@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      attachments: {
+        Row: {
+          created_at: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          file_path: string
+          id: string
+          mime_type: string | null
+          size_bytes: number
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          file_name: string
+          file_path: string
+          id?: string
+          mime_type?: string | null
+          size_bytes: number
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          file_name?: string
+          file_path?: string
+          id?: string
+          mime_type?: string | null
+          size_bytes?: number
+          uploaded_by?: string | null
+        }
+        Relationships: []
+      }
       audit_log: {
         Row: {
           action: string
@@ -1255,6 +1291,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_attachment: {
+        Args: { _entity_id: string; _entity_type: string }
+        Returns: boolean
+      }
       generate_monthly_recurring_invoices: { Args: never; Returns: number }
       get_user_role: {
         Args: { _user_id: string }
