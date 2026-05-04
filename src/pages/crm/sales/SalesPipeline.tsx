@@ -196,7 +196,7 @@ export default function SalesPipeline() {
   const totalPipeline = deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((s, d) => s + Number(d.tcv || d.value), 0);
   const wonValue = deals.filter(d => d.stage === "closed_won").reduce((s, d) => s + Number(d.tcv || d.value), 0);
 
-  const DealForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string }) => (
+  const renderDealForm = (onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required /></div>
@@ -258,7 +258,7 @@ export default function SalesPipeline() {
           <DialogTrigger asChild><Button><Plus className="h-4 w-4 mr-2" />New Deal</Button></DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Create Deal</DialogTitle></DialogHeader>
-            <DealForm onSubmit={handleCreate} submitLabel="Create Deal" />
+            {renderDealForm(handleCreate, "Create Deal")}
           </DialogContent>
         </Dialog>
       </div>
@@ -342,7 +342,7 @@ export default function SalesPipeline() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Deal</DialogTitle></DialogHeader>
-          <DealForm onSubmit={handleEdit} submitLabel="Save Changes" />
+          {renderDealForm(handleEdit, "Save Changes")}
         </DialogContent>
       </Dialog>
     </div>

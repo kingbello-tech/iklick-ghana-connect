@@ -95,7 +95,7 @@ export default function ClientList() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
-  const ClientForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string }) => (
+  const renderForm = (onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <Input placeholder="Name *" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
       <div className="grid grid-cols-2 gap-3">
@@ -187,7 +187,7 @@ export default function ClientList() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Add Client</DialogTitle></DialogHeader>
-          <ClientForm onSubmit={handleCreate} submitLabel="Create" />
+          {renderForm(handleCreate, "Create")}
         </DialogContent>
       </Dialog>
 
@@ -195,7 +195,7 @@ export default function ClientList() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>Edit Client</DialogTitle></DialogHeader>
-          <ClientForm onSubmit={handleEdit} submitLabel="Save Changes" />
+          {renderForm(handleEdit, "Save Changes")}
         </DialogContent>
       </Dialog>
 
