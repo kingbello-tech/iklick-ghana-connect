@@ -391,16 +391,29 @@ export default function IncidentDetail() {
               <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Change History</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {history.map((h) => (
-                    <div key={h.id} className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                      <Clock className="h-3 w-3 shrink-0" />
-                      <span className="text-primary">{profiles[h.user_id || ""]?.full_name || "System"}</span>
-                      <span>changed <span className="font-medium text-foreground">{h.field_changed.replace(/_/g, " ")}</span></span>
-                      {h.old_value && <span>from <Badge variant="outline" className="text-[9px]">{h.old_value.replace(/_/g, " ")}</Badge></span>}
-                      <span>to <Badge variant="outline" className="text-[9px]">{h.new_value?.replace(/_/g, " ")}</Badge></span>
-                      <span className="ml-auto">{format(new Date(h.created_at), "MMM d, HH:mm")}</span>
-                    </div>
-                  ))}
+                  {history.map((h) => {
+                    const resolve = (val: string | null) => {
+                      if (!val) return val;
+                      if (h.field_changed === "client_id") {
+                        return clients.find((c) => c.id === val)?.name || val;
+                      }
+                      if (h.field_changed === "assigned_to") {
+                        return profiles[val]?.full_name || val;
+                      }
+                      return val.replace(/_/g, " ");
+                    };
+                    const fieldLabel = h.field_changed === "client_id" ? "client" : h.field_changed === "assigned_to" ? "assignee" : h.field_changed.replace(/_/g, " ");
+                    return (
+                      <div key={h.id} className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+                        <Clock className="h-3 w-3 shrink-0" />
+                        <span className="text-primary">{profiles[h.user_id || ""]?.full_name || "System"}</span>
+                        <span>changed <span className="font-medium text-foreground">{fieldLabel}</span></span>
+                        {h.old_value && <span>from <Badge variant="outline" className="text-[9px]">{resolve(h.old_value)}</Badge></span>}
+                        <span>to <Badge variant="outline" className="text-[9px]">{resolve(h.new_value)}</Badge></span>
+                        <span className="ml-auto">{format(new Date(h.created_at), "MMM d, HH:mm")}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
