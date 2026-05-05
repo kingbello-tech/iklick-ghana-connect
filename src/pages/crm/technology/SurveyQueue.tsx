@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClipboardCheck, MapPin } from "lucide-react";
 import { format } from "date-fns";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 interface Survey {
   id: string;
@@ -54,6 +55,8 @@ export default function SurveyQueue() {
     engineer_notes: "",
     status: "scheduled",
   });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const isManager = role === "admin" || role === "technology_manager";
 
@@ -179,6 +182,7 @@ export default function SurveyQueue() {
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   const myQueue = role === "technology_engineer" ? surveys.filter(s => s.assigned_to === user?.id) : surveys;
+  const paginated = usePaginatedSlice(myQueue, page, pageSize);
   const pending = myQueue.filter(s => s.status === "scheduled");
   const completed = myQueue.filter(s => s.status === "completed");
 
@@ -199,7 +203,7 @@ export default function SurveyQueue() {
         <CardHeader><CardTitle className="text-sm">Active Surveys</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {myQueue.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No surveys assigned</p>}
-          {myQueue.map(s => {
+          {paginated.map(s => {
             const deal = dealMap[s.deal_id];
             return (
               <div key={s.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/50 cursor-pointer" onClick={() => openEdit(s)}>
@@ -219,6 +223,15 @@ export default function SurveyQueue() {
               </div>
             );
           })}
+          {myQueue.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={myQueue.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          )}
         </CardContent>
       </Card>
 
