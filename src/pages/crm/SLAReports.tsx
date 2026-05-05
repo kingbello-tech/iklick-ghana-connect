@@ -4,6 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { differenceInMinutes } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { Link } from "react-router-dom";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
+import { useState as useStateAlias } from "react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
@@ -13,6 +16,8 @@ export default function SLAReports() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [policies, setPolicies] = useState<SlaPolicy[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     const fetch = async () => {
@@ -67,6 +72,7 @@ export default function SLAReports() {
   };
 
   const analyzed = incidents.map((inc) => ({ ...inc, sla: getSLAStatus(inc) }));
+  const paginated = usePaginatedSlice(analyzed, page, pageSize);
   const breached = analyzed.filter((a) => a.sla.resolution === "breached").length;
   const atRisk = analyzed.filter((a) => a.sla.resolution === "at_risk").length;
   const met = analyzed.filter((a) => a.sla.resolution === "met").length;
@@ -152,9 +158,11 @@ export default function SLAReports() {
                 </tr>
               </thead>
               <tbody>
-                {analyzed.slice(0, 30).map((a) => (
+                {paginated.map((a) => (
                   <tr key={a.id} className={`border-b border-border hover:bg-muted/50 ${a.sla.response === "breached" ? "bg-destructive/5" : ""}`}>
-                    <td className="p-3 font-mono text-xs text-muted-foreground">{a.incident_number}</td>
+                    <td className="p-3 font-mono text-xs">
+                      <Link to={`/crm/incidents/${a.id}`} className="text-primary hover:underline">{a.incident_number}</Link>
+                    </td>
                     <td className="p-3 text-foreground capitalize">{a.priority}</td>
                     <td className="p-3 text-foreground capitalize">{a.status.replace("_", " ")}</td>
                     <td className="p-3">
@@ -176,6 +184,13 @@ export default function SLAReports() {
               </tbody>
             </table>
           </div>
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={analyzed.length}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          />
         </CardContent>
       </Card>
     </div>
