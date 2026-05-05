@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, ExternalLink } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from "recharts";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
@@ -34,6 +35,10 @@ export default function PerformanceReports() {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
   const [satisfaction, setSatisfaction] = useState<{ client_id: string; rating: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userPage, setUserPage] = useState(1);
+  const [userPageSize, setUserPageSize] = useState(25);
+  const [clientPage, setClientPage] = useState(1);
+  const [clientPageSize, setClientPageSize] = useState(25);
 
   useEffect(() => {
     const fetch = async () => {
@@ -108,6 +113,9 @@ export default function PerformanceReports() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
+  const userPerfPaged = usePaginatedSlice(userPerf, userPage, userPageSize);
+  const clientPerfPaged = usePaginatedSlice(clientPerf, clientPage, clientPageSize);
+
   return (
     <div className="space-y-6">
       <div>
@@ -158,7 +166,7 @@ export default function PerformanceReports() {
                     </tr>
                   </thead>
                   <tbody>
-                    {userPerf.map((u) => (
+                    {userPerfPaged.map((u) => (
                       <tr key={u.userId} className="border-b border-border hover:bg-muted/50">
                         <td className="p-3 text-foreground font-medium">{u.name}</td>
                         <td className="p-3 text-muted-foreground">{u.assigned}</td>
@@ -175,6 +183,15 @@ export default function PerformanceReports() {
                   </tbody>
                 </table>
               </div>
+              {userPerf.length > 0 && (
+                <TablePagination
+                  page={userPage}
+                  pageSize={userPageSize}
+                  total={userPerf.length}
+                  onPageChange={setUserPage}
+                  onPageSizeChange={(s) => { setUserPageSize(s); setUserPage(1); }}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -200,7 +217,7 @@ export default function PerformanceReports() {
                     </tr>
                   </thead>
                   <tbody>
-                    {clientPerf.map((c) => (
+                    {clientPerfPaged.map((c) => (
                       <tr key={c.clientId} className="border-b border-border hover:bg-muted/50">
                         <td className="p-3 text-foreground font-medium">{c.name}</td>
                         <td className="p-3 text-muted-foreground">{c.totalIncidents}</td>
@@ -216,6 +233,15 @@ export default function PerformanceReports() {
                   </tbody>
                 </table>
               </div>
+              {clientPerf.length > 0 && (
+                <TablePagination
+                  page={clientPage}
+                  pageSize={clientPageSize}
+                  total={clientPerf.length}
+                  onPageChange={setClientPage}
+                  onPageSizeChange={(s) => { setClientPageSize(s); setClientPage(1); }}
+                />
+              )}
             </CardContent>
           </Card>
         </TabsContent>
