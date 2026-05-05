@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Wrench } from "lucide-react";
 import { format } from "date-fns";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 interface Installation {
   id: string;
@@ -44,6 +45,8 @@ export default function InstallationQueue() {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Installation | null>(null);
   const [form, setForm] = useState({ assigned_to: "__unassigned__", scheduled_date: "", status: "pending", notes: "" });
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const isManager = role === "admin" || role === "technology_manager";
 
@@ -148,6 +151,7 @@ export default function InstallationQueue() {
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   const myQueue = role === "technology_engineer" ? installations.filter(i => i.assigned_to === user?.id) : installations;
+  const paginated = usePaginatedSlice(myQueue, page, pageSize);
   const pending = myQueue.filter(i => i.status === "pending").length;
   const inProgress = myQueue.filter(i => i.status === "in_progress").length;
   const done = myQueue.filter(i => i.status === "completed").length;
@@ -169,7 +173,7 @@ export default function InstallationQueue() {
         <CardHeader><CardTitle className="text-sm">All Installations</CardTitle></CardHeader>
         <CardContent className="space-y-2">
           {myQueue.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No installations</p>}
-          {myQueue.map(i => {
+          {paginated.map(i => {
             const deal = dealMap[i.deal_id];
             return (
               <div key={i.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/50 cursor-pointer" onClick={() => openEdit(i)}>
@@ -186,6 +190,15 @@ export default function InstallationQueue() {
               </div>
             );
           })}
+          {myQueue.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={myQueue.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          )}
         </CardContent>
       </Card>
 
