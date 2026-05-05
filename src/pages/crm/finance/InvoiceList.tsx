@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 interface InvoiceRow {
   id: string;
@@ -36,6 +37,8 @@ export default function InvoiceList() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     (async () => {
@@ -54,6 +57,9 @@ export default function InvoiceList() {
     if (search && !i.invoice_number.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
+
+  useEffect(() => { setPage(1); }, [search, statusFilter]);
+  const paginated = usePaginatedSlice(filtered, page, pageSize);
 
   return (
     <div className="space-y-6">
@@ -102,7 +108,7 @@ export default function InvoiceList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(inv => (
+                  {paginated.map(inv => (
                     <tr key={inv.id} className="border-b border-border hover:bg-muted/50">
                       <td className="py-2 pr-4">
                         <Link to={`/crm/finance/invoices/${inv.id}`} className="font-mono text-primary hover:underline">{inv.invoice_number}</Link>
@@ -119,6 +125,15 @@ export default function InvoiceList() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filtered.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={filtered.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>
