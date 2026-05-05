@@ -1291,6 +1291,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      auto_escalate_stale_incidents: { Args: never; Returns: number }
       can_access_attachment: {
         Args: { _entity_id: string; _entity_type: string }
         Returns: boolean
