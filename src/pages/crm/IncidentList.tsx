@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, List, Columns, AlertTriangle } from "lucide-react";
+import { Plus, Search, List, Columns, AlertTriangle, Download } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
 import { IncidentCreateDialog } from "@/components/crm/IncidentCreateDialog";
 import { IncidentKanban } from "@/components/crm/IncidentKanban";
+import { IncidentExportDialog } from "@/components/crm/IncidentExportDialog";
 import { Link } from "react-router-dom";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -43,6 +44,7 @@ export default function IncidentList() {
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
   const [view, setView] = useState<"table" | "kanban">("table");
   const [createOpen, setCreateOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const { canManageIncidents } = useAuth();
 
@@ -99,11 +101,16 @@ export default function IncidentList() {
           <h1 className="text-2xl font-bold text-foreground">Incidents</h1>
           <p className="text-muted-foreground text-sm">{filtered.length} incident{filtered.length !== 1 ? "s" : ""}</p>
         </div>
-        {canManageIncidents && (
-          <Button onClick={() => setCreateOpen(true)} className="gap-2">
-            <Plus className="h-4 w-4" /> New Incident
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => setExportOpen(true)} className="gap-2">
+            <Download className="h-4 w-4" /> Export
           </Button>
-        )}
+          {canManageIncidents && (
+            <Button onClick={() => setCreateOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" /> New Incident
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
@@ -205,6 +212,7 @@ export default function IncidentList() {
       )}
 
       <IncidentCreateDialog open={createOpen} onOpenChange={setCreateOpen} clients={clients} profiles={profiles} onCreated={fetchData} />
+      <IncidentExportDialog open={exportOpen} onOpenChange={setExportOpen} />
     </div>
   );
 }
