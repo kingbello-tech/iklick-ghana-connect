@@ -10,6 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check, Trash2 } from "lucide-react";
 import { Attachments } from "@/components/crm/Attachments";
+import { NotesEditor } from "@/components/crm/NotesEditor";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 import {
   AlertDialog,
@@ -101,6 +104,25 @@ export default function IncidentDetail() {
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
 
     await trackChange("status", incident.status, newStatus);
+
+    // Notify client when ticket is closed
+    if (newStatus === "closed" && incident.client_id) {
+      const client = clients.find((c) => c.id === incident.client_id);
+      if (client?.email) {
+        supabase.functions.invoke("send-incident-email", {
+          body: {
+            incident_number: incident.incident_number,
+            title: incident.title,
+            description: incident.description,
+            priority: incident.priority,
+            client_email: client.email,
+            client_name: client.name,
+            is_closed: true,
+          },
+        }).catch((err) => console.error("Close notification failed:", err));
+      }
+    }
+
     fetchAll();
   };
 
@@ -174,6 +196,7 @@ export default function IncidentDetail() {
             priority: editForm.priority || incident.priority,
             assigned_email: assignedEmail,
             assigned_name: assignedProfile?.full_name || null,
+            ticket_url: `${window.location.origin}/crm/incidents/${incident.id}`,
           },
         }).catch((err) => console.error("Reassignment email failed:", err));
       }
