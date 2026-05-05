@@ -12,6 +12,7 @@ import { IncidentCreateDialog } from "@/components/crm/IncidentCreateDialog";
 import { IncidentKanban } from "@/components/crm/IncidentKanban";
 import { IncidentExportDialog } from "@/components/crm/IncidentExportDialog";
 import { Link } from "react-router-dom";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
@@ -46,6 +47,8 @@ export default function IncidentList() {
   const [createOpen, setCreateOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const { canManageIncidents } = useAuth();
 
   const fetchData = async () => {
@@ -91,6 +94,9 @@ export default function IncidentList() {
     }
     return true;
   });
+
+  useEffect(() => { setPage(1); }, [search, statusFilter, priorityFilter, view]);
+  const paginated = usePaginatedSlice(filtered, page, pageSize);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
@@ -171,7 +177,7 @@ export default function IncidentList() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.map((inc) => {
+                    {paginated.map((inc) => {
                       const overdue = isResponseOverdue(inc);
                       return (
                         <tr key={inc.id} className={`border-b border-border hover:bg-muted/50 transition-colors ${overdue ? "bg-destructive/5" : ""}`}>
@@ -206,6 +212,15 @@ export default function IncidentList() {
                   </tbody>
                 </table>
               </div>
+            )}
+            {filtered.length > 0 && (
+              <TablePagination
+                page={page}
+                pageSize={pageSize}
+                total={filtered.length}
+                onPageChange={setPage}
+                onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+              />
             )}
           </CardContent>
         </Card>
