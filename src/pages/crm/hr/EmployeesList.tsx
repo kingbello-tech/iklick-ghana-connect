@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Search } from "lucide-react";
 import EmployeeDialog from "@/components/crm/hr/EmployeeDialog";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 export default function EmployeesList() {
   const [rows, setRows] = useState<any[]>([]);
@@ -14,6 +15,8 @@ export default function EmployeesList() {
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const load = async () => {
     setLoading(true);
@@ -27,6 +30,9 @@ export default function EmployeesList() {
     const s = q.toLowerCase();
     return !s || r.full_name?.toLowerCase().includes(s) || r.email?.toLowerCase().includes(s) || r.department?.toLowerCase().includes(s) || r.job_title?.toLowerCase().includes(s);
   });
+
+  useEffect(() => { setPage(1); }, [q]);
+  const paginated = usePaginatedSlice(filtered, page, pageSize);
 
   return (
     <div className="space-y-4">
@@ -57,7 +63,7 @@ export default function EmployeesList() {
                   <tr><th className="py-2">Name</th><th className="py-2">Department</th><th className="py-2">Type</th><th className="py-2">Status</th><th className="py-2 text-right">Basic (₵)</th><th className="py-2"></th></tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r) => (
+                  {paginated.map((r) => (
                     <tr key={r.id} className="border-b border-border/60">
                       <td className="py-3">
                         <Link to={`/crm/hr/employees/${r.id}`} className="font-medium hover:text-primary">{r.full_name}</Link>
@@ -73,6 +79,15 @@ export default function EmployeesList() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filtered.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={filtered.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>
