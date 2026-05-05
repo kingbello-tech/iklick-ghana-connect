@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Users, UserCheck, UserX, Phone } from "lucide-react";
-import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
+import { TablePagination } from "@/components/crm/TablePagination";
 
 const LEAD_TYPES = ["home", "sme", "enterprise"] as const;
 const LEAD_SOURCES = ["referral", "website", "walk_in", "campaign"] as const;
