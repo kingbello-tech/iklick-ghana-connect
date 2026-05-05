@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Download, ArrowLeft, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { format, differenceInMinutes } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from "recharts";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
@@ -32,6 +33,8 @@ export default function StaffReport() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     const fetch = async () => {
@@ -83,6 +86,8 @@ export default function StaffReport() {
   };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+
+  const paginated = usePaginatedSlice(incidents, page, pageSize);
 
   return (
     <div className="space-y-6">
@@ -152,7 +157,7 @@ export default function StaffReport() {
             <p className="text-muted-foreground text-sm py-8 text-center">No incidents assigned</p>
           ) : (
             <div className="space-y-2">
-              {incidents.map((inc) => (
+              {paginated.map((inc) => (
                 <Link key={inc.id} to={`/crm/incidents/${inc.id}`} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
                   <div className="flex items-center gap-3 min-w-0">
                     <span className="text-xs font-mono text-muted-foreground">{inc.incident_number}</span>
@@ -166,6 +171,15 @@ export default function StaffReport() {
                 </Link>
               ))}
             </div>
+          )}
+          {incidents.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={incidents.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
 type Client = Database["public"]["Tables"]["clients"]["Row"];
@@ -25,6 +26,8 @@ export default function ClientList() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const { canManageIncidents, isAdmin } = useAuth();
   const { toast } = useToast();
   const [form, setForm] = useState(emptyForm);
@@ -42,6 +45,9 @@ export default function ClientList() {
     const s = search.toLowerCase();
     return c.name.toLowerCase().includes(s) || (c.email || "").toLowerCase().includes(s) || (c.location || "").toLowerCase().includes(s);
   });
+
+  useEffect(() => { setPage(1); }, [search]);
+  const paginated = usePaginatedSlice(filtered, page, pageSize);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +159,7 @@ export default function ClientList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((c) => (
+                  {paginated.map((c) => (
                     <tr key={c.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                       <td className="p-3 text-foreground font-medium">{c.name}</td>
                       <td className="p-3 text-muted-foreground">{c.email || "—"}</td>
@@ -179,6 +185,15 @@ export default function ClientList() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filtered.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={filtered.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

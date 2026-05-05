@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { UserPlus, Pencil, Trash2 } from "lucide-react";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
@@ -29,6 +30,8 @@ export default function UserManagement() {
   const [editUser, setEditUser] = useState<{ profile: Profile; role: AppRole | "" }>({ profile: {} as Profile, role: "" });
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const { toast } = useToast();
 
   const fetchData = async () => {
@@ -129,6 +132,8 @@ export default function UserManagement() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
+  const paginated = usePaginatedSlice(profiles, page, pageSize);
+
   return (
     <div className="space-y-4 max-w-4xl">
       <div className="flex items-center justify-between">
@@ -195,7 +200,7 @@ export default function UserManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {profiles.map((p) => {
+                  {paginated.map((p) => {
                     const currentRole = roleMap[p.user_id]?.role;
                     return (
                       <tr key={p.id} className="border-b border-border hover:bg-muted/50 transition-colors">
@@ -230,6 +235,15 @@ export default function UserManagement() {
                 </tbody>
               </table>
             </div>
+          )}
+          {profiles.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={profiles.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>

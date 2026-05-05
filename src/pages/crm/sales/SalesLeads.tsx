@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Search, Users, UserCheck, UserX, Phone } from "lucide-react";
+import { TablePagination } from "@/components/crm/TablePagination";
 
 const LEAD_TYPES = ["home", "sme", "enterprise"] as const;
 const LEAD_SOURCES = ["referral", "website", "walk_in", "campaign"] as const;
@@ -79,6 +80,8 @@ export default function SalesLeads() {
   const [editOpen, setEditOpen] = useState(false);
   const [selected, setSelected] = useState<Lead | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const fetchData = async () => {
     const [leadsRes, profilesRes] = await Promise.all([
@@ -167,6 +170,9 @@ export default function SalesLeads() {
     const matchType = typeFilter === "all" || l.lead_type === typeFilter;
     return matchSearch && matchStatus && matchType;
   });
+
+  useEffect(() => { setPage(1); }, [search, statusFilter, typeFilter]);
+  const paginated = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   const stats = {
     total: leads.length,
@@ -283,7 +289,7 @@ export default function SalesLeads() {
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">No leads found</TableCell></TableRow>
-            ) : filtered.map(lead => (
+            ) : paginated.map(lead => (
               <TableRow key={lead.id}>
                 <TableCell>
                   <div>
@@ -307,6 +313,15 @@ export default function SalesLeads() {
             ))}
           </TableBody>
         </Table>
+        {filtered.length > 0 && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={filtered.length}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          />
+        )}
       </Card>
 
       {/* Edit Dialog */}

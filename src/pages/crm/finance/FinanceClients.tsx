@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, Receipt, Search } from "lucide-react";
 import { NewInvoiceDialog } from "@/components/crm/NewInvoiceDialog";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 interface ClientRow {
   id: string;
@@ -32,6 +33,8 @@ export default function FinanceClients() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [presetClient, setPresetClient] = useState<string | undefined>(undefined);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     (async () => {
@@ -67,6 +70,9 @@ export default function FinanceClients() {
       (c.location || "").toLowerCase().includes(q)
     );
   }, [clients, search]);
+
+  useEffect(() => { setPage(1); }, [search]);
+  const paginated = usePaginatedSlice(filtered, page, pageSize);
 
   const openInvoiceFor = (clientId: string) => {
     setPresetClient(clientId);
@@ -129,7 +135,7 @@ export default function FinanceClients() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(c => {
+                  {paginated.map(c => {
                     const a = agg[c.id] || { invoices: 0, outstanding: 0, collected: 0, hasDeals: false };
                     return (
                       <tr key={c.id} className="border-b border-border hover:bg-muted/50">
@@ -168,6 +174,15 @@ export default function FinanceClients() {
                 </tbody>
               </table>
             </div>
+          )}
+          {filtered.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={filtered.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>
