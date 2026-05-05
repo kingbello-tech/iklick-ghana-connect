@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Star, Link2, Copy, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 interface SatisfactionRecord {
   id: string;
@@ -34,6 +35,8 @@ export default function ClientSatisfaction() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [form, setForm] = useState({ client_id: "", incident_id: "" });
   const [generatedLink, setGeneratedLink] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const canCreate = role === "admin" || role === "client_experience" || role === "support_agent" || role === "network_engineer";
 
@@ -100,6 +103,8 @@ export default function ClientSatisfaction() {
   })).sort((a, b) => b.avg - a.avg).slice(0, 10);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
+
+  const paginated = usePaginatedSlice(records, page, pageSize);
 
   return (
     <div className="space-y-6">
@@ -212,7 +217,7 @@ export default function ClientSatisfaction() {
                 </tr>
               </thead>
               <tbody>
-                {records.slice(0, 20).map((r) => (
+                {paginated.map((r) => (
                   <tr key={r.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                     <td className="p-3 text-muted-foreground text-xs whitespace-nowrap">{format(new Date(r.created_at), "MMM d, yyyy")}</td>
                     <td className="p-3 text-foreground">{clientMap[r.client_id] || "Unknown"}</td>
@@ -236,6 +241,15 @@ export default function ClientSatisfaction() {
               </tbody>
             </table>
           </div>
+          {records.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={records.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
+          )}
         </CardContent>
       </Card>
 
