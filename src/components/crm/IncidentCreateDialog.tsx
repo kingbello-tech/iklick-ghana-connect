@@ -129,6 +129,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
           client_name: client?.name || null,
           assigned_email: assignedEmail,
           assigned_name: assignedProfile?.full_name || null,
+          ticket_url: assignedEmail ? `${window.location.origin}/crm/incidents/${inserted.id}` : undefined,
         },
       }).catch((err) => console.error("Email notification failed:", err));
 
