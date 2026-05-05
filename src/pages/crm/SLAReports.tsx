@@ -6,7 +6,6 @@ import { differenceInMinutes } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { Link } from "react-router-dom";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
-import { useState as useStateAlias } from "react";
 import type { Database } from "@/integrations/supabase/types";
 
 type Incident = Database["public"]["Tables"]["incidents"]["Row"];
