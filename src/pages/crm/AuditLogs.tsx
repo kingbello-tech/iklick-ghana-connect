@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
 type HistoryRow = Database["public"]["Tables"]["incident_history"]["Row"];
@@ -10,6 +11,8 @@ type HistoryRow = Database["public"]["Tables"]["incident_history"]["Row"];
 export default function AuditLogs() {
   const [logs, setLogs] = useState<(HistoryRow & { incident_number?: string; user_name?: string })[]>([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -46,6 +49,8 @@ export default function AuditLogs() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
+  const paginated = usePaginatedSlice(logs, page, pageSize);
+
   return (
     <div className="space-y-4">
       <div>
@@ -71,7 +76,7 @@ export default function AuditLogs() {
                   </tr>
                 </thead>
                 <tbody>
-                  {logs.map((log) => (
+                  {paginated.map((log) => (
                     <tr key={log.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                       <td className="p-3 text-muted-foreground text-xs whitespace-nowrap">
                         {format(new Date(log.created_at), "MMM d, yyyy HH:mm")}
@@ -88,6 +93,15 @@ export default function AuditLogs() {
                 </tbody>
               </table>
             </div>
+          )}
+          {logs.length > 0 && (
+            <TablePagination
+              page={page}
+              pageSize={pageSize}
+              total={logs.length}
+              onPageChange={setPage}
+              onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+            />
           )}
         </CardContent>
       </Card>
