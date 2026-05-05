@@ -366,7 +366,9 @@ export default function IncidentDetail() {
                     <span className="text-xs font-medium text-primary">{profiles[note.user_id]?.full_name || "User"}</span>
                     <span className="text-[10px] text-muted-foreground">{format(new Date(note.created_at), "MMM d, HH:mm")}</span>
                   </div>
-                  <p className="text-sm text-foreground">{note.content}</p>
+                  <div className="text-sm text-foreground prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-headings:my-2">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{note.content}</ReactMarkdown>
+                  </div>
                   <div className="mt-2">
                     <Attachments entityType="incident_note" entityId={note.id} compact canUpload={note.user_id === user?.id || canManageIncidents} />
                   </div>
@@ -374,13 +376,7 @@ export default function IncidentDetail() {
               ))}
               {canManageIncidents && (
                 <div className="flex gap-2">
-                  <Textarea
-                    placeholder="Add a note..."
-                    value={newNote}
-                    onChange={(e) => setNewNote(e.target.value)}
-                    className="flex-1"
-                    rows={2}
-                  />
+                  <NotesEditor value={newNote} onChange={setNewNote} placeholder="Add a note... (supports **bold**, *italic*, lists, links)" rows={2} />
                   <Button onClick={addNote} size="icon" disabled={!newNote.trim()} className="self-end shrink-0">
                     <Send className="h-4 w-4" />
                   </Button>
