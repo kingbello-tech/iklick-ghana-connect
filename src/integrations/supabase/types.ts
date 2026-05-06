@@ -467,6 +467,36 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_closures: {
+        Row: {
+          closed_by: string
+          created_at: string
+          id: string
+          incident_id: string
+          recommendation: string
+          resolution: string
+          root_cause: string
+        }
+        Insert: {
+          closed_by: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          recommendation: string
+          resolution: string
+          root_cause: string
+        }
+        Update: {
+          closed_by?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          recommendation?: string
+          resolution?: string
+          root_cause?: string
+        }
+        Relationships: []
+      }
       incident_history: {
         Row: {
           created_at: string
@@ -1296,6 +1326,7 @@ export type Database = {
         Args: { _entity_id: string; _entity_type: string }
         Returns: boolean
       }
+      can_close_incident: { Args: { _user_id: string }; Returns: boolean }
       generate_monthly_recurring_invoices: { Args: never; Returns: number }
       get_user_role: {
         Args: { _user_id: string }
