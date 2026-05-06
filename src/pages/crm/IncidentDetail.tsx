@@ -443,6 +443,29 @@ export default function IncidentDetail() {
 
           {/* Attachments */}
           <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
+
+          {closure && (
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle></CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
+                  <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Resolution</p>
+                  <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
+                  <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
+                </div>
+                <p className="text-[11px] text-muted-foreground pt-2 border-t border-border">
+                  Closed by {profiles[closure.closed_by]?.full_name || "—"} on {format(new Date(closure.created_at), "MMM d, yyyy HH:mm")}
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar Details */}
@@ -568,6 +591,14 @@ export default function IncidentDetail() {
           </Card>
         </div>
       </div>
+
+      <IncidentClosureDialog
+        open={closureOpen}
+        onOpenChange={setClosureOpen}
+        incidentId={incident.id}
+        incidentNumber={incident.incident_number}
+        onClosed={onClosureCompleted}
+      />
     </div>
   );
 }
