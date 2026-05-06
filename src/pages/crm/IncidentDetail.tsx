@@ -64,6 +64,7 @@ export default function IncidentDetail() {
   const [editForm, setEditForm] = useState<Partial<Incident> & { department?: string }>({});
   const [editDepartment, setEditDepartment] = useState("");
   const [closureOpen, setClosureOpen] = useState(false);
+  const [closureMode, setClosureMode] = useState<"resolve" | "close">("resolve");
   const [closure, setClosure] = useState<{ root_cause: string; resolution: string; recommendation: string; closed_by: string; created_at: string } | null>(null);
 
   const fetchAll = async () => {
@@ -102,16 +103,26 @@ export default function IncidentDetail() {
 
   const updateStatus = async (newStatus: string) => {
     if (!incident || !user) return;
+    if (newStatus === "resolved") {
+      // Mandatory resolution report
+      if (!canManageIncidents) {
+        toast({ title: "Not allowed", description: "You don't have permission to resolve tickets.", variant: "destructive" });
+        return;
+      }
+      setClosureMode("resolve");
+      setClosureOpen(true);
+      return;
+    }
     if (newStatus === "closed") {
       if (!canCloseIncident) {
         toast({ title: "Not allowed", description: "Only Client Experience, Managers and Admins can close tickets.", variant: "destructive" });
         return;
       }
+      setClosureMode("close");
       setClosureOpen(true);
       return;
     }
     const updates: any = { status: newStatus };
-    if (newStatus === "resolved") updates.resolved_at = new Date().toISOString();
 
     const { error } = await supabase.from("incidents").update(updates).eq("id", incident.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
@@ -133,9 +144,10 @@ export default function IncidentDetail() {
             priority: incident.priority,
             client_email: client.email,
             client_name: client.name,
-            is_closed: true,
+            is_closed: closureMode === "close",
+            is_resolved: closureMode === "resolve",
           },
-        }).catch((err) => console.error("Close notification failed:", err));
+        }).catch((err) => console.error("Notification failed:", err));
       }
     }
     fetchAll();
@@ -597,7 +609,8 @@ export default function IncidentDetail() {
         onOpenChange={setClosureOpen}
         incidentId={incident.id}
         incidentNumber={incident.incident_number}
-        onClosed={onClosureCompleted}
+        mode={closureMode}
+        onCompleted={onClosureCompleted}
       />
     </div>
   );
