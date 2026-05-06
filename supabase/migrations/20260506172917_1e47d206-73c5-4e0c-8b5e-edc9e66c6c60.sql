@@ -1,0 +1,2 @@
+ALTER TABLE public.incident_notes DROP CONSTRAINT IF EXISTS incident_notes_note_type_check;
+ALTER TABLE public.incident_notes ADD CONSTRAINT incident_notes_note_type_check CHECK (note_type IN ('note','log','image','closure_note','resolution_note'));
