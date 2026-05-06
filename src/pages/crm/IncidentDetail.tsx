@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check, Trash2 } from "lucide-react";
 import { Attachments } from "@/components/crm/Attachments";
 import { NotesEditor } from "@/components/crm/NotesEditor";
+import { IncidentClosureDialog } from "@/components/crm/IncidentClosureDialog";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -47,7 +48,8 @@ const DEPARTMENTS = ["Client Experience", "Technology", "Project Management", "S
 
 export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
-  const { user, canManageIncidents, isAdmin } = useAuth();
+  const { user, role, canManageIncidents, isAdmin } = useAuth();
+  const canCloseIncident = role === "admin" || role === "client_experience" || role === "network_manager";
   const navigate = useNavigate();
   const { toast } = useToast();
   const [incident, setIncident] = useState<Incident | null>(null);
@@ -61,15 +63,18 @@ export default function IncidentDetail() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Incident> & { department?: string }>({});
   const [editDepartment, setEditDepartment] = useState("");
+  const [closureOpen, setClosureOpen] = useState(false);
+  const [closure, setClosure] = useState<{ root_cause: string; resolution: string; recommendation: string; closed_by: string; created_at: string } | null>(null);
 
   const fetchAll = async () => {
     if (!id) return;
-    const [incRes, notesRes, histRes, profRes, clientsRes] = await Promise.all([
+    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes] = await Promise.all([
       supabase.from("incidents").select("*").eq("id", id).single(),
       supabase.from("incident_notes").select("*").eq("incident_id", id).order("created_at", { ascending: true }),
       supabase.from("incident_history").select("*").eq("incident_id", id).order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
       supabase.from("clients").select("*"),
+      (supabase as any).from("incident_closures").select("*").eq("incident_id", id).maybeSingle(),
     ]);
     if (incRes.data) {
       setIncident(incRes.data);
@@ -82,6 +87,7 @@ export default function IncidentDetail() {
     if (histRes.data) setHistory(histRes.data);
     if (profRes.data) setProfiles(Object.fromEntries(profRes.data.map((p) => [p.user_id, p])));
     if (clientsRes.data) setClients(clientsRes.data);
+    setClosure(closureRes.data || null);
     setLoading(false);
   };
 
@@ -96,17 +102,27 @@ export default function IncidentDetail() {
 
   const updateStatus = async (newStatus: string) => {
     if (!incident || !user) return;
+    if (newStatus === "closed") {
+      if (!canCloseIncident) {
+        toast({ title: "Not allowed", description: "Only Client Experience, Managers and Admins can close tickets.", variant: "destructive" });
+        return;
+      }
+      setClosureOpen(true);
+      return;
+    }
     const updates: any = { status: newStatus };
     if (newStatus === "resolved") updates.resolved_at = new Date().toISOString();
-    if (newStatus === "closed") updates.closed_at = new Date().toISOString();
 
     const { error } = await supabase.from("incidents").update(updates).eq("id", incident.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
 
     await trackChange("status", incident.status, newStatus);
+    fetchAll();
+  };
 
-    // Notify client when ticket is closed
-    if (newStatus === "closed" && incident.client_id) {
+  const onClosureCompleted = async () => {
+    if (!incident) return;
+    if (incident.client_id) {
       const client = clients.find((c) => c.id === incident.client_id);
       if (client?.email) {
         supabase.functions.invoke("send-incident-email", {
@@ -122,7 +138,6 @@ export default function IncidentDetail() {
         }).catch((err) => console.error("Close notification failed:", err));
       }
     }
-
     fetchAll();
   };
 
@@ -296,9 +311,16 @@ export default function IncidentDetail() {
                 <SelectItem value="in_progress">In Progress</SelectItem>
                 <SelectItem value="escalated">Escalated</SelectItem>
                 <SelectItem value="resolved">Resolved</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
+                {(canCloseIncident || incident.status === "closed") && (
+                  <SelectItem value="closed">Closed</SelectItem>
+                )}
               </SelectContent>
             </Select>
+          )}
+          {canCloseIncident && incident.status === "resolved" && !editing && (
+            <Button size="sm" onClick={() => setClosureOpen(true)}>
+              Close Ticket
+            </Button>
           )}
           {isAdmin && !editing && (
             <AlertDialog>
