@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Star, Link2, Copy, Trash2 } from "lucide-react";
+import { Plus, Star, Link2, Copy, Trash2, CheckCircle2 } from "lucide-react";
 import { format } from "date-fns";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
@@ -30,6 +31,7 @@ export default function ClientSatisfaction() {
   const { toast } = useToast();
   const [records, setRecords] = useState<SatisfactionRecord[]>([]);
   const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
+  const [pendingClosure, setPendingClosure] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -39,14 +41,17 @@ export default function ClientSatisfaction() {
   const [pageSize, setPageSize] = useState(25);
 
   const canCreate = role === "admin" || role === "client_experience" || role === "support_agent" || role === "network_engineer";
+  const canCloseIncidents = role === "admin" || role === "client_experience" || role === "network_manager";
 
   const fetchData = async () => {
-    const [satRes, clientRes] = await Promise.all([
+    const [satRes, clientRes, pendingRes] = await Promise.all([
       supabase.from("client_satisfaction").select("*").order("created_at", { ascending: false }),
       supabase.from("clients").select("id, name").order("name"),
+      supabase.from("incidents").select("id, incident_number, title, priority, client_id, resolved_at").eq("status", "resolved").order("resolved_at", { ascending: false }),
     ]);
     if (satRes.data) setRecords(satRes.data as SatisfactionRecord[]);
     if (clientRes.data) setClients(clientRes.data);
+    if (pendingRes.data) setPendingClosure(pendingRes.data);
     setLoading(false);
   };
 
@@ -149,6 +154,40 @@ export default function ClientSatisfaction() {
           </Dialog>
         )}
       </div>
+
+      {canCloseIncidents && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Pending Closure ({pendingClosure.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {pendingClosure.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-6 text-center">No resolved tickets awaiting closure.</p>
+            ) : (
+              <div className="space-y-2">
+                {pendingClosure.slice(0, 10).map((inc) => (
+                  <Link key={inc.id} to={`/crm/incidents/${inc.id}`} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className="text-xs font-mono text-muted-foreground shrink-0">{inc.incident_number}</span>
+                      <div className="min-w-0">
+                        <p className="text-sm text-foreground truncate">{inc.title}</p>
+                        <p className="text-[11px] text-muted-foreground truncate">{clientMap[inc.client_id] || "—"}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="outline" className="text-[10px] capitalize">{inc.priority}</Badge>
+                      {inc.resolved_at && <span className="text-[11px] text-muted-foreground hidden sm:inline">resolved {format(new Date(inc.resolved_at), "MMM d")}</span>}
+                      <Button size="sm" variant="outline" className="h-7 text-xs">Review & Close</Button>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
