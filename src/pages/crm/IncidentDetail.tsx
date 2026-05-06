@@ -330,7 +330,7 @@ export default function IncidentDetail() {
             </Select>
           )}
           {canCloseIncident && incident.status === "resolved" && !editing && (
-            <Button size="sm" onClick={() => setClosureOpen(true)}>
+            <Button size="sm" onClick={() => { setClosureMode("close"); setClosureOpen(true); }}>
               Close Ticket
             </Button>
           )}
