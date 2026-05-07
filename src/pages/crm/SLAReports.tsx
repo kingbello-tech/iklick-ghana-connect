@@ -40,9 +40,9 @@ export default function SLAReports() {
     const now = new Date();
     const closedAt = inc.closed_at ? new Date(inc.closed_at) : null;
 
-    // Resolution SLA: use resolved_at or closed_at as the end time
+    // Resolution SLA: prefer resolved_at (when work completed) over closed_at
     const resolvedAt = inc.resolved_at ? new Date(inc.resolved_at) : null;
-    const endTime = closedAt || resolvedAt;
+    const endTime = resolvedAt || closedAt;
     const resolutionMins = endTime
       ? differenceInMinutes(endTime, createdAt)
       : differenceInMinutes(now, createdAt);
