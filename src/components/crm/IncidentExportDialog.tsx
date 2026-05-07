@@ -35,11 +35,12 @@ export function IncidentExportDialog({ open, onOpenChange }: Props) {
       const clientMap = Object.fromEntries((clientRes.data || []).map((c: any) => [c.id, c.name]));
       const profMap = Object.fromEntries((profRes.data || []).map((p: any) => [p.user_id, p.full_name]));
 
-      const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Assigned To", "Created", "Resolved", "Closed"];
+      const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Termination POP", "Assigned To", "Created", "Resolved", "Closed"];
       const rows = (incRes.data || []).map((i: any) => [
         i.incident_number, i.title,
         i.client_id ? clientMap[i.client_id] || "" : "",
         i.priority, i.status, i.issue_category || "", i.service_type || "", i.location || "",
+        i.termination_pop || "",
         i.assigned_to ? profMap[i.assigned_to] || "" : "",
         i.created_at ? format(new Date(i.created_at), "yyyy-MM-dd HH:mm") : "",
         i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
