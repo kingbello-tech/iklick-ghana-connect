@@ -165,6 +165,7 @@ export default function IncidentDetail() {
       service_type: incident.service_type,
       issue_category: incident.issue_category,
       location: incident.location,
+      termination_pop: (incident as any).termination_pop ?? null,
       client_id: incident.client_id,
       assigned_to: incident.assigned_to,
     });
@@ -181,6 +182,7 @@ export default function IncidentDetail() {
     if (editForm.service_type !== incident.service_type) changes.push({ field: "service_type", old: incident.service_type, new: editForm.service_type || null });
     if (editForm.issue_category !== incident.issue_category) changes.push({ field: "issue_category", old: incident.issue_category, new: editForm.issue_category || null });
     if (editForm.location !== incident.location) changes.push({ field: "location", old: incident.location, new: editForm.location || null });
+    if ((editForm as any).termination_pop !== (incident as any).termination_pop) changes.push({ field: "termination_pop", old: (incident as any).termination_pop ?? null, new: (editForm as any).termination_pop || null });
     if (editForm.client_id !== incident.client_id) changes.push({ field: "client_id", old: incident.client_id, new: editForm.client_id || null });
     if (editForm.assigned_to !== incident.assigned_to) changes.push({ field: "assigned_to", old: incident.assigned_to, new: editForm.assigned_to || null });
 
@@ -193,6 +195,7 @@ export default function IncidentDetail() {
       service_type: editForm.service_type,
       issue_category: editForm.issue_category,
       location: editForm.location,
+      termination_pop: (editForm as any).termination_pop || null,
       client_id: editForm.client_id || null,
       assigned_to: editForm.assigned_to || null,
     }).eq("id", incident.id);
