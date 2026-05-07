@@ -589,6 +589,7 @@ export type Database = {
           resolved_at: string | null
           service_type: Database["public"]["Enums"]["service_type"] | null
           status: Database["public"]["Enums"]["incident_status"]
+          termination_pop: string | null
           title: string
           updated_at: string
         }
@@ -607,6 +608,7 @@ export type Database = {
           resolved_at?: string | null
           service_type?: Database["public"]["Enums"]["service_type"] | null
           status?: Database["public"]["Enums"]["incident_status"]
+          termination_pop?: string | null
           title: string
           updated_at?: string
         }
@@ -625,6 +627,7 @@ export type Database = {
           resolved_at?: string | null
           service_type?: Database["public"]["Enums"]["service_type"] | null
           status?: Database["public"]["Enums"]["incident_status"]
+          termination_pop?: string | null
           title?: string
           updated_at?: string
         }
