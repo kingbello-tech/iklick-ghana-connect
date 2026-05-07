@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { UserPlus, Pencil, Trash2 } from "lucide-react";
+import { UserPlus, Pencil, Trash2, KeyRound } from "lucide-react";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -30,6 +30,9 @@ export default function UserManagement() {
   const [editUser, setEditUser] = useState<{ profile: Profile; role: AppRole | "" }>({ profile: {} as Profile, role: "" });
   const [deleteTarget, setDeleteTarget] = useState<Profile | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [pwTarget, setPwTarget] = useState<Profile | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [resettingPw, setResettingPw] = useState(false);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const { toast } = useToast();
@@ -102,6 +105,25 @@ export default function UserManagement() {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const resetPassword = async () => {
+    if (!pwTarget) return;
+    setResettingPw(true);
+    try {
+      const res = await supabase.functions.invoke("reset-user-password", {
+        body: { user_id: pwTarget.user_id, password: newPassword },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast({ title: "Password reset", description: `Password updated for ${pwTarget.full_name || "user"}` });
+      setPwTarget(null);
+      setNewPassword("");
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    } finally {
+      setResettingPw(false);
     }
   };
 
@@ -225,6 +247,9 @@ export default function UserManagement() {
                           <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
                             <Pencil className="h-3.5 w-3.5 mr-1" /> Edit
                           </Button>
+                          <Button variant="ghost" size="sm" onClick={() => { setPwTarget(p); setNewPassword(""); }}>
+                            <KeyRound className="h-3.5 w-3.5 mr-1" /> Password
+                          </Button>
                           <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => setDeleteTarget(p)}>
                             <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
                           </Button>
@@ -320,6 +345,29 @@ export default function UserManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={!!pwTarget} onOpenChange={(open) => { if (!open) { setPwTarget(null); setNewPassword(""); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <p className="text-sm text-muted-foreground">
+              Set a new password for <strong>{pwTarget?.full_name || "this user"}</strong>. They will need to use it on their next sign in.
+            </p>
+            <Input
+              type="password"
+              placeholder="New password (min 6 chars)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <Button onClick={resetPassword} disabled={resettingPw || newPassword.length < 6} className="w-full">
+              {resettingPw ? "Updating..." : "Update Password"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
