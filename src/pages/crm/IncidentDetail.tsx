@@ -535,6 +535,14 @@ export default function IncidentDetail() {
                     <Input value={editForm.location || ""} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} />
                   </div>
                   <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Termination POP</label>
+                    <Input
+                      placeholder="Where the client takes their internet from"
+                      value={(editForm as any).termination_pop || ""}
+                      onChange={(e) => setEditForm({ ...editForm, termination_pop: e.target.value } as any)}
+                    />
+                  </div>
+                  <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Department</label>
                     <Select value={editDepartment} onValueChange={(v) => { setEditDepartment(v); setEditForm({ ...editForm, assigned_to: "" }); }}>
                       <SelectTrigger><SelectValue placeholder="Filter by department" /></SelectTrigger>
@@ -569,6 +577,12 @@ export default function IncidentDetail() {
                       <MapPin className="h-4 w-4 text-muted-foreground" />
                       <span className="text-muted-foreground">Location:</span>
                       <span className="text-foreground">{incident.location}</span>
+                    </div>
+                  )}
+                  {(incident as any).termination_pop && (
+                    <div>
+                      <span className="text-muted-foreground">Termination POP: </span>
+                      <span className="text-foreground">{(incident as any).termination_pop}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2">
