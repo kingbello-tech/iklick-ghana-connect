@@ -70,6 +70,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
     service_type: "home" as Database["public"]["Enums"]["service_type"],
     issue_category: "",
     location: "",
+    termination_pop: "",
     department: "",
     assigned_to: "",
   });
@@ -102,6 +103,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
         service_type: form.service_type,
         issue_category: form.issue_category || null,
         location: form.location || null,
+        termination_pop: form.termination_pop || null,
         assigned_to: form.assigned_to || null,
         created_by: user.id,
         incident_number: "TEMP",
@@ -135,7 +137,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
 
       toast({ title: "Incident created" });
       onOpenChange(false);
-      setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", department: "", assigned_to: "" });
+      setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", termination_pop: "", department: "", assigned_to: "" });
       onCreated();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -187,6 +189,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
             </Select>
           </div>
           <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+          <Input placeholder="Termination POP (where the client takes their internet from)" value={form.termination_pop} onChange={(e) => setForm({ ...form, termination_pop: e.target.value })} />
           <div className="grid grid-cols-2 gap-3">
             <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v, assigned_to: "" })}>
               <SelectTrigger><SelectValue placeholder="Department" /></SelectTrigger>
