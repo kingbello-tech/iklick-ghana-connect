@@ -3,13 +3,6 @@ import { Linkedin, Mail, ChevronLeft, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import team1 from "@/assets/team/team-1.jpg";
-import team2 from "@/assets/team/team-2.jpg";
-import team3 from "@/assets/team/team-3.jpg";
-import team4 from "@/assets/team/team-4.jpg";
-import team5 from "@/assets/team/team-5.jpg";
-import team6 from "@/assets/team/team-6.jpg";
-
 interface Member {
   id: number;
   name: string;
@@ -27,27 +20,27 @@ const team: Member[] = [
     bio: "Kwame founded iKlick with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
   {
-    id: 2, name: "Ama Boateng", role: "Director of Operations", image: team2,
+    id: 2, name: "Ama Boateng", role: "Director of Operations", image: null,
     email: "ama@iklickgh.com", linkedin: "#",
     bio: "Ama oversees iKlick's day-to-day operations, ensuring every deployment, installation, and service ticket is delivered to the highest standard. With a background in industrial engineering, she brings precision and care to every project the team takes on.",
   },
   {
-    id: 3, name: "Kojo Asante", role: "Lead Network Engineer", image: team3,
+    id: 3, name: "Kojo Asante", role: "Lead Network Engineer", image: null,
     email: "kojo@iklickgh.com", linkedin: "#",
     bio: "Kojo architects the fiber and wireless networks powering iKlick's clients. From core routing to last-mile design, he leads the engineering team in building resilient, scalable infrastructure that delivers consistent performance.",
   },
   {
-    id: 4, name: "Akosua Owusu", role: "Sales Manager", image: team4,
+    id: 4, name: "Akosua Owusu", role: "Sales Manager", image: null,
     email: "akosua@iklickgh.com", linkedin: "#",
     bio: "Akosua partners with enterprises, estates, and institutions to design connectivity solutions that fit their needs. She combines technical fluency with a consultative approach to help clients get the most from their network.",
   },
   {
-    id: 5, name: "Yaw Adjei", role: "Finance Officer", image: team5,
+    id: 5, name: "Yaw Adjei", role: "Finance Officer", image: null,
     email: "yaw@iklickgh.com", linkedin: "#",
     bio: "Yaw runs iKlick's financial operations with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
   },
   {
-    id: 6, name: "Esi Quartey", role: "Client Experience Lead", image: team6,
+    id: 6, name: "Esi Quartey", role: "Client Experience Lead", image: null,
     email: "esi@iklickgh.com", linkedin: "#",
     bio: "Esi champions the voice of every iKlick client. She leads support, satisfaction, and SLA programs — making sure clients feel heard and that every issue is resolved quickly and completely.",
   },
