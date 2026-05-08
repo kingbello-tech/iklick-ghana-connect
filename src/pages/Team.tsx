@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Linkedin, Mail, ChevronLeft } from "lucide-react";
+import { Linkedin, Mail, ChevronLeft, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ interface Member {
   id: number;
   name: string;
   role: string;
-  image: string;
+  image: string | null;
   bio: string;
   email: string;
   linkedin?: string;
@@ -22,7 +22,7 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "---", role: "Admin & HR Manager", image: team1,
+    id: 1, name: "---", role: "Admin & HR Manager", image: null,
     email: "kwame@iklickgh.com", linkedin: "#",
     bio: "Kwame founded iKlick with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
@@ -93,10 +93,14 @@ const Team = () => {
                         selected.id === m.id ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
                       }`}
                     >
-                      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-3 ring-2 transition-all ${
+                      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-3 ring-2 transition-all flex items-center justify-center bg-muted ${
                         selected.id === m.id ? "ring-primary" : "ring-border group-hover:ring-primary/40"
                       }`}>
-                        <img src={m.image} alt={m.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                        {m.image ? (
+                          <img src={m.image} alt={m.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                        ) : (
+                          <User className="w-10 h-10 text-muted-foreground" />
+                        )}
                       </div>
                       <p className="font-semibold text-sm">{m.name}</p>
                       <p className="text-xs text-muted-foreground">{m.role}</p>
@@ -118,8 +122,12 @@ const Team = () => {
                 <p className="text-muted-foreground text-center mb-8">{selected.role}</p>
 
                 <div className="flex justify-center mb-6">
-                  <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden ring-4 ring-primary/20">
-                    <img src={selected.image} alt={selected.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                  <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden ring-4 ring-primary/20 flex items-center justify-center bg-muted">
+                    {selected.image ? (
+                      <img src={selected.image} alt={selected.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-20 h-20 text-muted-foreground" />
+                    )}
                   </div>
                 </div>
 
