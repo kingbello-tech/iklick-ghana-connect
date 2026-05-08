@@ -83,7 +83,26 @@ const Team = () => {
               <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
                 <p className="text-xs text-muted-foreground mb-1 text-center">Home /</p>
                 <h2 className="text-2xl font-bold mb-1 text-center">MEET THE TEAM</h2>
-                <p className="text-sm text-muted-foreground text-center">The people behind our success</p>
+                <p className="text-sm text-muted-foreground mb-6 text-center">The people behind our success</p>
+                <div className="grid grid-cols-2 gap-5">
+                  {team.map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelected(m)}
+                      className={`group flex flex-col items-center text-center p-3 rounded-xl transition-all ${
+                        selected.id === m.id ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-3 ring-2 transition-all ${
+                        selected.id === m.id ? "ring-primary" : "ring-border group-hover:ring-primary/40"
+                      }`}>
+                        <img src={m.image} alt={m.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                      </div>
+                      <p className="font-semibold text-sm">{m.name}</p>
+                      <p className="text-xs text-muted-foreground">{m.role}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
