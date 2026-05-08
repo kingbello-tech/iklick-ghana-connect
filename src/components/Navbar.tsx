@@ -16,6 +16,7 @@ const Navbar = ({ visible = true }: NavbarProps) => {
   const navLinks = [
     { name: "Services", href: "#services", isRoute: false },
     { name: "Projects", href: "/projects", isRoute: true },
+    { name: "Team", href: "/team", isRoute: true },
     { name: "Support", href: "#support", isRoute: false },
     { name: "Contact", href: "#contact", isRoute: false }
   ];
