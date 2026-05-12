@@ -115,11 +115,11 @@ const Team = () => {
                 <p className="text-muted-foreground text-center mb-8">{selected.role}</p>
 
                 <div className="flex justify-center mb-6">
-                  <div className="w-40 h-40 md:w-48 md:h-48 rounded-full overflow-hidden ring-4 ring-primary/20 flex items-center justify-center bg-muted">
+                  <div className="w-48 h-48 md:w-56 md:h-56 rounded-full overflow-hidden ring-4 ring-primary/20 flex items-center justify-center bg-muted">
                     {selected.image ? (
                       <img src={selected.image} alt={selected.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-20 h-20 text-muted-foreground" />
+                      <User className="w-24 h-24 text-muted-foreground" />
                     )}
                   </div>
                 </div>
