@@ -74,6 +74,8 @@ export default function InstallationQueue() {
   useEffect(() => { fetchData(); }, []);
 
   const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
+  const leadMap = Object.fromEntries(leads.map(l => [l.id, l]));
+  const clientMap = Object.fromEntries(clients.map(c => [c.id, c]));
   const profileMap = Object.fromEntries(profiles.map(p => [p.user_id, p.full_name || "Unknown"]));
 
   const openEdit = (i: Installation) => {
@@ -218,14 +220,52 @@ export default function InstallationQueue() {
         <DialogContent>
           <DialogHeader><DialogTitle>Installation</DialogTitle></DialogHeader>
           {selected && (
-            <div className="space-y-4">
-              <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="text-xs text-muted-foreground">
-                  Deal {selected.work_order_number && <span className="font-mono text-primary ml-1">· {selected.work_order_number}</span>}
-                </p>
-                <p className="font-medium text-foreground">{dealMap[selected.deal_id]?.title}</p>
-              </div>
-              {isManager && (
+              <div className="space-y-4">
+                <div className="p-3 bg-muted/30 rounded-lg">
+                  <p className="text-xs text-muted-foreground">
+                    Deal {selected.work_order_number && <span className="font-mono text-primary ml-1">· {selected.work_order_number}</span>}
+                  </p>
+                  <p className="font-medium text-foreground">{dealMap[selected.deal_id]?.title}</p>
+                </div>
+                {(() => {
+                  const d = dealMap[selected.deal_id];
+                  const l = d?.lead_id ? leadMap[d.lead_id] : null;
+                  const c = d?.client_id ? clientMap[d.client_id] : null;
+                  const Row = ({ label, value }: { label: string; value: any }) =>
+                    value ? (
+                      <div>
+                        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+                        <p className="text-sm text-foreground break-words">{value}</p>
+                      </div>
+                    ) : null;
+                  return (
+                    <div className="p-4 rounded-lg border border-border bg-card/50 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <p className="text-sm font-semibold text-foreground">Client / Site Information</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Row label="Customer" value={l?.name || c?.name} />
+                        <Row label="Company" value={l?.company_name} />
+                        <Row label="Phone" value={l?.phone || c?.phone} />
+                        <Row label="Email" value={l?.email || c?.email} />
+                        <Row label="Address" value={l?.address} />
+                        <Row label="GPS Address" value={l?.gps_address} />
+                        <Row label="Location" value={l?.location || c?.location} />
+                        <Row label="Ghana Card No." value={l?.ghana_card_number} />
+                        <Row label="Service Type" value={d?.service_type || l?.lead_type || c?.service_type} />
+                        <Row label="ISP Category" value={d?.isp_category} />
+                        <Row label="Bandwidth" value={d?.bandwidth} />
+                      </div>
+                      {(l?.notes || d?.notes) && (
+                        <div className="pt-2 border-t border-border">
+                          <Row label="Notes from Sales" value={l?.notes || d?.notes} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+                {isManager && (
                 <div>
                   <Label>Assign Engineer</Label>
                   <Select value={form.assigned_to} onValueChange={v => setForm({ ...form, assigned_to: v })}>
