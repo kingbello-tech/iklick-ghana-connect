@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Users, UserCheck, UserX, Phone } from "lucide-react";
+import { Plus, Search, Users, UserCheck, UserX, Phone, ArrowRightCircle } from "lucide-react";
 import { TablePagination } from "@/components/crm/TablePagination";
 
 const LEAD_TYPES = ["home", "sme", "enterprise"] as const;
@@ -162,6 +162,34 @@ export default function SalesLeads() {
       notes: lead.notes || "",
     });
     setEditOpen(true);
+  };
+
+  const handleConvert = async (lead: Lead) => {
+    if (!user) return;
+    if (lead.converted_deal_id) {
+      toast({ title: "Already converted", description: "This lead is already in the pipeline." });
+      return;
+    }
+    const { data: deal, error: dealErr } = await supabase
+      .from("deals")
+      .insert({
+        title: lead.company_name || lead.name,
+        lead_id: lead.id,
+        stage: "new_lead" as any,
+        assigned_to: lead.assigned_to || user.id,
+        created_by: user.id,
+        notes: lead.notes,
+        probability: 25,
+      })
+      .select("id")
+      .single();
+    if (dealErr || !deal) {
+      toast({ title: "Could not convert", description: dealErr?.message, variant: "destructive" });
+      return;
+    }
+    await supabase.from("leads").update({ converted_deal_id: deal.id, status: "qualified" as any }).eq("id", lead.id);
+    toast({ title: "Lead converted", description: "Deal created in the pipeline." });
+    fetchData();
   };
 
   const filtered = leads.filter(l => {
