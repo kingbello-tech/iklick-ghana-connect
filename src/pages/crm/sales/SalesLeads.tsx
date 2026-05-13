@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Users, UserCheck, UserX, Phone } from "lucide-react";
+import { Plus, Search, Users, UserCheck, UserX, Phone, ArrowRightCircle } from "lucide-react";
 import { TablePagination } from "@/components/crm/TablePagination";
 
 const LEAD_TYPES = ["home", "sme", "enterprise"] as const;
@@ -164,6 +164,34 @@ export default function SalesLeads() {
     setEditOpen(true);
   };
 
+  const handleConvert = async (lead: Lead) => {
+    if (!user) return;
+    if (lead.converted_deal_id) {
+      toast({ title: "Already converted", description: "This lead is already in the pipeline." });
+      return;
+    }
+    const { data: deal, error: dealErr } = await supabase
+      .from("deals")
+      .insert({
+        title: lead.company_name || lead.name,
+        lead_id: lead.id,
+        stage: "new_lead" as any,
+        assigned_to: lead.assigned_to || user.id,
+        created_by: user.id,
+        notes: lead.notes,
+        probability: 25,
+      })
+      .select("id")
+      .single();
+    if (dealErr || !deal) {
+      toast({ title: "Could not convert", description: dealErr?.message, variant: "destructive" });
+      return;
+    }
+    await supabase.from("leads").update({ converted_deal_id: deal.id, status: "qualified" as any }).eq("id", lead.id);
+    toast({ title: "Lead converted", description: "Deal created in the pipeline." });
+    fetchData();
+  };
+
   const filtered = leads.filter(l => {
     const matchSearch = !search || [l.name, l.company_name, l.email, l.location].some(f => f?.toLowerCase().includes(search.toLowerCase()));
     const matchStatus = statusFilter === "all" || l.status === statusFilter;
@@ -308,7 +336,18 @@ export default function SalesLeads() {
                 <TableCell className="text-muted-foreground capitalize">{lead.source.replace("_", " ")}</TableCell>
                 <TableCell><Badge variant="outline" className={statusColors[lead.status]}>{lead.status}</Badge></TableCell>
                 <TableCell className="text-muted-foreground">{lead.assigned_to ? profileMap[lead.assigned_to] || "Unknown" : "—"}</TableCell>
-                <TableCell><Button variant="ghost" size="sm" onClick={() => openEdit(lead)}>Edit</Button></TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(lead)}>Edit</Button>
+                    {lead.converted_deal_id ? (
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">In pipeline</Badge>
+                    ) : (
+                      <Button variant="ghost" size="sm" onClick={() => handleConvert(lead)} title="Convert to deal">
+                        <ArrowRightCircle className="h-4 w-4 mr-1" />Convert
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
