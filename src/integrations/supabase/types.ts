@@ -688,6 +688,36 @@ export type Database = {
           },
         ]
       }
+      intake_links: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          label: string | null
+          sales_rep_id: string
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          sales_rep_id: string
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          label?: string | null
+          sales_rep_id?: string
+          token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           amount_paid: number
@@ -796,12 +826,15 @@ export type Database = {
       }
       leads: {
         Row: {
+          address: string | null
           assigned_to: string | null
           company_name: string | null
           converted_deal_id: string | null
           created_at: string
           created_by: string
           email: string | null
+          ghana_card_number: string | null
+          gps_address: string | null
           id: string
           lead_type: Database["public"]["Enums"]["lead_type"]
           location: string | null
@@ -813,12 +846,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          address?: string | null
           assigned_to?: string | null
           company_name?: string | null
           converted_deal_id?: string | null
           created_at?: string
           created_by: string
           email?: string | null
+          ghana_card_number?: string | null
+          gps_address?: string | null
           id?: string
           lead_type?: Database["public"]["Enums"]["lead_type"]
           location?: string | null
@@ -830,12 +866,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          address?: string | null
           assigned_to?: string | null
           company_name?: string | null
           converted_deal_id?: string | null
           created_at?: string
           created_by?: string
           email?: string | null
+          ghana_card_number?: string | null
+          gps_address?: string | null
           id?: string
           lead_type?: Database["public"]["Enums"]["lead_type"]
           location?: string | null
