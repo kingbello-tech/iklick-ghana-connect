@@ -318,10 +318,6 @@ export default function SurveyQueue() {
                       <Row label="Service Type" value={d?.service_type || l?.lead_type || c?.service_type} />
                       <Row label="ISP Category" value={d?.isp_category} />
                       <Row label="Bandwidth" value={d?.bandwidth} />
-                      <Row label="MRC (₵)" value={d?.mrc ? Number(d.mrc).toLocaleString() : null} />
-                      <Row label="NRC (₵)" value={d?.nrc ? Number(d.nrc).toLocaleString() : null} />
-                      <Row label="Sales Rep" value={rep} />
-                      <Row label="Lead Source" value={l?.source} />
                     </div>
                     {(l?.notes || d?.notes) && (
                       <div className="pt-2 border-t border-border">

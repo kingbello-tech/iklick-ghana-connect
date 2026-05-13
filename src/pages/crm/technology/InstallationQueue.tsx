@@ -26,7 +26,9 @@ interface Installation {
   work_order_number: string | null;
 }
 
-interface Deal { id: string; title: string; isp_category: string | null; client_id: string | null; mrc: number | null; nrc: number | null; service_type: string | null; }
+interface Deal { id: string; title: string; isp_category: string | null; client_id: string | null; lead_id: string | null; assigned_to: string | null; created_by: string | null; mrc: number | null; nrc: number | null; service_type: string | null; bandwidth: string | null; notes: string | null; }
+interface Lead { id: string; name: string; company_name: string | null; email: string | null; phone: string | null; address: string | null; gps_address: string | null; location: string | null; ghana_card_number: string | null; lead_type: string | null; notes: string | null; }
+interface Client { id: string; name: string; email: string | null; phone: string | null; location: string | null; service_type: string | null; }
 interface Profile { user_id: string; full_name: string | null; }
 
 const STATUS_COLORS: Record<string, string> = {
