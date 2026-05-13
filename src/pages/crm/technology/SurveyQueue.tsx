@@ -28,7 +28,35 @@ interface Survey {
   completed_at: string | null;
 }
 
-interface Deal { id: string; title: string; isp_category: string | null; }
+interface Deal {
+  id: string;
+  title: string;
+  isp_category: string | null;
+  service_type: string | null;
+  bandwidth: string | null;
+  mrc: number | null;
+  nrc: number | null;
+  notes: string | null;
+  lead_id: string | null;
+  client_id: string | null;
+  assigned_to: string | null;
+  created_by: string | null;
+}
+interface Lead {
+  id: string;
+  name: string;
+  company_name: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  gps_address: string | null;
+  location: string | null;
+  ghana_card_number: string | null;
+  lead_type: string | null;
+  notes: string | null;
+  source: string | null;
+}
+interface Client { id: string; name: string; email: string | null; phone: string | null; location: string | null; service_type: string | null; }
 interface Profile { user_id: string; full_name: string | null; }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -42,6 +70,8 @@ export default function SurveyQueue() {
   const { toast } = useToast();
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -61,13 +91,17 @@ export default function SurveyQueue() {
   const isManager = role === "admin" || role === "technology_manager";
 
   const fetchData = async () => {
-    const [sRes, dRes, pRes] = await Promise.all([
+    const [sRes, dRes, lRes, cRes, pRes] = await Promise.all([
       supabase.from("site_surveys").select("*").order("requested_at", { ascending: false }),
-      supabase.from("deals").select("id, title, isp_category"),
+      supabase.from("deals").select("id, title, isp_category, service_type, bandwidth, mrc, nrc, notes, lead_id, client_id, assigned_to, created_by"),
+      supabase.from("leads").select("id, name, company_name, email, phone, address, gps_address, location, ghana_card_number, lead_type, notes, source"),
+      supabase.from("clients").select("id, name, email, phone, location, service_type"),
       supabase.from("profiles").select("user_id, full_name"),
     ]);
     if (sRes.data) setSurveys(sRes.data as any);
     if (dRes.data) setDeals(dRes.data as any);
+    if (lRes.data) setLeads(lRes.data as any);
+    if (cRes.data) setClients(cRes.data as any);
     if (pRes.data) setProfiles(pRes.data);
     setLoading(false);
   };
@@ -75,6 +109,8 @@ export default function SurveyQueue() {
   useEffect(() => { fetchData(); }, []);
 
   const dealMap = Object.fromEntries(deals.map(d => [d.id, d]));
+  const leadMap = Object.fromEntries(leads.map(l => [l.id, l]));
+  const clientMap = Object.fromEntries(clients.map(c => [c.id, c]));
   const profileMap = Object.fromEntries(profiles.map(p => [p.user_id, p.full_name || "Unknown"]));
 
   const openEdit = (s: Survey) => {
@@ -112,6 +148,14 @@ export default function SurveyQueue() {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
       return;
+    }
+
+    // When survey is completed, advance the deal to Proposal/Costing for the sales rep.
+    if (justCompleted) {
+      await supabase
+        .from("deals")
+        .update({ stage: "proposal_sent" as any })
+        .eq("id", selected.deal_id);
     }
 
     const deal = dealMap[selected.deal_id];
@@ -244,6 +288,49 @@ export default function SurveyQueue() {
                 <p className="text-xs text-muted-foreground">Deal</p>
                 <p className="font-medium text-foreground">{dealMap[selected.deal_id]?.title}</p>
               </div>
+              {(() => {
+                const d = dealMap[selected.deal_id];
+                const l = d?.lead_id ? leadMap[d.lead_id] : null;
+                const c = d?.client_id ? clientMap[d.client_id] : null;
+                const rep = d?.assigned_to ? profileMap[d.assigned_to] : (d?.created_by ? profileMap[d.created_by] : null);
+                const Row = ({ label, value }: { label: string; value: any }) =>
+                  value ? (
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+                      <p className="text-sm text-foreground break-words">{value}</p>
+                    </div>
+                  ) : null;
+                return (
+                  <div className="p-4 rounded-lg border border-border bg-card/50 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <p className="text-sm font-semibold text-foreground">Client / Site Information</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Row label="Customer" value={l?.name || c?.name} />
+                      <Row label="Company" value={l?.company_name} />
+                      <Row label="Phone" value={l?.phone || c?.phone} />
+                      <Row label="Email" value={l?.email || c?.email} />
+                      <Row label="Address" value={l?.address} />
+                      <Row label="GPS Address" value={l?.gps_address} />
+                      <Row label="Location" value={l?.location || c?.location} />
+                      <Row label="Ghana Card No." value={l?.ghana_card_number} />
+                      <Row label="Service Type" value={d?.service_type || l?.lead_type || c?.service_type} />
+                      <Row label="ISP Category" value={d?.isp_category} />
+                      <Row label="Bandwidth" value={d?.bandwidth} />
+                      <Row label="MRC (₵)" value={d?.mrc ? Number(d.mrc).toLocaleString() : null} />
+                      <Row label="NRC (₵)" value={d?.nrc ? Number(d.nrc).toLocaleString() : null} />
+                      <Row label="Sales Rep" value={rep} />
+                      <Row label="Lead Source" value={l?.source} />
+                    </div>
+                    {(l?.notes || d?.notes) && (
+                      <div className="pt-2 border-t border-border">
+                        <Row label="Notes from Sales" value={l?.notes || d?.notes} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               <div className="grid grid-cols-2 gap-4">
                 {isManager && (
                   <div>
