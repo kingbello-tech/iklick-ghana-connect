@@ -43,6 +43,8 @@ export default function InstallationQueue() {
   const { toast } = useToast();
   const [installations, setInstallations] = useState<Installation[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -54,13 +56,17 @@ export default function InstallationQueue() {
   const isManager = role === "admin" || role === "technology_manager";
 
   const fetchData = async () => {
-    const [iRes, dRes, pRes] = await Promise.all([
+    const [iRes, dRes, lRes, cRes, pRes] = await Promise.all([
       supabase.from("installations").select("*").order("created_at", { ascending: false }),
-      supabase.from("deals").select("id, title, isp_category, client_id, mrc, nrc, service_type"),
+      supabase.from("deals").select("id, title, isp_category, client_id, lead_id, assigned_to, created_by, mrc, nrc, service_type, bandwidth, notes"),
+      supabase.from("leads").select("id, name, company_name, email, phone, address, gps_address, location, ghana_card_number, lead_type, notes"),
+      supabase.from("clients").select("id, name, email, phone, location, service_type"),
       supabase.from("profiles").select("user_id, full_name"),
     ]);
     if (iRes.data) setInstallations(iRes.data as any);
     if (dRes.data) setDeals(dRes.data as any);
+    if (lRes.data) setLeads(lRes.data as any);
+    if (cRes.data) setClients(cRes.data as any);
     if (pRes.data) setProfiles(pRes.data);
     setLoading(false);
   };
