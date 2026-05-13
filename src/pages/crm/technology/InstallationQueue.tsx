@@ -23,6 +23,7 @@ interface Installation {
   completed_at: string | null;
   notes: string | null;
   created_at: string;
+  work_order_number: string | null;
 }
 
 interface Deal { id: string; title: string; isp_category: string | null; client_id: string | null; mrc: number | null; nrc: number | null; service_type: string | null; }
@@ -180,7 +181,10 @@ export default function InstallationQueue() {
                 <div className="flex items-center gap-3">
                   <Wrench className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">{deal?.title || "Unknown deal"}</p>
+                    <p className="text-sm font-medium text-foreground">
+                      {i.work_order_number && <span className="font-mono text-xs text-primary mr-2">{i.work_order_number}</span>}
+                      {deal?.title || "Unknown deal"}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {i.assigned_to ? `Engineer: ${profileMap[i.assigned_to]}` : "Unassigned"} · Created {format(new Date(i.created_at), "MMM d")}
                     </p>
@@ -208,7 +212,9 @@ export default function InstallationQueue() {
           {selected && (
             <div className="space-y-4">
               <div className="p-3 bg-muted/30 rounded-lg">
-                <p className="text-xs text-muted-foreground">Deal</p>
+                <p className="text-xs text-muted-foreground">
+                  Deal {selected.work_order_number && <span className="font-mono text-primary ml-1">· {selected.work_order_number}</span>}
+                </p>
                 <p className="font-medium text-foreground">{dealMap[selected.deal_id]?.title}</p>
               </div>
               {isManager && (
