@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import SurveyPage from "./pages/SurveyPage";
 import Projects from "./pages/Projects";
 import Team from "./pages/Team";
+import IntakeForm from "./pages/IntakeForm";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
 import CRMDashboard from "./pages/crm/CRMDashboard";
@@ -29,6 +30,7 @@ import SalesLeads from "./pages/crm/sales/SalesLeads";
 import SalesPipeline from "./pages/crm/sales/SalesPipeline";
 import SalesDashboard from "./pages/crm/sales/SalesDashboard";
 import SalesTargets from "./pages/crm/sales/SalesTargets";
+import IntakeLinks from "./pages/crm/sales/IntakeLinks";
 import TechnologyDashboard from "./pages/crm/technology/TechnologyDashboard";
 import SurveyQueue from "./pages/crm/technology/SurveyQueue";
 import InstallationQueue from "./pages/crm/technology/InstallationQueue";
@@ -67,6 +69,7 @@ const App = () => (
               <Route path="/team" element={<Team />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/survey/:token" element={<SurveyPage />} />
+              <Route path="/intake/:token" element={<IntakeForm />} />
 
               {/* CRM routes */}
               <Route path="/crm" element={<ProtectedRoute><CRMLayout /></ProtectedRoute>}>
@@ -89,6 +92,7 @@ const App = () => (
                 <Route path="sales/leads" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesLeads /></ProtectedRoute>} />
                 <Route path="sales/pipeline" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesPipeline /></ProtectedRoute>} />
                 <Route path="sales/targets" element={<ProtectedRoute allowedRoles={SALES_ROLES}><SalesTargets /></ProtectedRoute>} />
+                <Route path="sales/intake-links" element={<ProtectedRoute allowedRoles={SALES_ROLES}><IntakeLinks /></ProtectedRoute>} />
 
                 {/* Technology routes */}
                 <Route path="technology/dashboard" element={<ProtectedRoute allowedRoles={TECH_ROLES}><TechnologyDashboard /></ProtectedRoute>} />
