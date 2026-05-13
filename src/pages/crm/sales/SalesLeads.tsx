@@ -336,7 +336,18 @@ export default function SalesLeads() {
                 <TableCell className="text-muted-foreground capitalize">{lead.source.replace("_", " ")}</TableCell>
                 <TableCell><Badge variant="outline" className={statusColors[lead.status]}>{lead.status}</Badge></TableCell>
                 <TableCell className="text-muted-foreground">{lead.assigned_to ? profileMap[lead.assigned_to] || "Unknown" : "—"}</TableCell>
-                <TableCell><Button variant="ghost" size="sm" onClick={() => openEdit(lead)}>Edit</Button></TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(lead)}>Edit</Button>
+                    {lead.converted_deal_id ? (
+                      <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">In pipeline</Badge>
+                    ) : (
+                      <Button variant="ghost" size="sm" onClick={() => handleConvert(lead)} title="Convert to deal">
+                        <ArrowRightCircle className="h-4 w-4 mr-1" />Convert
+                      </Button>
+                    )}
+                  </div>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
