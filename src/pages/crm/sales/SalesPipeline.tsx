@@ -49,6 +49,18 @@ interface Deal {
 }
 
 interface Profile { user_id: string; full_name: string | null; }
+interface SiteSurvey {
+  id: string;
+  deal_id: string;
+  status: string;
+  feasibility: string;
+  cost_estimate: number | null;
+  infrastructure_notes: string | null;
+  engineer_notes: string | null;
+  scheduled_date: string | null;
+  completed_at: string | null;
+  assigned_to: string | null;
+}
 
 const emptyForm = {
   title: "",
@@ -68,6 +80,7 @@ export default function SalesPipeline() {
   const { toast } = useToast();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [surveys, setSurveys] = useState<SiteSurvey[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -75,12 +88,14 @@ export default function SalesPipeline() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchData = async () => {
-    const [dealsRes, profilesRes] = await Promise.all([
+    const [dealsRes, profilesRes, surveysRes] = await Promise.all([
       supabase.from("deals").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("user_id, full_name"),
+      supabase.from("site_surveys").select("*").order("requested_at", { ascending: false }),
     ]);
     if (dealsRes.data) setDeals(dealsRes.data as unknown as Deal[]);
     if (profilesRes.data) setProfiles(profilesRes.data);
+    if (surveysRes.data) setSurveys(surveysRes.data as unknown as SiteSurvey[]);
     setLoading(false);
   };
 
@@ -342,6 +357,38 @@ export default function SalesPipeline() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Deal</DialogTitle></DialogHeader>
+          {selected && (() => {
+            const survey = surveys.find(s => s.deal_id === selected.id);
+            if (!survey) return null;
+            const Row = ({ label, value }: { label: string; value: any }) =>
+              value ? (
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+                  <p className="text-sm text-foreground break-words">{value}</p>
+                </div>
+              ) : null;
+            return (
+              <div className="mb-4 p-4 rounded-lg border border-border bg-muted/30 space-y-3">
+                <div className="flex items-center gap-2">
+                  <ClipboardCheck className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold text-foreground">Site Survey Report</p>
+                  <Badge variant="outline" className="ml-auto text-xs">{survey.status}</Badge>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Row label="Feasibility" value={survey.feasibility} />
+                  <Row label="Cost Estimate" value={survey.cost_estimate ? `₵${Number(survey.cost_estimate).toLocaleString()}` : null} />
+                  <Row label="Scheduled" value={survey.scheduled_date} />
+                  <Row label="Completed" value={survey.completed_at ? new Date(survey.completed_at).toLocaleDateString() : null} />
+                  <Row label="Engineer" value={survey.assigned_to ? profileMap[survey.assigned_to] : null} />
+                </div>
+                {survey.infrastructure_notes && <Row label="Infrastructure Notes" value={survey.infrastructure_notes} />}
+                {survey.engineer_notes && <Row label="Engineer Notes" value={survey.engineer_notes} />}
+                {survey.status !== "completed" && (
+                  <p className="text-xs text-muted-foreground italic">Awaiting Technology team to complete the survey.</p>
+                )}
+              </div>
+            );
+          })()}
           {renderDealForm(handleEdit, "Save Changes")}
         </DialogContent>
       </Dialog>
