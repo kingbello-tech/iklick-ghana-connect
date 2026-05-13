@@ -653,6 +653,7 @@ export type Database = {
           scheduled_date: string | null
           status: Database["public"]["Enums"]["installation_status"]
           updated_at: string
+          work_order_number: string | null
         }
         Insert: {
           assigned_by?: string | null
@@ -665,6 +666,7 @@ export type Database = {
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["installation_status"]
           updated_at?: string
+          work_order_number?: string | null
         }
         Update: {
           assigned_by?: string | null
@@ -677,6 +679,7 @@ export type Database = {
           scheduled_date?: string | null
           status?: Database["public"]["Enums"]["installation_status"]
           updated_at?: string
+          work_order_number?: string | null
         }
         Relationships: [
           {

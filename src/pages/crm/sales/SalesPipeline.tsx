@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Calendar, Percent, ClipboardCheck } from "lucide-react";
+import { Plus, Calendar, Percent, ClipboardCheck, Wrench } from "lucide-react";
 
 const STAGES = [
   { value: "new_lead", label: "Lead", color: "bg-blue-500" },
@@ -191,6 +191,38 @@ export default function SalesPipeline() {
     }
   };
 
+  const requestInstallation = async (deal: Deal) => {
+    if (!user) return;
+    // Move stage to closed_won; trigger create_installation_on_won will create the installation row + work order #
+    const { error } = await supabase.from("deals").update({ stage: "closed_won" as any }).eq("id", deal.id);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    // Fetch the newly-created installation to surface the work order number
+    const { data: inst } = await supabase
+      .from("installations")
+      .select("work_order_number")
+      .eq("deal_id", deal.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    supabase.functions.invoke("send-tech-email", {
+      body: {
+        type: "deal_won_to_tech",
+        deal_title: deal.title,
+        deal_id: deal.id,
+        isp_category: deal.isp_category,
+        notes: inst?.work_order_number ? `Work Order: ${inst.work_order_number}` : undefined,
+      },
+    }).catch(err => console.error("install request email failed", err));
+    toast({
+      title: "Installation requested",
+      description: inst?.work_order_number ? `Work Order ${inst.work_order_number} sent to Technology` : "Sent to Technology team",
+    });
+    fetchData();
+  };
+
   const openEdit = (deal: Deal) => {
     setSelected(deal);
     setForm({
@@ -320,6 +352,12 @@ export default function SalesPipeline() {
                           <ClipboardCheck className="h-3 w-3 mr-1" />Request Site Survey
                         </Button>
                       )}
+                      {["proposal_sent", "negotiation"].includes(deal.stage) &&
+                        surveys.some(s => s.deal_id === deal.id && s.status === "completed") && (
+                          <Button size="sm" className="w-full mt-2" onClick={() => requestInstallation(deal)}>
+                            <Wrench className="h-3 w-3 mr-1" />Move to Installation
+                          </Button>
+                        )}
                     </CardContent>
                   </Card>
                 ))}
