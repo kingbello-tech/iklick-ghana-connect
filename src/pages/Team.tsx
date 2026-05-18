@@ -20,9 +20,9 @@ const team: Member[] = [
     bio: "Kwame founded iKlick with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
   {
-    id: 2, name: "Aseda Sasu-Boamah", role: "Director of Operations", image: null,
-    email: "aseda@iklickgh.com", linkedin: "#",
-    bio: "Aseda oversees iKlick's day-to-day operations, ensuring every deployment, installation, and service ticket is delivered to the highest standard. With a background in industrial engineering, she brings precision and care to every project the team takes on.",
+    id: 2, name: "Rita Sena Agbeko", role: "Head of Finance & Strategy", image: null,
+    email: "rita@iklickgh.com", linkedin: "#",
+    bio: "Rita oversees iKlick's financial strategy and operations, ensuring sustainable growth and operational excellence. With a background in finance and strategy, she brings precision and foresight to every project the team takes on.",
   },
   {
     id: 3, name: "Kojo Asante", role: "Lead Network Engineer", image: null,
