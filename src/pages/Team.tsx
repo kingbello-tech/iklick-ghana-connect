@@ -15,14 +15,14 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "---", role: "Admin & HR Manager", image: null,
+    id: 1, name: "---", role: "Business Support", image: null,
     email: "kwame@iklickgh.com", linkedin: "#",
     bio: "Kwame founded iKlick with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
   {
-    id: 2, name: "Ama Boateng", role: "Director of Operations", image: null,
-    email: "ama@iklickgh.com", linkedin: "#",
-    bio: "Ama oversees iKlick's day-to-day operations, ensuring every deployment, installation, and service ticket is delivered to the highest standard. With a background in industrial engineering, she brings precision and care to every project the team takes on.",
+    id: 2, name: "Aseda Sasu-Boamah", role: "Director of Operations", image: null,
+    email: "aseda@iklickgh.com", linkedin: "#",
+    bio: "Aseda oversees iKlick's day-to-day operations, ensuring every deployment, installation, and service ticket is delivered to the highest standard. With a background in industrial engineering, she brings precision and care to every project the team takes on.",
   },
   {
     id: 3, name: "Kojo Asante", role: "Lead Network Engineer", image: null,
