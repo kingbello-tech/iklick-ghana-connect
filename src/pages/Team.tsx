@@ -30,9 +30,9 @@ const team: Member[] = [
     bio: "Joseph architects the fiber and wireless networks powering iKlick's clients. From core routing to last-mile design, he leads the engineering team in building resilient, scalable infrastructure that delivers consistent performance.",
   },
   {
-    id: 4, name: "Akosua Owusu", role: "Sales Manager", image: null,
-    email: "akosua@iklickgh.com", linkedin: "#",
-    bio: "Akosua partners with enterprises, estates, and institutions to design connectivity solutions that fit their needs. She combines technical fluency with a consultative approach to help clients get the most from their network.",
+    id: 4, name: "Eugene Bluku", role: "Sales Manager", image: null,
+    email: "eugene@iklickgh.com", linkedin: "#",
+    bio: "Eugene partners with enterprises, estates, and institutions to design connectivity solutions that fit their needs. He combines technical fluency with a consultative approach to help clients get the most from their network.",
   },
   {
     id: 5, name: "Yaw Adjei", role: "Finance Officer", image: null,
