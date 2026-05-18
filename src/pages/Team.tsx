@@ -15,7 +15,7 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "Rita Senah Agbeko", role: "Head of Finance & Strategy", image: null,
+    id: 1, name: "Bright Asiamah Tawiah", role: "General Manager", image: null,
     email: "kwame@iklickgh.com", linkedin: "#",
     bio: "Kwame founded iKlick with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
