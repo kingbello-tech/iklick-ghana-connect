@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import iklickLogo from "@/assets/iklick_logo_full.png";
+import SectionLink from "@/components/SectionLink";
 
 const Footer = () => {
   return (
@@ -7,9 +9,9 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           {/* Company */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-4">
+            <Link to="/" className="flex items-center gap-2 mb-4">
               <img src={iklickLogo} alt="iKlick Communications" className="h-16 md:h-20 w-auto object-contain rounded" />
-            </div>
+            </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Forward-thinking ISP delivering reliable, high-speed connectivity across Ghana.
             </p>
@@ -19,10 +21,10 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-foreground/70">Services</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#services" className="hover:text-foreground transition-colors">Enterprise Fiber</a></li>
-              <li><a href="#services" className="hover:text-foreground transition-colors">Residential Broadband</a></li>
-              <li><a href="#services" className="hover:text-foreground transition-colors">VoIP Solutions</a></li>
-              <li><a href="#services" className="hover:text-foreground transition-colors">Managed IT</a></li>
+              <li><SectionLink hash="#services" className="hover:text-foreground transition-colors">Enterprise Fiber</SectionLink></li>
+              <li><SectionLink hash="#services" className="hover:text-foreground transition-colors">Residential Broadband</SectionLink></li>
+              <li><SectionLink hash="#services" className="hover:text-foreground transition-colors">VoIP Solutions</SectionLink></li>
+              <li><SectionLink hash="#services" className="hover:text-foreground transition-colors">Managed IT</SectionLink></li>
             </ul>
           </div>
 
@@ -30,10 +32,10 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-foreground/70">Support</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#support" className="hover:text-foreground transition-colors">Help Center</a></li>
-              <li><a href="#support" className="hover:text-foreground transition-colors">Service Status</a></li>
-              <li><a href="#contact" className="hover:text-foreground transition-colors">Contact Us</a></li>
-              <li><a href="#" className="hover:text-foreground transition-colors">FAQs</a></li>
+              <li><SectionLink hash="#support" className="hover:text-foreground transition-colors">Help Center</SectionLink></li>
+              <li><SectionLink hash="#support" className="hover:text-foreground transition-colors">Service Status</SectionLink></li>
+              <li><SectionLink hash="#contact" className="hover:text-foreground transition-colors">Contact Us</SectionLink></li>
+              <li><SectionLink hash="#support" className="hover:text-foreground transition-colors">FAQs</SectionLink></li>
             </ul>
           </div>
 
@@ -55,8 +57,8 @@ const Footer = () => {
             © {new Date().getFullYear()} iKlick Communications Limited. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
+            <a href="mailto:sales@iklickgh.com" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="mailto:sales@iklickgh.com" className="hover:text-foreground transition-colors">Terms of Service</a>
           </div>
         </div>
       </div>

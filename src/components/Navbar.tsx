@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
+import SectionLink from "@/components/SectionLink";
 import iklickLogo from "@/assets/iklick_logo_full.png";
 
 interface NavbarProps {
@@ -30,9 +31,9 @@ const Navbar = ({ visible = true }: NavbarProps) => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <a href="#" className="flex items-center justify-center gap-2 group">
+          <Link to="/" className="flex items-center justify-center gap-2 group">
             <img src={iklickLogo} alt="iKlick Communications" className="h-14 md:h-16 w-auto object-contain rounded align-middle" />
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
@@ -46,13 +47,13 @@ const Navbar = ({ visible = true }: NavbarProps) => {
                   {link.name}
                 </Link>
               ) : (
-                <a
+                <SectionLink
                   key={link.name}
-                  href={link.href}
+                  hash={link.href}
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   {link.name}
-                </a>
+                </SectionLink>
               )
             )}
             <ThemeToggle />
@@ -87,14 +88,14 @@ const Navbar = ({ visible = true }: NavbarProps) => {
                     {link.name}
                   </Link>
                 ) : (
-                  <a
+                  <SectionLink
                     key={link.name}
-                    href={link.href}
+                    hash={link.href}
                     className="text-muted-foreground hover:text-foreground transition-colors py-2"
                     onClick={() => setIsOpen(false)}
                   >
                     {link.name}
-                  </a>
+                  </SectionLink>
                 )
               )}
               <div className="flex items-center gap-2">
