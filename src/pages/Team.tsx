@@ -40,9 +40,9 @@ const team: Member[] = [
     bio: "Yaw runs iKlick's financial operations with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
   },
   {
-    id: 6, name: "Esi Quartey", role: "Client Experience Lead", image: null,
-    email: "esi@iklickgh.com", linkedin: "#",
-    bio: "Esi champions the voice of every iKlick client. She leads support, satisfaction, and SLA programs — making sure clients feel heard and that every issue is resolved quickly and completely.",
+    id: 6, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: null,
+    email: "erasmus@iklickgh.com", linkedin: "#",
+    bio: "Erasmus champions the voice of every iKlick client. He leads support, satisfaction, and SLA programs — making sure clients feel heard and that every issue is resolved quickly and completely.",
   },
 ];
 
