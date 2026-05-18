@@ -62,7 +62,7 @@ const Team = () => {
             Meet the <span className="gradient-text">Team</span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            The people behind our success, Engineers, Operators, and Storytellers building Ghana's most reliable connectivity.
+            The people behind our success, Engineers, Operators, and amazing people building the most reliable connectivity ever seen.
           </p>
         </div>
       </section>
