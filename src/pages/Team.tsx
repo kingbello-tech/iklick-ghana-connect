@@ -35,9 +35,9 @@ const team: Member[] = [
     bio: "Eugene partners with enterprises, estates, and institutions to design connectivity solutions that fit their needs. He combines technical fluency with a consultative approach to help clients get the most from their network.",
   },
   {
-    id: 5, name: "Yaw Adjei", role: "Finance Officer", image: null,
-    email: "yaw@iklickgh.com", linkedin: "#",
-    bio: "Yaw runs iKlick's financial operations with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
+    id: 5, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: null,
+    email: "erasmus@iklickgh.com", linkedin: "#",
+    bio: "Erasmus leads iKlick's service delivery with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
   },
   {
     id: 6, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: null,
