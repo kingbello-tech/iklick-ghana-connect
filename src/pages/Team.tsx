@@ -42,7 +42,7 @@ const team: Member[] = [
   {
     id: 6, name: "Sabina Danquah", role: "Client Experience Manager", image: null,
     email: "sabina@iklickgh.com", linkedin: "#",
-    bio: "Sabina champions the voice of every iKlick client. She leads support, satisfaction, and SLA programs — making sure clients feel heard and that every issue is resolved quickly and completely.",
+    bio: "Sabina champions the voice of every iKlick client. She leads support, satisfaction, and SLA programs making sure clients feel heard and that every issue is resolved quickly and completely.",
   },
 ];
 
