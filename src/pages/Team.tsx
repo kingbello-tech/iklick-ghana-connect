@@ -25,9 +25,9 @@ const team: Member[] = [
     bio: "Rita oversees iKlick's financial strategy and operations, ensuring sustainable growth and operational excellence. With a background in finance and strategy, she brings precision and foresight to every project the team takes on.",
   },
   {
-    id: 3, name: "Kojo Asante", role: "Lead Network Engineer", image: null,
-    email: "kojo@iklickgh.com", linkedin: "#",
-    bio: "Kojo architects the fiber and wireless networks powering iKlick's clients. From core routing to last-mile design, he leads the engineering team in building resilient, scalable infrastructure that delivers consistent performance.",
+    id: 3, name: "Joseph Afotey", role: "Head of Technology", image: null,
+    email: "joseph@iklickgh.com", linkedin: "#",
+    bio: "Joseph architects the fiber and wireless networks powering iKlick's clients. From core routing to last-mile design, he leads the engineering team in building resilient, scalable infrastructure that delivers consistent performance.",
   },
   {
     id: 4, name: "Akosua Owusu", role: "Sales Manager", image: null,
