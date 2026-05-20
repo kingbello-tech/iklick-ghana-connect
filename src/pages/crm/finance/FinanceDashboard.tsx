@@ -187,7 +187,6 @@ export default function FinanceDashboard() {
           </CardContent>
         </Card>
       )}
-      </div>
 
       <Card>
         <CardHeader><CardTitle>Recent Invoices</CardTitle></CardHeader>
