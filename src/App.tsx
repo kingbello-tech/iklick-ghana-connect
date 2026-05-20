@@ -46,6 +46,8 @@ import StatutorySettings from "./pages/crm/hr/StatutorySettings";
 import PayrollRunsStub from "./pages/crm/hr/PayrollRunsStub";
 import StatutoryReportsStub from "./pages/crm/hr/StatutoryReportsStub";
 import MyPayslipsStub from "./pages/crm/MyPayslipsStub";
+import ProjectList from "./pages/crm/projects/ProjectList";
+import ProjectDetail from "./pages/crm/projects/ProjectDetail";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +80,8 @@ const App = () => (
                 <Route path="incidents" element={<IncidentList />} />
                 <Route path="incidents/:id" element={<IncidentDetail />} />
                 <Route path="clients" element={<ClientList />} />
+                <Route path="projects" element={<ProjectList />} />
+                <Route path="projects/:id" element={<ProjectDetail />} />
                 <Route path="satisfaction" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><ClientSatisfaction /></ProtectedRoute>} />
                 <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience", "network_manager"]}><SLAReports /></ProtectedRoute>} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
