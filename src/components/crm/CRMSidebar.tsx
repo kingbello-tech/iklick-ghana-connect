@@ -28,6 +28,7 @@ const navItems = [
 ];
 
 const cxItems = [
+  { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
   { title: "Satisfaction", url: "/crm/satisfaction", icon: Heart },
   { title: "SLA Reports", url: "/crm/sla-reports", icon: Clock },
 ];
