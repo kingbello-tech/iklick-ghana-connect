@@ -391,8 +391,18 @@ export default function IncidentDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Description */}
-          <Card>
+          <Tabs defaultValue="conversation" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="conversation">Conversation</TabsTrigger>
+              <TabsTrigger value="approvals">Approvals</TabsTrigger>
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="time">Time</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="conversation" className="space-y-4 mt-0">
+              {/* Description */}
+              <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Description</CardTitle></CardHeader>
             <CardContent>
               {editing ? (
@@ -436,8 +446,47 @@ export default function IncidentDetail() {
             </CardContent>
           </Card>
 
-          {/* History */}
-          {history.length > 0 && (
+              {/* Attachments */}
+              <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
+
+              {closure && (
+                <Card>
+                  <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle></CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
+                      <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Resolution</p>
+                      <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
+                      <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground pt-2 border-t border-border">
+                      Closed by {profiles[closure.closed_by]?.full_name || "—"} on {format(new Date(closure.created_at), "MMM d, yyyy HH:mm")}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="approvals" className="mt-0">
+              <IncidentApprovals incidentId={incident.id} />
+            </TabsContent>
+
+            <TabsContent value="tasks" className="mt-0">
+              <IncidentTasks incidentId={incident.id} />
+            </TabsContent>
+
+            <TabsContent value="time" className="mt-0">
+              <IncidentTimeEntries incidentId={incident.id} />
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-0">
+              {history.length > 0 ? (
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Change History</CardTitle></CardHeader>
               <CardContent>
@@ -468,33 +517,11 @@ export default function IncidentDetail() {
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Attachments */}
-          <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
-
-          {closure && (
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle></CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
-                  <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Resolution</p>
-                  <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
-                  <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
-                </div>
-                <p className="text-[11px] text-muted-foreground pt-2 border-t border-border">
-                  Closed by {profiles[closure.closed_by]?.full_name || "—"} on {format(new Date(closure.created_at), "MMM d, yyyy HH:mm")}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <p className="text-xs text-muted-foreground">No history yet.</p>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Sidebar Details */}
