@@ -71,16 +71,18 @@ export default function IncidentDetail() {
   const [closureOpen, setClosureOpen] = useState(false);
   const [closureMode, setClosureMode] = useState<"resolve" | "close">("resolve");
   const [closure, setClosure] = useState<{ root_cause: string; resolution: string; recommendation: string; closed_by: string; created_at: string } | null>(null);
+  const [slaMinutes, setSlaMinutes] = useState<number | null>(null);
 
   const fetchAll = async () => {
     if (!id) return;
-    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes] = await Promise.all([
+    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes] = await Promise.all([
       supabase.from("incidents").select("*").eq("id", id).single(),
       supabase.from("incident_notes").select("*").eq("incident_id", id).order("created_at", { ascending: true }),
       supabase.from("incident_history").select("*").eq("incident_id", id).order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
       supabase.from("clients").select("*"),
       (supabase as any).from("incident_closures").select("*").eq("incident_id", id).maybeSingle(),
+      supabase.from("sla_policies").select("priority,resolution_time_minutes"),
     ]);
     if (incRes.data) {
       setIncident(incRes.data);
@@ -88,6 +90,8 @@ export default function IncidentDetail() {
         const c = clientsRes.data?.find((cl) => cl.id === incRes.data.client_id);
         if (c) setClientName(c.name);
       }
+      const sla = slaRes.data?.find((s: any) => s.priority === incRes.data.priority);
+      setSlaMinutes(sla?.resolution_time_minutes ?? null);
     }
     if (notesRes.data) setNotes(notesRes.data);
     if (histRes.data) setHistory(histRes.data);
