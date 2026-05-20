@@ -1,158 +1,103 @@
-# Payroll & Payslips (Ghana-compliant)
+## Goal
 
-A new internal-only module under `/crm/hr/...` that lets HR/Finance manage employee pay records, run monthly payroll with automatic GRA PAYE, SSNIT Tier 1 and Tier 2 calculations, generate per-employee PDF payslips, file statutory schedules, and lets every staff member view their own payslip history.
+Rewire the CRM with patterns borrowed from ManageEngine ServiceDesk Plus: every signed-in user lands on a dashboard tailored to their role, incident handling becomes a proper request lifecycle with SLA timers and approvals, a new Project Management module ties work to deals and incidents, and Sales + Billing get tightened pipelines and finance dashboards. Visual style stays iKlick's current liquid-glass look — only the information architecture and density are SDP-inspired.
 
-## What gets built
+Delivered in four phases. You approve once; each phase ships as its own batch.
 
-### 1. New role & access
-- Add `hr_officer` to the `app_role` enum.
-- Helper function `has_hr_access(uid)` → admin | finance_officer | hr_officer.
-- Sidebar "HR & Payroll" group visible only to those roles, plus a "My Payslips" link visible to every signed-in staff member.
+---
 
-### 2. Employee payroll profiles
-Page: `/crm/hr/employees`
-- One row per staff member (linked to `auth.users` / `profiles`).
-- Fields: SSNIT number, TIN, Ghana Card #, bank name + account, mobile money #, hire date, employment type (permanent / contract / probation), job title, department, basic salary (GHS), pay frequency (monthly), tier-2 trustee, status (active / on-leave / terminated), termination date.
-- Recurring pay-item assignments (links to catalog items with default amount or % of basic).
+## Phase 1 — Role-based dashboards (UI only, no schema)
 
-### 3. Pay items catalog + per-payslip overrides
-Page: `/crm/hr/pay-items`
-- Reusable items finance/HR can edit at any time.
-- Per item: name, type (allowance / deduction / employer-cost), taxable (yes/no), pension-qualifying (yes/no — affects SSNIT base), calculation (`fixed` or `percent_of_basic`), default value, active.
-- Seed: Transport Allowance, Rent Allowance, Risk Allowance, Overtime, Bonus, Salary Advance Recovery, Loan Repayment, Tier 3 Voluntary, Welfare Dues.
-- On any payslip, HR can also add one-off lines (bonus, advance, etc.) without touching the catalog.
+Replace the current `CRMDashboard` router with a role switch that loads one of these dashboards. Each follows the same shell: top KPI strip, "My Queue" table, role-specific charts, quick actions.
 
-### 4. Statutory configuration
-Page: `/crm/hr/statutory-settings` (admin-only)
-- **PAYE bands** table (band order, monthly threshold GHS, rate %). Effective-from date so historical runs stay correct. Seeded with current GRA monthly resident bands.
-- **SSNIT** rates (employee 5.5%, employer 13%, total 18.5%) — editable.
-- **Tier 2** rate (5%) — editable.
-- All statutory calc reads the bands/rates that were active at the run's pay period.
+| Role | Dashboard focus |
+|---|---|
+| admin | Global KPIs across all modules (incidents, sales pipeline, AR, projects, payroll status). Drill-down links. |
+| network_manager | Team SLA compliance, unassigned queue, escalations, technician load heatmap. |
+| network_engineer / support_agent | My open tickets, SLA timers, today's tasks, recently closed. |
+| client_experience | CSAT trend, open survey responses, SLA breach watchlist, follow-ups due. |
+| sales_manager | Team pipeline, target attainment, win rate, leaderboard, stuck deals. |
+| sales_representative | My leads, my pipeline, my targets, activities due today. |
+| technology_manager | Survey queue, installation calendar, engineer load, overdue work orders. |
+| technology_engineer | My assigned surveys + installations, today's schedule, materials list. |
+| finance_officer | AR aging, drafts to send, payments to confirm, recurring billing health. |
+| hr_officer | Headcount, pending payroll runs, statutory deadlines, new hires. |
 
-### 5. Payroll runs
-Page: `/crm/hr/payroll-runs`
-- Create a run for a given month → choose which employees to include (default: all active).
-- For each employee, system computes:
-  - Gross = basic + sum(allowances)
-  - Pension-qualifying gross (basic + qualifying allowances)
-  - SSNIT employee 5.5%, employer 13%, Tier 2 employer 5%
-  - Taxable income = gross − employee SSNIT 5.5% − non-taxable allowances
-  - PAYE via cumulative band lookup
-  - Other deductions (loans, advances, voluntary)
-  - Net pay
-- Run statuses: `draft` → `approved` → `paid`. Only `draft` is editable; `approved` locks numbers; `paid` records payment date.
-- Bulk actions: recalculate, approve, mark paid, email payslips.
+Shared building blocks: `KPIStrip`, `MyQueueTable`, `SLATimerBadge`, `QuickActions`. Built in `src/components/crm/dashboard/`.
 
-### 6. Payslip PDF
-- Generated via an edge function (`generate-payslip`) using a templated HTML → PDF (pdf-lib / Puppeteer-free approach: server-rendered HTML returned as `application/pdf` using `@react-pdf/renderer` style with Deno-compatible lib, or pre-built HTML returned to client which uses `react-to-print` / `html2pdf.js`).
-  - Recommended: client-side `jspdf` + `jspdf-autotable` so we don't need a heavy server PDF runtime; payslip data already comes from the DB.
-- Contains: company header, employee details, period, earnings table, deductions table, employer contributions (info), gross/taxable/PAYE/SSNIT/net summary, year-to-date totals, signatures area.
-- Stored: regenerated on demand from DB (no need to persist the file).
+## Phase 2 — Incident / Request module overhaul
 
-### 7. Statutory reports
-Page: `/crm/hr/statutory-reports`
-- For a chosen month, export:
-  - **GRA PAYE schedule** — per employee: name, TIN, gross, taxable, PAYE (CSV + PDF).
-  - **SSNIT Tier 1 schedule** — per employee: SSNIT #, basic, employee 5.5%, employer 13%, total 18.5%.
-  - **Tier 2 schedule** — per employee: SSNIT #, pensionable salary, 5% contribution, trustee.
-- Totals row at bottom.
+Bring SDP "request" patterns to existing incidents.
 
-### 8. Employee self-service
-Page: `/crm/hr/my-payslips`
-- Every signed-in staff member sees only their own payslips (from `approved` or `paid` runs).
-- Click → view PDF / download.
+Schema (new migration):
+- `request_categories` (name, parent_id, default_priority, default_sla_policy_id)
+- `request_templates` (category_id, name, fields jsonb, default assignee, default priority)
+- `incident_approvals` (incident_id, approver_id, status, decided_at, comment)
+- `incident_tasks` (incident_id, title, assignee_id, due_at, status) — subtasks within a ticket
+- `incident_time_entries` (incident_id, user_id, minutes, note, logged_at)
+- `incidents`: add `category_id`, `template_id`, `requires_approval`, `first_response_at`, `due_at`, `reopen_count`
 
-### 9. Audit
-- All payroll-run state changes, statutory edits, and pay-item changes recorded in existing `audit_log`.
+UI:
+- New "Create Request" wizard driven by category → template.
+- Incident detail re-laid out as SDP-style tabs: Details · Conversations · Approvals · Tasks · Time · History · Resolution.
+- Persistent SLA timer header (response + resolution countdown, colour-coded).
+- Inline approve/reject for approvers; queue card on approver dashboards.
+- Bulk actions on incident list (assign, priority, close).
 
-## Data model (new tables)
+Edge function: `sla-timer-tick` (cron, every 5 min) — sets `first_response_at`, marks breaches, sends notifications via existing channel.
 
-```text
-employees
-  user_id (unique, FK profiles.user_id)
-  ssnit_number, tin, ghana_card_number
-  bank_name, bank_account, momo_number, momo_network
-  hire_date, termination_date, employment_type, status
-  job_title, department, basic_salary
-  tier2_trustee, notes
+## Phase 3 — Project Management module
 
-pay_items
-  name (unique), item_type (allowance|deduction|employer_cost)
-  taxable bool, pension_qualifying bool
-  calc_method (fixed|percent_of_basic)
-  default_value, active
+Schema (new migration):
+- `projects` (name, code, client_id, deal_id, owner_id, status, start_date, target_end, actual_end, health)
+- `project_milestones` (project_id, name, target_date, completed_at, order)
+- `project_tasks` (project_id, milestone_id, parent_task_id, title, assignee_id, priority, status, estimate_hours, start_date, due_date, completed_at)
+- `project_members` (project_id, user_id, role) — RBAC per project
+- `project_time_entries` (task_id, user_id, minutes, note, logged_at)
+- `project_comments` (entity_type, entity_id, user_id, body)
 
-employee_pay_items            -- recurring per-employee assignments
-  employee_id, pay_item_id, amount_or_percent, active
+UI under `/crm/projects`:
+- Projects list with health pills (green/amber/red based on milestone slippage).
+- Project detail: Overview · Milestones (timeline) · Tasks (Kanban via existing @dnd-kit + List view) · Team · Time · Files (reuse `attachments`).
+- Auto-create a project skeleton when a deal hits `closed_won` (extend `create_installation_on_won` trigger).
+- Link tasks ↔ incidents (one-way reference) so escalations from a deployment land in PM.
 
-paye_bands
-  effective_from date, band_order int
-  threshold_ghs numeric, rate_percent numeric
+Dashboards updated: tech managers and admin see project health; engineers see "My project tasks" alongside incidents.
 
-statutory_rates               -- single row per effective_from
-  effective_from, ssnit_employee_pct, ssnit_employer_pct, tier2_pct
+## Phase 4 — Sales + Billing rewire
 
-payroll_runs
-  period_month date            -- 1st of month
-  status (draft|approved|paid)
-  notes, created_by, approved_by, approved_at, paid_at
+Sales:
+- Enforce SDP-style stage gates on `deals`: each stage transition validates required artefacts (e.g. `negotiation` requires a `quotations` row v≥1; `closed_won` requires signed quotation flag).
+- Add `deal_approvals` (discount > X% routes to sales_manager).
+- Sales rep dashboard gets "Stuck deals" (no activity in N days) and "Today's activities" from `deal_activities`.
+- Sales manager dashboard gets weighted pipeline (`value × probability`) and target burn-down sourced from `sales_targets`.
 
-payslips
-  payroll_run_id, employee_id
-  basic, gross, pensionable_gross, taxable_income
-  ssnit_employee, ssnit_employer, tier2_employer
-  paye, other_deductions, total_deductions
-  net_pay
-  ytd_gross, ytd_paye, ytd_ssnit       -- snapshot at run time
+Billing:
+- New "Approval" status for invoices > threshold (admin/finance_officer manager approval before `sent`).
+- Dunning: edge function `dunning-sweep` (cron) flips overdue invoices, queues reminder notifications + email via existing `send-tech-email` style function.
+- Finance dashboard rebuilt around AR aging buckets (0-30, 31-60, 61-90, 90+), DSO calc, collections this month vs target, recurring run health.
+- Payments view (currently buried) promoted to its own page `/crm/finance/payments`.
 
-payslip_lines                 -- one row per allowance/deduction/override
-  payslip_id, pay_item_id (nullable for one-offs)
-  name, line_type, taxable, pension_qualifying, amount, source (recurring|override)
-```
+---
 
-All tables RLS-on. Policies summary:
-- HR/Finance/Admin: full CRUD on employees, pay_items, runs, payslips, statutory tables.
-- Every authenticated user: SELECT own `employees` row, own `payslips` (only when run status is `approved`/`paid`), own `payslip_lines`.
+## Cross-cutting work
 
-## Calculation engine
+- **Routing & sidebar**: `CRMSidebar` groups reordered to match SDP modules (Home · Requests · Projects · Sales · Billing · HR · Admin). Each group is collapsible; default-open is the user's primary module.
+- **Auth context**: add `hasProjectAccess` and `homeModule` so login redirects to the role's natural landing page (e.g. sales rep → `/crm/sales/dashboard`).
+- **Realtime**: keep current `postgres_changes` subscriptions; add channels for `incident_tasks` and `project_tasks`.
+- **Reusable primitives** in `src/components/crm/`: `KPIStrip`, `SLATimerBadge`, `QueueTable`, `ApprovalCard`, `StageGateAlert`, `AgingBuckets`.
+- **No new design system tokens** — reuse current semantic tokens.
 
-Implemented as a Postgres function `calculate_payslip(employee_id, run_id)` and a small TS helper used by the UI to preview before saving. Both read from `paye_bands` and `statutory_rates` filtered to the run's `period_month`.
+## Technical notes
 
-Order of operations:
-1. Sum basic + allowances → gross.
-2. Sum basic + pension-qualifying allowances → pensionable_gross.
-3. ssnit_employee = pensionable_gross × 5.5%, ssnit_employer = ×13%, tier2 = ×5%.
-4. taxable = gross − ssnit_employee − non-taxable allowances.
-5. paye = cumulative band lookup over taxable.
-6. net = gross − ssnit_employee − paye − other_deductions.
+- All new tables get RLS using existing `has_role` / `has_*_access` helpers; project members get row access via a new `has_project_access(_user_id, _project_id)` security-definer function.
+- Triggers reused for audit logging (`log_audit`) and notifications (`notify_user` / `notify_role`).
+- Migrations split per phase; types regenerate after each.
+- Edge functions added: `sla-timer-tick`, `dunning-sweep`. Both cron-scheduled via `supabase/config.toml`.
+- Phase 1 ships first — no schema changes — so you see immediate value before approving Phase 2's migration.
 
-## UI structure
+## Out of scope (this rewire)
 
-```text
-Sidebar: HR & Payroll  (hr_officer / finance_officer / admin)
-├── Dashboard            /crm/hr
-├── Employees            /crm/hr/employees
-├── Pay Items            /crm/hr/pay-items
-├── Payroll Runs         /crm/hr/payroll-runs
-│   └── Run detail       /crm/hr/payroll-runs/:id   (table of payslips, edit/recalc)
-│       └── Payslip      /crm/hr/payslips/:id       (preview + PDF)
-├── Statutory Settings   /crm/hr/statutory-settings  (admin only)
-└── Statutory Reports    /crm/hr/statutory-reports
-
-Sidebar: top-level "My Payslips" /crm/me/payslips   (every staff)
-```
-
-## Build phases (so we ship in slices, not one mega change)
-
-1. **Phase A — Foundations**: enum role + helper, employees table + page, pay_items table + page, statutory tables seeded with current GRA bands.
-2. **Phase B — Calculation**: payroll_runs + payslips + payslip_lines tables, calc function, run-creation flow, payslip detail view (no PDF yet).
-3. **Phase C — Output**: PDF payslip, employee self-service "My Payslips", email payslip via existing Outlook integration.
-4. **Phase D — Statutory exports**: GRA, SSNIT Tier 1, Tier 2 CSV/PDF schedules.
-
-We start with Phase A and stop for review before Phase B.
-
-## Out of scope (explicitly)
-- Leave management, attendance, timesheets, performance reviews.
-- Multi-currency or non-Ghana tax regimes.
-- Direct bank-file payment generation (we'll just produce schedules).
-- The on-prem hosting move — that's a future deployment task; nothing in this build prevents it because the stack stays Postgres + static frontend + edge functions.
+- Asset/CMDB module, knowledge base, change/release management (SDP has these; flag if you want them later).
+- Mobile-specific layouts beyond responsive cards.
+- Email-to-ticket parsing (current Outlook integration stays as-is).
