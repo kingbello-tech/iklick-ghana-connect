@@ -11,12 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, ArrowLeft, Send, Plus, Printer } from "lucide-react";
+import { Loader2, ArrowLeft, Send, Plus, Printer, ShieldCheck } from "lucide-react";
 import { format } from "date-fns";
 import { Attachments } from "@/components/crm/Attachments";
 
 const STATUS_BADGE: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
+  pending_approval: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  approved: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
   sent: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
   paid: "bg-green-500/15 text-green-600 dark:text-green-400",
   partially_paid: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
@@ -73,6 +75,22 @@ export default function InvoiceDetail() {
     load();
   };
 
+  const approveInvoice = async () => {
+    if (!invoice || !user) return;
+    setUpdating(true);
+    const { error } = await supabase
+      .from("invoices")
+      .update({ status: "approved" as any, approved_by: user.id, approved_at: new Date().toISOString() })
+      .eq("id", invoice.id);
+    setUpdating(false);
+    if (error) {
+      toast({ title: "Failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Approved", description: "Invoice approved and ready to send." });
+    load();
+  };
+
   const recordPayment = async () => {
     if (!invoice || !user) return;
     const amt = parseFloat(payAmount);
@@ -109,7 +127,12 @@ export default function InvoiceDetail() {
         </Button>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => window.print()}><Printer className="h-4 w-4 mr-1" /> Print</Button>
-          {invoice.status === "draft" && (
+          {invoice.status === "pending_approval" && (
+            <Button onClick={approveInvoice} disabled={updating} size="sm" variant="default">
+              <ShieldCheck className="h-4 w-4 mr-1" /> Approve
+            </Button>
+          )}
+          {(invoice.status === "draft" || invoice.status === "approved") && (
             <Button onClick={() => updateStatus("sent")} disabled={updating} size="sm">
               <Send className="h-4 w-4 mr-1" /> Send to Client
             </Button>
