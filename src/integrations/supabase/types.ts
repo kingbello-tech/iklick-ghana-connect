@@ -224,6 +224,53 @@ export type Database = {
           },
         ]
       }
+      deal_approvals: {
+        Row: {
+          approver_id: string | null
+          comment: string | null
+          created_at: string
+          deal_id: string
+          decided_at: string | null
+          discount_pct: number | null
+          id: string
+          reason: string
+          requested_by: string | null
+          status: Database["public"]["Enums"]["approval_status"]
+        }
+        Insert: {
+          approver_id?: string | null
+          comment?: string | null
+          created_at?: string
+          deal_id: string
+          decided_at?: string | null
+          discount_pct?: number | null
+          id?: string
+          reason: string
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+        }
+        Update: {
+          approver_id?: string | null
+          comment?: string | null
+          created_at?: string
+          deal_id?: string
+          decided_at?: string | null
+          discount_pct?: number | null
+          id?: string
+          reason?: string
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["approval_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deal_approvals_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deals: {
         Row: {
           acv: number | null
@@ -903,6 +950,9 @@ export type Database = {
       invoices: {
         Row: {
           amount_paid: number
+          approval_required: boolean
+          approved_at: string | null
+          approved_by: string | null
           balance_due: number
           client_id: string | null
           created_at: string
@@ -913,6 +963,7 @@ export type Database = {
           invoice_number: string
           issue_date: string
           kind: Database["public"]["Enums"]["invoice_kind"]
+          last_reminder_at: string | null
           mrc_amount: number
           notes: string | null
           nrc_amount: number
@@ -920,6 +971,7 @@ export type Database = {
           parent_invoice_id: string | null
           period_end: string | null
           period_start: string | null
+          reminder_count: number
           sent_at: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           subtotal: number
@@ -930,6 +982,9 @@ export type Database = {
         }
         Insert: {
           amount_paid?: number
+          approval_required?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
           balance_due?: number
           client_id?: string | null
           created_at?: string
@@ -940,6 +995,7 @@ export type Database = {
           invoice_number: string
           issue_date?: string
           kind?: Database["public"]["Enums"]["invoice_kind"]
+          last_reminder_at?: string | null
           mrc_amount?: number
           notes?: string | null
           nrc_amount?: number
@@ -947,6 +1003,7 @@ export type Database = {
           parent_invoice_id?: string | null
           period_end?: string | null
           period_start?: string | null
+          reminder_count?: number
           sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
@@ -957,6 +1014,9 @@ export type Database = {
         }
         Update: {
           amount_paid?: number
+          approval_required?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
           balance_due?: number
           client_id?: string | null
           created_at?: string
@@ -967,6 +1027,7 @@ export type Database = {
           invoice_number?: string
           issue_date?: string
           kind?: Database["public"]["Enums"]["invoice_kind"]
+          last_reminder_at?: string | null
           mrc_amount?: number
           notes?: string | null
           nrc_amount?: number
@@ -974,6 +1035,7 @@ export type Database = {
           parent_invoice_id?: string | null
           period_end?: string | null
           period_start?: string | null
+          reminder_count?: number
           sent_at?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           subtotal?: number
@@ -1961,6 +2023,7 @@ export type Database = {
         Returns: boolean
       }
       can_close_incident: { Args: { _user_id: string }; Returns: boolean }
+      dunning_sweep: { Args: never; Returns: number }
       generate_monthly_recurring_invoices: { Args: never; Returns: number }
       get_user_role: {
         Args: { _user_id: string }
@@ -1977,6 +2040,7 @@ export type Database = {
       }
       has_sales_access: { Args: { _user_id: string }; Returns: boolean }
       has_technology_access: { Args: { _user_id: string }; Returns: boolean }
+      invoice_approval_threshold: { Args: never; Returns: number }
       is_project_member: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
@@ -2035,6 +2099,7 @@ export type Database = {
         | "technology_manager"
         | "finance_officer"
         | "hr_officer"
+      approval_status: "pending" | "approved" | "rejected"
       deal_service_type: "fiber_home" | "dedicated_business" | "enterprise_link"
       deal_stage:
         | "new_lead"
@@ -2063,6 +2128,8 @@ export type Database = {
         | "partially_paid"
         | "overdue"
         | "cancelled"
+        | "pending_approval"
+        | "approved"
       isp_service_category: "community_wifi" | "ftth" | "voip" | "dia"
       lead_source: "referral" | "website" | "walk_in" | "campaign"
       lead_status: "new" | "contacted" | "qualified" | "unqualified"
@@ -2238,6 +2305,7 @@ export const Constants = {
         "finance_officer",
         "hr_officer",
       ],
+      approval_status: ["pending", "approved", "rejected"],
       deal_service_type: [
         "fiber_home",
         "dedicated_business",
@@ -2272,6 +2340,8 @@ export const Constants = {
         "partially_paid",
         "overdue",
         "cancelled",
+        "pending_approval",
+        "approved",
       ],
       isp_service_category: ["community_wifi", "ftth", "voip", "dia"],
       lead_source: ["referral", "website", "walk_in", "campaign"],
