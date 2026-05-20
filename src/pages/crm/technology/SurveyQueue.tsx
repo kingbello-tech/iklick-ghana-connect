@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ClipboardCheck, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
+import { Attachments } from "@/components/crm/Attachments";
 
 interface Survey {
   id: string;
@@ -367,6 +368,7 @@ export default function SurveyQueue() {
                 <div className="col-span-2"><Label>Infrastructure Notes</Label><Textarea value={form.infrastructure_notes} onChange={e => setForm({ ...form, infrastructure_notes: e.target.value })} /></div>
                 <div className="col-span-2"><Label>Engineer Notes</Label><Textarea value={form.engineer_notes} onChange={e => setForm({ ...form, engineer_notes: e.target.value })} /></div>
               </div>
+              <Attachments entityType="site_survey" entityId={selected.id} title="Survey Attachments" />
               <Button onClick={save} className="w-full">Save</Button>
             </div>
           )}

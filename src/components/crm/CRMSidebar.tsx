@@ -22,13 +22,13 @@ import {
 
 const navItems = [
   { title: "Dashboard", url: "/crm/dashboard", icon: LayoutDashboard },
-  { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
   { title: "Projects", url: "/crm/projects", icon: FolderKanban },
   { title: "Clients", url: "/crm/clients", icon: Users },
   { title: "Help & Workflow", url: "/crm/help", icon: BookOpen },
 ];
 
 const cxItems = [
+  { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
   { title: "Satisfaction", url: "/crm/satisfaction", icon: Heart },
   { title: "SLA Reports", url: "/crm/sla-reports", icon: Clock },
 ];
@@ -50,6 +50,7 @@ const salesItems = [
 
 const technologyItems = [
   { title: "Tech Dashboard", url: "/crm/technology/dashboard", icon: Wifi },
+  { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
   { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
   { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
 ];

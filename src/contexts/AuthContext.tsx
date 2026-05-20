@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const hasRole = (r: AppRole) => role === r;
   const isAdmin = role === "admin";
-  const canManageIncidents = role === "admin" || role === "network_manager" || role === "network_engineer" || role === "support_agent" || role === "client_experience";
+  const canManageIncidents = role === "admin" || role === "technology_manager" || role === "technology_engineer" || role === "client_experience";
   const hasSalesAccess = role === "admin" || role === "sales_representative" || role === "sales_manager";
   const hasTechnologyAccess = role === "admin" || role === "technology_engineer" || role === "technology_manager";
   const hasFinanceAccess = role === "admin" || role === "finance_officer";
