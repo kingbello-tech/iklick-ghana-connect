@@ -12,6 +12,11 @@ import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check, Trash2 } from "
 import { Attachments } from "@/components/crm/Attachments";
 import { NotesEditor } from "@/components/crm/NotesEditor";
 import { IncidentClosureDialog } from "@/components/crm/IncidentClosureDialog";
+import { SLATimerBadge } from "@/components/crm/dashboard/SLATimerBadge";
+import { IncidentApprovals } from "@/components/crm/incident/IncidentApprovals";
+import { IncidentTasks } from "@/components/crm/incident/IncidentTasks";
+import { IncidentTimeEntries } from "@/components/crm/incident/IncidentTimeEntries";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
