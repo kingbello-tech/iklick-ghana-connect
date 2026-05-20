@@ -38,6 +38,7 @@ import FinanceDashboard from "./pages/crm/finance/FinanceDashboard";
 import InvoiceList from "./pages/crm/finance/InvoiceList";
 import InvoiceDetail from "./pages/crm/finance/InvoiceDetail";
 import FinanceClients from "./pages/crm/finance/FinanceClients";
+import PaymentList from "./pages/crm/finance/PaymentList";
 import Help from "./pages/crm/Help";
 import EmployeesList from "./pages/crm/hr/EmployeesList";
 import EmployeeDetail from "./pages/crm/hr/EmployeeDetail";
@@ -107,6 +108,7 @@ const App = () => (
                 <Route path="finance/dashboard" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><FinanceDashboard /></ProtectedRoute>} />
                 <Route path="finance/invoices" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceList /></ProtectedRoute>} />
                 <Route path="finance/invoices/:id" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><InvoiceDetail /></ProtectedRoute>} />
+                <Route path="finance/payments" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><PaymentList /></ProtectedRoute>} />
                 <Route path="finance/clients" element={<ProtectedRoute allowedRoles={FINANCE_ROLES}><FinanceClients /></ProtectedRoute>} />
 
                 {/* HR & Payroll */}
