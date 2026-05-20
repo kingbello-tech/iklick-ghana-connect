@@ -46,6 +46,8 @@ import StatutorySettings from "./pages/crm/hr/StatutorySettings";
 import PayrollRunsStub from "./pages/crm/hr/PayrollRunsStub";
 import StatutoryReportsStub from "./pages/crm/hr/StatutoryReportsStub";
 import MyPayslipsStub from "./pages/crm/MyPayslipsStub";
+import ProjectList from "./pages/crm/projects/ProjectList";
+import ProjectDetail from "./pages/crm/projects/ProjectDetail";
 
 const queryClient = new QueryClient();
 
