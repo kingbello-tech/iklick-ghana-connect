@@ -12,6 +12,11 @@ import { ArrowLeft, Clock, User, MapPin, Send, Pencil, X, Check, Trash2 } from "
 import { Attachments } from "@/components/crm/Attachments";
 import { NotesEditor } from "@/components/crm/NotesEditor";
 import { IncidentClosureDialog } from "@/components/crm/IncidentClosureDialog";
+import { SLATimerBadge } from "@/components/crm/dashboard/SLATimerBadge";
+import { IncidentApprovals } from "@/components/crm/incident/IncidentApprovals";
+import { IncidentTasks } from "@/components/crm/incident/IncidentTasks";
+import { IncidentTimeEntries } from "@/components/crm/incident/IncidentTimeEntries";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -66,16 +71,18 @@ export default function IncidentDetail() {
   const [closureOpen, setClosureOpen] = useState(false);
   const [closureMode, setClosureMode] = useState<"resolve" | "close">("resolve");
   const [closure, setClosure] = useState<{ root_cause: string; resolution: string; recommendation: string; closed_by: string; created_at: string } | null>(null);
+  const [slaMinutes, setSlaMinutes] = useState<number | null>(null);
 
   const fetchAll = async () => {
     if (!id) return;
-    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes] = await Promise.all([
+    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes] = await Promise.all([
       supabase.from("incidents").select("*").eq("id", id).single(),
       supabase.from("incident_notes").select("*").eq("incident_id", id).order("created_at", { ascending: true }),
       supabase.from("incident_history").select("*").eq("incident_id", id).order("created_at", { ascending: false }),
       supabase.from("profiles").select("*"),
       supabase.from("clients").select("*"),
       (supabase as any).from("incident_closures").select("*").eq("incident_id", id).maybeSingle(),
+      supabase.from("sla_policies").select("priority,resolution_time_minutes"),
     ]);
     if (incRes.data) {
       setIncident(incRes.data);
@@ -83,6 +90,8 @@ export default function IncidentDetail() {
         const c = clientsRes.data?.find((cl) => cl.id === incRes.data.client_id);
         if (c) setClientName(c.name);
       }
+      const sla = slaRes.data?.find((s: any) => s.priority === incRes.data.priority);
+      setSlaMinutes(sla?.resolution_time_minutes ?? null);
     }
     if (notesRes.data) setNotes(notesRes.data);
     if (histRes.data) setHistory(histRes.data);
@@ -291,6 +300,11 @@ export default function IncidentDetail() {
             <Badge variant="outline" style={{ color: STATUS_COLORS[incident.status], borderColor: `${STATUS_COLORS[incident.status]}40` }}>
               {incident.status.replace("_", " ")}
             </Badge>
+            <SLATimerBadge
+              createdAt={incident.created_at}
+              targetMinutes={slaMinutes}
+              resolved={incident.status === "resolved" || incident.status === "closed"}
+            />
           </div>
           {editing ? (
             <Input
@@ -377,8 +391,18 @@ export default function IncidentDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-4">
-          {/* Description */}
-          <Card>
+          <Tabs defaultValue="conversation" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="conversation">Conversation</TabsTrigger>
+              <TabsTrigger value="approvals">Approvals</TabsTrigger>
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="time">Time</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="conversation" className="space-y-4 mt-0">
+              {/* Description */}
+              <Card>
             <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Description</CardTitle></CardHeader>
             <CardContent>
               {editing ? (
@@ -422,8 +446,47 @@ export default function IncidentDetail() {
             </CardContent>
           </Card>
 
-          {/* History */}
-          {history.length > 0 && (
+              {/* Attachments */}
+              <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
+
+              {closure && (
+                <Card>
+                  <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle></CardHeader>
+                  <CardContent className="space-y-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
+                      <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Resolution</p>
+                      <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
+                      <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground pt-2 border-t border-border">
+                      Closed by {profiles[closure.closed_by]?.full_name || "—"} on {format(new Date(closure.created_at), "MMM d, yyyy HH:mm")}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="approvals" className="mt-0">
+              <IncidentApprovals incidentId={incident.id} />
+            </TabsContent>
+
+            <TabsContent value="tasks" className="mt-0">
+              <IncidentTasks incidentId={incident.id} />
+            </TabsContent>
+
+            <TabsContent value="time" className="mt-0">
+              <IncidentTimeEntries incidentId={incident.id} />
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-0">
+              {history.length > 0 ? (
             <Card>
               <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Change History</CardTitle></CardHeader>
               <CardContent>
@@ -454,33 +517,11 @@ export default function IncidentDetail() {
                 </div>
               </CardContent>
             </Card>
-          )}
-
-          {/* Attachments */}
-          <Attachments entityType="incident" entityId={incident.id} title="Incident Attachments" />
-
-          {closure && (
-            <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle></CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
-                  <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Resolution</p>
-                  <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
-                  <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
-                </div>
-                <p className="text-[11px] text-muted-foreground pt-2 border-t border-border">
-                  Closed by {profiles[closure.closed_by]?.full_name || "—"} on {format(new Date(closure.created_at), "MMM d, yyyy HH:mm")}
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <p className="text-xs text-muted-foreground">No history yet.</p>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Sidebar Details */}

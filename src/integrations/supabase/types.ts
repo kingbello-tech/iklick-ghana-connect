@@ -467,6 +467,53 @@ export type Database = {
         }
         Relationships: []
       }
+      incident_approvals: {
+        Row: {
+          approver_id: string | null
+          created_at: string
+          decided_at: string | null
+          decision: string
+          decision_comment: string | null
+          id: string
+          incident_id: string
+          reason: string
+          requested_by: string
+          updated_at: string
+        }
+        Insert: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string
+          decision_comment?: string | null
+          id?: string
+          incident_id: string
+          reason: string
+          requested_by: string
+          updated_at?: string
+        }
+        Update: {
+          approver_id?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string
+          decision_comment?: string | null
+          id?: string
+          incident_id?: string
+          reason?: string
+          requested_by?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_approvals_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_closures: {
         Row: {
           closed_by: string
@@ -573,70 +620,202 @@ export type Database = {
           },
         ]
       }
-      incidents: {
+      incident_tasks: {
         Row: {
           assigned_to: string | null
-          client_id: string | null
-          closed_at: string | null
+          completed_at: string | null
           created_at: string
           created_by: string
           description: string | null
+          due_date: string | null
           id: string
-          incident_number: string
-          issue_category: string | null
-          location: string | null
-          priority: Database["public"]["Enums"]["incident_priority"]
-          resolved_at: string | null
-          service_type: Database["public"]["Enums"]["service_type"] | null
-          status: Database["public"]["Enums"]["incident_status"]
-          termination_pop: string | null
+          incident_id: string
+          status: string
           title: string
           updated_at: string
         }
         Insert: {
           assigned_to?: string | null
-          client_id?: string | null
-          closed_at?: string | null
+          completed_at?: string | null
           created_at?: string
           created_by: string
           description?: string | null
+          due_date?: string | null
           id?: string
-          incident_number: string
-          issue_category?: string | null
-          location?: string | null
-          priority?: Database["public"]["Enums"]["incident_priority"]
-          resolved_at?: string | null
-          service_type?: Database["public"]["Enums"]["service_type"] | null
-          status?: Database["public"]["Enums"]["incident_status"]
-          termination_pop?: string | null
+          incident_id: string
+          status?: string
           title: string
           updated_at?: string
         }
         Update: {
           assigned_to?: string | null
-          client_id?: string | null
-          closed_at?: string | null
+          completed_at?: string | null
           created_at?: string
           created_by?: string
           description?: string | null
+          due_date?: string | null
           id?: string
-          incident_number?: string
-          issue_category?: string | null
-          location?: string | null
-          priority?: Database["public"]["Enums"]["incident_priority"]
-          resolved_at?: string | null
-          service_type?: Database["public"]["Enums"]["service_type"] | null
-          status?: Database["public"]["Enums"]["incident_status"]
-          termination_pop?: string | null
+          incident_id?: string
+          status?: string
           title?: string
           updated_at?: string
         }
         Relationships: [
           {
+            foreignKeyName: "incident_tasks_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incident_time_entries: {
+        Row: {
+          billable: boolean
+          created_at: string
+          id: string
+          incident_id: string
+          logged_by: string
+          minutes: number
+          note: string | null
+          worked_on: string
+        }
+        Insert: {
+          billable?: boolean
+          created_at?: string
+          id?: string
+          incident_id: string
+          logged_by: string
+          minutes: number
+          note?: string | null
+          worked_on?: string
+        }
+        Update: {
+          billable?: boolean
+          created_at?: string
+          id?: string
+          incident_id?: string
+          logged_by?: string
+          minutes?: number
+          note?: string | null
+          worked_on?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_time_entries_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          assigned_to: string | null
+          category_id: string | null
+          client_id: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_at: string | null
+          first_response_at: string | null
+          id: string
+          impact: string | null
+          incident_number: string
+          issue_category: string | null
+          location: string | null
+          priority: Database["public"]["Enums"]["incident_priority"]
+          reopened_count: number
+          resolved_at: string | null
+          service_type: Database["public"]["Enums"]["service_type"] | null
+          source: string
+          status: Database["public"]["Enums"]["incident_status"]
+          sub_category: string | null
+          template_id: string | null
+          termination_pop: string | null
+          title: string
+          updated_at: string
+          urgency: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          category_id?: string | null
+          client_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_at?: string | null
+          first_response_at?: string | null
+          id?: string
+          impact?: string | null
+          incident_number: string
+          issue_category?: string | null
+          location?: string | null
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          reopened_count?: number
+          resolved_at?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+          source?: string
+          status?: Database["public"]["Enums"]["incident_status"]
+          sub_category?: string | null
+          template_id?: string | null
+          termination_pop?: string | null
+          title: string
+          updated_at?: string
+          urgency?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          category_id?: string | null
+          client_id?: string | null
+          closed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_at?: string | null
+          first_response_at?: string | null
+          id?: string
+          impact?: string | null
+          incident_number?: string
+          issue_category?: string | null
+          location?: string | null
+          priority?: Database["public"]["Enums"]["incident_priority"]
+          reopened_count?: number
+          resolved_at?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+          source?: string
+          status?: Database["public"]["Enums"]["incident_status"]
+          sub_category?: string | null
+          template_id?: string | null
+          termination_pop?: string | null
+          title?: string
+          updated_at?: string
+          urgency?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "request_categories"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "incidents_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "request_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -1124,6 +1303,103 @@ export type Database = {
             columns: ["deal_id"]
             isOneToOne: false
             referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_categories: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "request_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      request_templates: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          default_impact: string | null
+          default_priority: Database["public"]["Enums"]["incident_priority"]
+          default_urgency: string | null
+          description_template: string | null
+          id: string
+          name: string
+          title_template: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_impact?: string | null
+          default_priority?: Database["public"]["Enums"]["incident_priority"]
+          default_urgency?: string | null
+          description_template?: string | null
+          id?: string
+          name: string
+          title_template: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          default_impact?: string | null
+          default_priority?: Database["public"]["Enums"]["incident_priority"]
+          default_urgency?: string | null
+          description_template?: string | null
+          id?: string
+          name?: string
+          title_template?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "request_templates_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "request_categories"
             referencedColumns: ["id"]
           },
         ]
