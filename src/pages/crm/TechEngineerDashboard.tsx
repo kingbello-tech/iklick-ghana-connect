@@ -82,7 +82,7 @@ export default function TechEngineerDashboard() {
       </div>
 
       <QueueTable
-        title={<><ListTree className="inline h-4 w-4 mr-1" />Today's Schedule</> as any}
+        title={<span className="flex items-center gap-2"><ListTree className="h-4 w-4" />Today's Schedule</span>}
         rows={todayWork}
         empty="Nothing scheduled for today"
         columns={[

@@ -16,7 +16,7 @@ export function QueueTable<T extends { id: string }>({
   empty = "Nothing in queue",
   action,
 }: {
-  title: string;
+  title: ReactNode;
   rows: T[];
   columns: QueueColumn<T>[];
   rowHref?: (row: T) => string;
