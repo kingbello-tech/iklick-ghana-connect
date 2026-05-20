@@ -300,6 +300,11 @@ export default function IncidentDetail() {
             <Badge variant="outline" style={{ color: STATUS_COLORS[incident.status], borderColor: `${STATUS_COLORS[incident.status]}40` }}>
               {incident.status.replace("_", " ")}
             </Badge>
+            <SLATimerBadge
+              createdAt={incident.created_at}
+              targetMinutes={slaMinutes}
+              resolved={incident.status === "resolved" || incident.status === "closed"}
+            />
           </div>
           {editing ? (
             <Input
