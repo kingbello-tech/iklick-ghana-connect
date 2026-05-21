@@ -124,23 +124,14 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
       // If high/critical priority, broadcast to Technology team
       let techEmails: string[] = [];
       if (form.priority === "critical" || form.priority === "high") {
-        const { data: techData } = await supabase
-          .from("profiles")
-          .select("email, user_id, user_roles!inner(role)" as any)
-          .in("user_roles.role" as any, ["technology_manager", "technology_engineer"] as any);
-        // Fallback: simple two-step fetch if join not allowed
-        if (!techData || techData.length === 0) {
-          const { data: roleRows } = await supabase
-            .from("user_roles")
-            .select("user_id")
-            .in("role", ["technology_manager", "technology_engineer"] as any);
-          const ids = (roleRows || []).map((r: any) => r.user_id);
-          if (ids.length) {
-            const { data: profs } = await supabase.from("profiles").select("email").in("user_id", ids);
-            techEmails = (profs || []).map((p: any) => p.email).filter(Boolean);
-          }
-        } else {
-          techEmails = (techData as any[]).map((p) => p.email).filter(Boolean);
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["technology_manager", "technology_engineer"]);
+        const ids = (roleRows || []).map((r) => r.user_id);
+        if (ids.length) {
+          const { data: profs } = await supabase.from("profiles").select("email").in("user_id", ids);
+          techEmails = (profs || []).map((p) => p.email).filter((e): e is string => !!e);
         }
       }
 
