@@ -33,6 +33,16 @@ const cxItems = [
   { title: "SLA Reports", url: "/crm/sla-reports", icon: Clock },
 ];
 
+// Items visible to Technology Engineers (no surveys/installs queue)
+const techEngineerItems = [
+  { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
+];
+
+// Items visible to Network Engineers (incidents only from Technology dept)
+const networkEngineerItems = [
+  { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
+];
+
 const adminItems = [
   { title: "User Management", url: "/crm/settings", icon: Settings },
   { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
@@ -48,6 +58,7 @@ const salesItems = [
   { title: "Targets", url: "/crm/sales/targets", icon: BarChart3 },
 ];
 
+// Full Technology section (manager/admin)
 const technologyItems = [
   { title: "Tech Dashboard", url: "/crm/technology/dashboard", icon: Wifi },
   { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
@@ -80,6 +91,14 @@ export function CRMSidebar() {
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
   const isNetworkManager = role === "network_manager";
+
+  // Pick correct technology section per role
+  const techMenu =
+    role === "technology_engineer"
+      ? techEngineerItems
+      : role === "network_engineer"
+      ? networkEngineerItems
+      : technologyItems; // admin, technology_manager, network_manager get the full queue
 
   const isActive = (path: string) => location.pathname.startsWith(path);
 
@@ -166,7 +185,7 @@ export function CRMSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {technologyItems.map((item) => (
+                {techMenu.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <Link to={item.url} className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">

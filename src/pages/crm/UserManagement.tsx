@@ -187,7 +187,6 @@ export default function UserManagement() {
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="network_manager">Network Manager</SelectItem>
                   <SelectItem value="network_engineer">Network Engineer</SelectItem>
-                  <SelectItem value="support_agent">Support Agent</SelectItem>
                   <SelectItem value="client_experience">Client Experience</SelectItem>
                   <SelectItem value="sales_manager">Sales Manager</SelectItem>
                   <SelectItem value="sales_representative">Sales Representative</SelectItem>
@@ -309,7 +308,6 @@ export default function UserManagement() {
                   <SelectItem value="admin">Admin</SelectItem>
                   <SelectItem value="network_manager">Network Manager</SelectItem>
                   <SelectItem value="network_engineer">Network Engineer</SelectItem>
-                  <SelectItem value="support_agent">Support Agent</SelectItem>
                   <SelectItem value="client_experience">Client Experience</SelectItem>
                   <SelectItem value="sales_manager">Sales Manager</SelectItem>
                   <SelectItem value="sales_representative">Sales Representative</SelectItem>
