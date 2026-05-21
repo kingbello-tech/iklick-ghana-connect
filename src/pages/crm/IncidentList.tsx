@@ -49,7 +49,7 @@ export default function IncidentList() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const { canManageIncidents } = useAuth();
+  const { canManageIncidents, canCreateIncidents } = useAuth();
 
   const fetchData = async () => {
     const [incRes, clientRes, profRes, slaRes] = await Promise.all([
@@ -111,7 +111,7 @@ export default function IncidentList() {
           <Button variant="outline" onClick={() => setExportOpen(true)} className="gap-2">
             <Download className="h-4 w-4" /> Export
           </Button>
-          {canManageIncidents && (
+          {canCreateIncidents && (
             <Button onClick={() => setCreateOpen(true)} className="gap-2">
               <Plus className="h-4 w-4" /> New Incident
             </Button>
