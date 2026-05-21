@@ -16,6 +16,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   canManageIncidents: boolean;
+  canCreateIncidents: boolean;
   isAdmin: boolean;
   hasSalesAccess: boolean;
   hasTechnologyAccess: boolean;
@@ -89,15 +90,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const hasRole = (r: AppRole) => role === r;
   const isAdmin = role === "admin";
-  const canManageIncidents = role === "admin" || role === "technology_manager" || role === "technology_engineer" || role === "client_experience";
+  // Can work/update incidents (includes CX for closure/notes)
+  const canManageIncidents =
+    role === "admin" ||
+    role === "technology_manager" ||
+    role === "technology_engineer" ||
+    role === "network_manager" ||
+    role === "network_engineer" ||
+    role === "client_experience";
+  // Can create new incidents (CX excluded)
+  const canCreateIncidents =
+    role === "admin" ||
+    role === "technology_manager" ||
+    role === "technology_engineer" ||
+    role === "network_manager" ||
+    role === "network_engineer";
   const hasSalesAccess = role === "admin" || role === "sales_representative" || role === "sales_manager";
-  const hasTechnologyAccess = role === "admin" || role === "technology_engineer" || role === "technology_manager";
+  const hasTechnologyAccess = role === "admin" || role === "technology_engineer" || role === "technology_manager" || role === "network_manager" || role === "network_engineer";
   const hasFinanceAccess = role === "admin" || role === "finance_officer";
   const isSalesManagerOrAdmin = role === "admin" || role === "sales_manager";
   const hasHRAccess = role === "admin" || role === "finance_officer" || role === "hr_officer";
 
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, loading, signIn, signUp, signOut, hasRole, canManageIncidents, isAdmin, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, isSalesManagerOrAdmin, hasHRAccess }}>
+    <AuthContext.Provider value={{ session, user, role, profile, loading, signIn, signUp, signOut, hasRole, canManageIncidents, canCreateIncidents, isAdmin, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, isSalesManagerOrAdmin, hasHRAccess }}>
       {children}
     </AuthContext.Provider>
   );

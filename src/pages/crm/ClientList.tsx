@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Users as UsersIcon } from "lucide-react";
+import { ClientContacts } from "@/components/crm/ClientContacts";
 import { useToast } from "@/hooks/use-toast";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import type { Database } from "@/integrations/supabase/types";
@@ -24,6 +25,7 @@ export default function ClientList() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [contactsOpen, setContactsOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -99,6 +101,11 @@ export default function ClientList() {
     setDeleteOpen(true);
   };
 
+  const openContacts = (client: Client) => {
+    setSelectedClient(client);
+    setContactsOpen(true);
+  };
+
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   const renderForm = (onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
@@ -169,6 +176,9 @@ export default function ClientList() {
                       {canManageIncidents && (
                         <td className="p-3 text-right">
                           <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" className="h-8 w-8" title="Contacts" onClick={() => openContacts(c)}>
+                              <UsersIcon className="h-4 w-4" />
+                            </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(c)}>
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -229,6 +239,16 @@ export default function ClientList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Contacts Dialog */}
+      <Dialog open={contactsOpen} onOpenChange={setContactsOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedClient?.name} — Contacts</DialogTitle>
+          </DialogHeader>
+          {selectedClient && <ClientContacts clientId={selectedClient.id} canEdit={canManageIncidents} />}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -40,7 +40,7 @@ export default function ClientSatisfaction() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  const canCreate = role === "admin" || role === "client_experience" || role === "support_agent" || role === "network_engineer";
+  const canCreate = role === "admin" || role === "client_experience" || role === "network_engineer";
   const canCloseIncidents = role === "admin" || role === "client_experience" || role === "network_manager";
 
   const fetchData = async () => {

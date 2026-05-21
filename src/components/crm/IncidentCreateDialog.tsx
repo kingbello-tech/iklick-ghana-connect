@@ -121,6 +121,20 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
         assignedEmail = profData?.email || null;
       }
 
+      // If high/critical priority, broadcast to Technology team
+      let techEmails: string[] = [];
+      if (form.priority === "critical" || form.priority === "high") {
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["technology_manager", "technology_engineer"]);
+        const ids = (roleRows || []).map((r) => r.user_id);
+        if (ids.length) {
+          const { data: profs } = await supabase.from("profiles").select("email").in("user_id", ids);
+          techEmails = (profs || []).map((p) => p.email).filter((e): e is string => !!e);
+        }
+      }
+
       supabase.functions.invoke("send-incident-email", {
         body: {
           incident_number: inserted.incident_number,
@@ -132,6 +146,8 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
           assigned_email: assignedEmail,
           assigned_name: assignedProfile?.full_name || null,
           ticket_url: assignedEmail ? `${window.location.origin}/crm/incidents/${inserted.id}` : undefined,
+          tech_team_emails: techEmails,
+          flag_reason: techEmails.length ? `New ${form.priority} priority incident` : undefined,
         },
       }).catch((err) => console.error("Email notification failed:", err));
 

@@ -25,6 +25,6 @@ export default function CRMDashboard() {
   if (role === "hr_officer") return <HRDashboard />;
   if (role === "client_experience") return <CXDashboard />;
 
-  // network_engineer, support_agent, and any other staff
+  // network_engineer and any other staff
   return <MyDashboard />;
 }

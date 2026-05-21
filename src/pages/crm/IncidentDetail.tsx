@@ -137,6 +137,36 @@ export default function IncidentDetail() {
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
 
     await trackChange("status", incident.status, newStatus);
+
+    // Flag-to-Technology: notify tech team when escalated
+    if (newStatus === "escalated" && incident.status !== "escalated") {
+      try {
+        const { data: roleRows } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .in("role", ["technology_manager", "technology_engineer"] as any);
+        const ids = (roleRows || []).map((r: any) => r.user_id);
+        let emails: string[] = [];
+        if (ids.length) {
+          const { data: profs } = await supabase.from("profiles").select("email").in("user_id", ids);
+          emails = (profs || []).map((p: any) => p.email).filter(Boolean);
+        }
+        if (emails.length) {
+          supabase.functions.invoke("send-incident-email", {
+            body: {
+              incident_number: incident.incident_number,
+              title: incident.title,
+              description: incident.description,
+              priority: incident.priority,
+              tech_team_emails: emails,
+              flag_reason: "Incident escalated and requires Technology team attention",
+              ticket_url: `${window.location.origin}/crm/incidents/${incident.id}`,
+            },
+          }).catch((err) => console.error("Tech notify failed:", err));
+        }
+      } catch (err) { console.error("Tech notify lookup failed:", err); }
+    }
+
     fetchAll();
   };
 

@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     const OUTLOOK_API_KEY = Deno.env.get('MICROSOFT_OUTLOOK_API_KEY');
     if (!OUTLOOK_API_KEY) throw new Error('MICROSOFT_OUTLOOK_API_KEY is not configured');
 
-    const { incident_number, title, description, priority, client_email, client_name, assigned_email, assigned_name, is_note_update, is_closed, ticket_url } = await req.json();
+    const { incident_number, title, description, priority, client_email, client_name, assigned_email, assigned_name, is_note_update, is_closed, ticket_url, tech_team_emails, flag_reason } = await req.json();
 
     if (!title || !incident_number) {
       return new Response(JSON.stringify({ error: 'Missing required fields: title, incident_number' }), {
@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const results: { client?: string; assigned?: string } = {};
+    const results: { client?: string; assigned?: string; tech_team?: string } = {};
 
     const buildHtml = (recipientName: string, isClient: boolean, isUpdate: boolean = false, isClosed: boolean = false) => `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -112,6 +112,51 @@ Deno.serve(async (req) => {
         }),
       });
       results.assigned = resp.ok ? 'sent' : `failed (${resp.status})`;
+    }
+
+    // Send to Technology team (broadcast for flagged/critical incidents)
+    if (Array.isArray(tech_team_emails) && tech_team_emails.length > 0) {
+      const recipients = (tech_team_emails as string[])
+        .filter((e) => typeof e === 'string' && e.includes('@'))
+        .map((address) => ({ emailAddress: { address } }));
+      if (recipients.length > 0) {
+        const subject = `[${incident_number}] ${flag_reason || 'Flagged Incident'}: ${title}`;
+        const html = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #b91c1c; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+              <h1 style="margin: 0; font-size: 20px;">⚠ Flagged Incident</h1>
+            </div>
+            <div style="border: 1px solid #e0e0e0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+              <p>Hello Technology Team,</p>
+              <p>${flag_reason || 'An incident has been flagged and requires attention.'}</p>
+              <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+                <tr style="background: #f5f5f5;"><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Ticket ID</td><td style="padding:10px;border:1px solid #e0e0e0;">${incident_number}</td></tr>
+                <tr><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Title</td><td style="padding:10px;border:1px solid #e0e0e0;">${title}</td></tr>
+                <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Priority</td><td style="padding:10px;border:1px solid #e0e0e0;text-transform:capitalize;">${priority || 'medium'}</td></tr>
+                ${description ? `<tr><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Description</td><td style="padding:10px;border:1px solid #e0e0e0;">${description}</td></tr>` : ''}
+              </table>
+              ${ticket_url ? `<p style="margin: 20px 0;"><a href="${ticket_url}" style="display: inline-block; background: #b91c1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Ticket</a></p>` : ''}
+              <p style="color: #666; font-size: 12px; margin-top: 24px;">This is an automated notification.</p>
+            </div>
+          </div>`;
+        const resp = await fetch(`${GATEWAY_URL}/me/sendMail`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'X-Connection-Api-Key': OUTLOOK_API_KEY,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: {
+              subject,
+              body: { contentType: 'HTML', content: html },
+              toRecipients: recipients,
+              from: { emailAddress: { address: 'noc@iklickgh.com', name: 'Iklick NOC' } },
+            },
+          }),
+        });
+        results.tech_team = resp.ok ? `sent (${recipients.length})` : `failed (${resp.status})`;
+      }
     }
 
     return new Response(JSON.stringify({ success: true, results }), {
