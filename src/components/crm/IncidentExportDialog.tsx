@@ -26,16 +26,28 @@ export function IncidentExportDialog({ open, onOpenChange }: Props) {
     try {
       const fromIso = new Date(from + "T00:00:00").toISOString();
       const toIso = new Date(to + "T23:59:59").toISOString();
-      const [incRes, clientRes, profRes, closureRes] = await Promise.all([
+      const [incRes, clientRes, profRes] = await Promise.all([
         supabase.from("incidents").select("*").gte("created_at", fromIso).lte("created_at", toIso).order("created_at", { ascending: false }),
         supabase.from("clients").select("id, name"),
         supabase.from("profiles").select("user_id, full_name"),
-        supabase.from("incident_closures").select("incident_id, root_cause, recommendation, resolution"),
       ]);
       if (incRes.error) throw incRes.error;
+      const incidentIds = (incRes.data || []).map((i: any) => i.id);
+      let closures: any[] = [];
+      // Fetch closures in chunks scoped to the actual incident IDs (avoids the 1000-row default limit and RLS edge cases)
+      const chunkSize = 200;
+      for (let i = 0; i < incidentIds.length; i += chunkSize) {
+        const chunk = incidentIds.slice(i, i + chunkSize);
+        const { data, error } = await (supabase as any)
+          .from("incident_closures")
+          .select("incident_id, root_cause, recommendation, resolution")
+          .in("incident_id", chunk);
+        if (error) throw error;
+        closures = closures.concat(data || []);
+      }
       const clientMap = Object.fromEntries((clientRes.data || []).map((c: any) => [c.id, c.name]));
       const profMap = Object.fromEntries((profRes.data || []).map((p: any) => [p.user_id, p.full_name]));
-      const closureMap = Object.fromEntries((closureRes.data || []).map((c: any) => [c.incident_id, c]));
+      const closureMap = Object.fromEntries(closures.map((c: any) => [c.incident_id, c]));
 
       const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Termination POP", "Assigned To", "Created", "Resolved", "Closed", "Root Cause", "Recommendation", "Resolution"];
       const rows = (incRes.data || []).map((i: any) => {
