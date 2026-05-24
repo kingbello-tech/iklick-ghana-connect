@@ -26,17 +26,21 @@ export function IncidentExportDialog({ open, onOpenChange }: Props) {
     try {
       const fromIso = new Date(from + "T00:00:00").toISOString();
       const toIso = new Date(to + "T23:59:59").toISOString();
-      const [incRes, clientRes, profRes] = await Promise.all([
+      const [incRes, clientRes, profRes, closureRes] = await Promise.all([
         supabase.from("incidents").select("*").gte("created_at", fromIso).lte("created_at", toIso).order("created_at", { ascending: false }),
         supabase.from("clients").select("id, name"),
         supabase.from("profiles").select("user_id, full_name"),
+        supabase.from("incident_closures").select("incident_id, root_cause, recommendation, resolution"),
       ]);
       if (incRes.error) throw incRes.error;
       const clientMap = Object.fromEntries((clientRes.data || []).map((c: any) => [c.id, c.name]));
       const profMap = Object.fromEntries((profRes.data || []).map((p: any) => [p.user_id, p.full_name]));
+      const closureMap = Object.fromEntries((closureRes.data || []).map((c: any) => [c.incident_id, c]));
 
-      const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Termination POP", "Assigned To", "Created", "Resolved", "Closed"];
-      const rows = (incRes.data || []).map((i: any) => [
+      const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Termination POP", "Assigned To", "Created", "Resolved", "Closed", "Root Cause", "Recommendation", "Resolution"];
+      const rows = (incRes.data || []).map((i: any) => {
+        const c = closureMap[i.id] || {};
+        return [
         i.incident_number, i.title,
         i.client_id ? clientMap[i.client_id] || "" : "",
         i.priority, i.status, i.issue_category || "", i.service_type || "", i.location || "",
@@ -45,7 +49,11 @@ export function IncidentExportDialog({ open, onOpenChange }: Props) {
         i.created_at ? format(new Date(i.created_at), "yyyy-MM-dd HH:mm") : "",
         i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
         i.closed_at ? format(new Date(i.closed_at), "yyyy-MM-dd HH:mm") : "",
-      ]);
+        c.root_cause || "",
+        c.recommendation || "",
+        c.resolution || "",
+        ];
+      });
       const escape = (v: any) => {
         const s = String(v ?? "");
         return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
