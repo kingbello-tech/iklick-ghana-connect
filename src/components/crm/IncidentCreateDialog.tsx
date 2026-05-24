@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, X, Plus } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
@@ -58,10 +59,63 @@ function ClientCombobox({ clients, value, onChange }: { clients: Client[]; value
     </Popover>
   );
 }
+
+function AdditionalClientsPicker({ clients, selectedIds, primaryId, onChange }: { clients: Client[]; selectedIds: string[]; primaryId: string; onChange: (ids: string[]) => void }) {
+  const [open, setOpen] = useState(false);
+  const available = clients.filter((c) => c.id !== primaryId);
+  const selectedClients = clients.filter((c) => selectedIds.includes(c.id));
+
+  const toggle = (id: string) => {
+    if (selectedIds.includes(id)) onChange(selectedIds.filter((x) => x !== id));
+    else onChange([...selectedIds, id]);
+  };
+
+  return (
+    <div className="space-y-2">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button type="button" variant="outline" className="w-full justify-between font-normal h-10">
+            <span className="flex items-center gap-2"><Plus className="h-4 w-4" /> Add Affected Clients</span>
+            <ChevronsUpDown className="h-4 w-4 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[320px] p-0">
+          <Command>
+            <CommandInput placeholder="Search clients..." />
+            <CommandList>
+              <CommandEmpty>No client found.</CommandEmpty>
+              <CommandGroup>
+                {available.map((c) => (
+                  <CommandItem key={c.id} value={c.name} onSelect={() => toggle(c.id)}>
+                    <Check className={cn("mr-2 h-4 w-4", selectedIds.includes(c.id) ? "opacity-100" : "opacity-0")} />
+                    {c.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {selectedClients.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {selectedClients.map((c) => (
+            <Badge key={c.id} variant="secondary" className="gap-1">
+              {c.name}
+              <button type="button" onClick={() => toggle(c.id)} className="ml-1 hover:text-destructive">
+                <X className="h-3 w-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [], onCreated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [additionalClientIds, setAdditionalClientIds] = useState<string[]>([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -84,6 +138,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
       department: "",
       assigned_to: "",
     });
+    setAdditionalClientIds((ids) => ids.filter((id) => id !== clientId));
   };
 
   const filteredProfiles = form.department
@@ -111,7 +166,9 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
       if (error) throw error;
 
       // Send email notifications
-      const client = clients.find((c) => c.id === form.client_id);
+      const primaryClient = clients.find((c) => c.id === form.client_id);
+      const extraClients = clients.filter((c) => additionalClientIds.includes(c.id));
+      const allClients = [primaryClient, ...extraClients].filter((c): c is Client => !!c);
       const assignedProfile = profiles.find((p) => p.user_id === form.assigned_to);
 
       // Fetch assigned user's email from profiles
@@ -135,25 +192,48 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
         }
       }
 
-      supabase.functions.invoke("send-incident-email", {
-        body: {
-          incident_number: inserted.incident_number,
-          title: form.title,
-          description: form.description,
-          priority: form.priority,
-          client_email: client?.email || null,
-          client_name: client?.name || null,
-          assigned_email: assignedEmail,
-          assigned_name: assignedProfile?.full_name || null,
-          ticket_url: assignedEmail ? `${window.location.origin}/crm/incidents/${inserted.id}` : undefined,
-          tech_team_emails: techEmails,
-          flag_reason: techEmails.length ? `New ${form.priority} priority incident` : undefined,
-        },
-      }).catch((err) => console.error("Email notification failed:", err));
+      // Send one email per affected client; only the first call carries assigned/tech notifications to avoid duplicates
+      allClients.forEach((c, idx) => {
+        if (!c.email) return;
+        supabase.functions.invoke("send-incident-email", {
+          body: {
+            incident_number: inserted.incident_number,
+            title: form.title,
+            description: form.description,
+            priority: form.priority,
+            client_email: c.email,
+            client_name: c.name,
+            assigned_email: idx === 0 ? assignedEmail : null,
+            assigned_name: idx === 0 ? (assignedProfile?.full_name || null) : null,
+            ticket_url: idx === 0 && assignedEmail ? `${window.location.origin}/crm/incidents/${inserted.id}` : undefined,
+            tech_team_emails: idx === 0 ? techEmails : [],
+            flag_reason: idx === 0 && techEmails.length ? `New ${form.priority} priority incident` : undefined,
+          },
+        }).catch((err) => console.error("Email notification failed:", err));
+      });
+      // If no clients at all but we still need to notify staff/tech team
+      if (allClients.length === 0 && (assignedEmail || techEmails.length)) {
+        supabase.functions.invoke("send-incident-email", {
+          body: {
+            incident_number: inserted.incident_number,
+            title: form.title,
+            description: form.description,
+            priority: form.priority,
+            client_email: null,
+            client_name: null,
+            assigned_email: assignedEmail,
+            assigned_name: assignedProfile?.full_name || null,
+            ticket_url: assignedEmail ? `${window.location.origin}/crm/incidents/${inserted.id}` : undefined,
+            tech_team_emails: techEmails,
+            flag_reason: techEmails.length ? `New ${form.priority} priority incident` : undefined,
+          },
+        }).catch((err) => console.error("Email notification failed:", err));
+      }
 
-      toast({ title: "Incident created" });
+      toast({ title: "Incident created", description: allClients.length > 1 ? `Notifications sent to ${allClients.length} clients.` : undefined });
       onOpenChange(false);
       setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", termination_pop: "", department: "", assigned_to: "" });
+      setAdditionalClientIds([]);
       onCreated();
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -204,6 +284,14 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
               </SelectContent>
             </Select>
           </div>
+          {form.client_id && (
+            <AdditionalClientsPicker
+              clients={clients}
+              selectedIds={additionalClientIds}
+              primaryId={form.client_id}
+              onChange={setAdditionalClientIds}
+            />
+          )}
           <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <Input placeholder="Termination POP (where the client takes their internet from)" value={form.termination_pop} onChange={(e) => setForm({ ...form, termination_pop: e.target.value })} />
           <div className="grid grid-cols-2 gap-3">
