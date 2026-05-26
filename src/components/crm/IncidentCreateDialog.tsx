@@ -171,6 +171,12 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
       const allClients = [primaryClient, ...extraClients].filter((c): c is Client => !!c);
       const assignedProfile = profiles.find((p) => p.user_id === form.assigned_to);
 
+      // Persist multi-client links (primary + additional) so they show on the detail page
+      const linkRows = allClients.map((c) => ({ incident_id: inserted.id, client_id: c.id }));
+      if (linkRows.length) {
+        await (supabase as any).from("incident_clients").insert(linkRows);
+      }
+
       // Fetch assigned user's email from profiles
       let assignedEmail: string | null = null;
       if (form.assigned_to) {
