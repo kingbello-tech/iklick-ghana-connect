@@ -611,6 +611,42 @@ export type Database = {
           },
         ]
       }
+      incident_clients: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          incident_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          incident_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_clients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incident_clients_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       incident_closures: {
         Row: {
           closed_by: string

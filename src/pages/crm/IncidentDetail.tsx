@@ -63,6 +63,7 @@ export default function IncidentDetail() {
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [clients, setClients] = useState<Client[]>([]);
   const [clientName, setClientName] = useState<string>("");
+  const [affectedClientIds, setAffectedClientIds] = useState<string[]>([]);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -75,7 +76,7 @@ export default function IncidentDetail() {
 
   const fetchAll = async () => {
     if (!id) return;
-    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes] = await Promise.all([
+    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes, linksRes] = await Promise.all([
       supabase.from("incidents").select("*").eq("id", id).single(),
       supabase.from("incident_notes").select("*").eq("incident_id", id).order("created_at", { ascending: true }),
       supabase.from("incident_history").select("*").eq("incident_id", id).order("created_at", { ascending: false }),
@@ -83,6 +84,7 @@ export default function IncidentDetail() {
       supabase.from("clients").select("*"),
       (supabase as any).from("incident_closures").select("*").eq("incident_id", id).maybeSingle(),
       supabase.from("sla_policies").select("priority,resolution_time_minutes"),
+      (supabase as any).from("incident_clients").select("client_id").eq("incident_id", id),
     ]);
     if (incRes.data) {
       setIncident(incRes.data);
@@ -97,6 +99,7 @@ export default function IncidentDetail() {
     if (histRes.data) setHistory(histRes.data);
     if (profRes.data) setProfiles(Object.fromEntries(profRes.data.map((p) => [p.user_id, p])));
     if (clientsRes.data) setClients(clientsRes.data);
+    setAffectedClientIds(((linksRes as any)?.data || []).map((r: any) => r.client_id));
     setClosure(closureRes.data || null);
     setLoading(false);
   };
@@ -689,6 +692,46 @@ export default function IncidentDetail() {
               )}
             </CardContent>
           </Card>
+
+          {(() => {
+            const ids = Array.from(new Set([
+              ...(incident.client_id ? [incident.client_id] : []),
+              ...affectedClientIds,
+            ]));
+            if (ids.length <= 1) return null;
+            const affected = ids
+              .map((cid) => clients.find((c) => c.id === cid))
+              .filter((c): c is Client => !!c);
+            return (
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-muted-foreground">
+                    Affected Clients ({affected.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  {affected.map((c) => (
+                    <div key={c.id} className="flex items-start justify-between gap-2 p-2 rounded-md bg-muted/40">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-foreground truncate">{c.name}</span>
+                          {incident.client_id === c.id && (
+                            <Badge variant="outline" className="text-[9px]">Primary</Badge>
+                          )}
+                        </div>
+                        {c.email && (
+                          <p className="text-xs text-muted-foreground truncate">{c.email}</p>
+                        )}
+                        {c.phone && (
+                          <p className="text-xs text-muted-foreground truncate">{c.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
       </div>
 
