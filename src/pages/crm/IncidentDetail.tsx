@@ -63,6 +63,7 @@ export default function IncidentDetail() {
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [clients, setClients] = useState<Client[]>([]);
   const [clientName, setClientName] = useState<string>("");
+  const [affectedClientIds, setAffectedClientIds] = useState<string[]>([]);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -75,7 +76,7 @@ export default function IncidentDetail() {
 
   const fetchAll = async () => {
     if (!id) return;
-    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes] = await Promise.all([
+    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes, linksRes] = await Promise.all([
       supabase.from("incidents").select("*").eq("id", id).single(),
       supabase.from("incident_notes").select("*").eq("incident_id", id).order("created_at", { ascending: true }),
       supabase.from("incident_history").select("*").eq("incident_id", id).order("created_at", { ascending: false }),
@@ -83,6 +84,7 @@ export default function IncidentDetail() {
       supabase.from("clients").select("*"),
       (supabase as any).from("incident_closures").select("*").eq("incident_id", id).maybeSingle(),
       supabase.from("sla_policies").select("priority,resolution_time_minutes"),
+      (supabase as any).from("incident_clients").select("client_id").eq("incident_id", id),
     ]);
     if (incRes.data) {
       setIncident(incRes.data);
@@ -97,6 +99,7 @@ export default function IncidentDetail() {
     if (histRes.data) setHistory(histRes.data);
     if (profRes.data) setProfiles(Object.fromEntries(profRes.data.map((p) => [p.user_id, p])));
     if (clientsRes.data) setClients(clientsRes.data);
+    setAffectedClientIds(((linksRes as any)?.data || []).map((r: any) => r.client_id));
     setClosure(closureRes.data || null);
     setLoading(false);
   };
