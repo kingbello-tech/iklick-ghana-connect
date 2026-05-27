@@ -573,13 +573,30 @@ export default function IncidentDetail() {
                 <div className="space-y-3">
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Client</label>
-                    <Select value={editForm.client_id || ""} onValueChange={(v) => setEditForm({ ...editForm, client_id: v })}>
+                    <Select value={editForm.client_id || ""} onValueChange={(v) => setEditForm({ ...editForm, client_id: v, site_id: null } as any)}>
                       <SelectTrigger><SelectValue placeholder="Select client" /></SelectTrigger>
                       <SelectContent>
                         {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
+                  {editForm.client_id && (
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Site</label>
+                      <Select value={(editForm as any).site_id || ""} onValueChange={(v) => setEditForm({ ...editForm, site_id: v } as any)}>
+                        <SelectTrigger><SelectValue placeholder="Select site (optional)" /></SelectTrigger>
+                        <SelectContent>
+                          {sites.filter((s) => s.client_id === editForm.client_id).length === 0 ? (
+                            <SelectItem value="none" disabled>No sites for this client</SelectItem>
+                          ) : (
+                            sites.filter((s) => s.client_id === editForm.client_id).map((s) => (
+                              <SelectItem key={s.id} value={s.id}>{s.name}{s.location ? ` — ${s.location}` : ""}</SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
                   <div>
                     <label className="text-xs text-muted-foreground mb-1 block">Priority</label>
                     <Select value={editForm.priority || "medium"} onValueChange={(v) => setEditForm({ ...editForm, priority: v as any })}>
