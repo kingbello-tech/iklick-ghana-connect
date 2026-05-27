@@ -40,6 +40,7 @@ type IncidentNote = Database["public"]["Tables"]["incident_notes"]["Row"];
 type IncidentHistory = Database["public"]["Tables"]["incident_history"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 type Client = Database["public"]["Tables"]["clients"]["Row"];
+type Site = Database["public"]["Tables"]["client_sites"]["Row"];
 
 const PRIORITY_COLORS: Record<string, string> = {
   critical: "hsl(0, 84%, 60%)", high: "hsl(25, 95%, 53%)", medium: "hsl(45, 93%, 47%)", low: "hsl(142, 71%, 45%)",
@@ -62,6 +63,7 @@ export default function IncidentDetail() {
   const [history, setHistory] = useState<IncidentHistory[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [clients, setClients] = useState<Client[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [clientName, setClientName] = useState<string>("");
   const [affectedClientIds, setAffectedClientIds] = useState<string[]>([]);
   const [newNote, setNewNote] = useState("");
@@ -76,7 +78,7 @@ export default function IncidentDetail() {
 
   const fetchAll = async () => {
     if (!id) return;
-    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes, linksRes] = await Promise.all([
+    const [incRes, notesRes, histRes, profRes, clientsRes, closureRes, slaRes, linksRes, sitesRes] = await Promise.all([
       supabase.from("incidents").select("*").eq("id", id).single(),
       supabase.from("incident_notes").select("*").eq("incident_id", id).order("created_at", { ascending: true }),
       supabase.from("incident_history").select("*").eq("incident_id", id).order("created_at", { ascending: false }),
@@ -85,6 +87,7 @@ export default function IncidentDetail() {
       (supabase as any).from("incident_closures").select("*").eq("incident_id", id).maybeSingle(),
       supabase.from("sla_policies").select("priority,resolution_time_minutes"),
       (supabase as any).from("incident_clients").select("client_id").eq("incident_id", id),
+      supabase.from("client_sites").select("*").order("name"),
     ]);
     if (incRes.data) {
       setIncident(incRes.data);
@@ -99,6 +102,7 @@ export default function IncidentDetail() {
     if (histRes.data) setHistory(histRes.data);
     if (profRes.data) setProfiles(Object.fromEntries(profRes.data.map((p) => [p.user_id, p])));
     if (clientsRes.data) setClients(clientsRes.data);
+    if (sitesRes.data) setSites(sitesRes.data as Site[]);
     setAffectedClientIds(((linksRes as any)?.data || []).map((r: any) => r.client_id));
     setClosure(closureRes.data || null);
     setLoading(false);
@@ -209,6 +213,7 @@ export default function IncidentDetail() {
       location: incident.location,
       termination_pop: (incident as any).termination_pop ?? null,
       client_id: incident.client_id,
+      site_id: (incident as any).site_id ?? null,
       assigned_to: incident.assigned_to,
     });
     setEditing(true);
@@ -226,6 +231,7 @@ export default function IncidentDetail() {
     if (editForm.location !== incident.location) changes.push({ field: "location", old: incident.location, new: editForm.location || null });
     if ((editForm as any).termination_pop !== (incident as any).termination_pop) changes.push({ field: "termination_pop", old: (incident as any).termination_pop ?? null, new: (editForm as any).termination_pop || null });
     if (editForm.client_id !== incident.client_id) changes.push({ field: "client_id", old: incident.client_id, new: editForm.client_id || null });
+    if ((editForm as any).site_id !== (incident as any).site_id) changes.push({ field: "site_id", old: (incident as any).site_id ?? null, new: (editForm as any).site_id || null });
     if (editForm.assigned_to !== incident.assigned_to) changes.push({ field: "assigned_to", old: incident.assigned_to, new: editForm.assigned_to || null });
 
     if (changes.length === 0) { setEditing(false); return; }
@@ -239,6 +245,7 @@ export default function IncidentDetail() {
       location: editForm.location,
       termination_pop: (editForm as any).termination_pop || null,
       client_id: editForm.client_id || null,
+      site_id: (editForm as any).site_id || null,
       assigned_to: editForm.assigned_to || null,
     }).eq("id", incident.id);
 
