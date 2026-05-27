@@ -18,6 +18,7 @@ import CRMDashboard from "./pages/crm/CRMDashboard";
 import IncidentList from "./pages/crm/IncidentList";
 import IncidentDetail from "./pages/crm/IncidentDetail";
 import ClientList from "./pages/crm/ClientList";
+import ClientDetail from "./pages/crm/ClientDetail";
 import UserManagement from "./pages/crm/UserManagement";
 import SLAPolicies from "./pages/crm/SLAPolicies";
 import AuditLogs from "./pages/crm/AuditLogs";
@@ -81,6 +82,7 @@ const App = () => (
                 <Route path="incidents" element={<IncidentList />} />
                 <Route path="incidents/:id" element={<IncidentDetail />} />
                 <Route path="clients" element={<ClientList />} />
+                <Route path="clients/:id" element={<ClientDetail />} />
                 <Route path="projects" element={<ProjectList />} />
                 <Route path="projects/:id" element={<ProjectDetail />} />
                 <Route path="satisfaction" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><ClientSatisfaction /></ProtectedRoute>} />
