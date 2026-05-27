@@ -27,7 +27,7 @@ interface Onboarding { id: string; site_id: string; current_stage: "survey"|"ins
 interface OnbTask { id: string; site_id: string; stage: string; title: string; status: string; assigned_to: string | null; due_date: string | null; completed_at: string | null; }
 interface Incident { id: string; incident_number: string; title: string; status: string; priority: string; created_at: string; resolved_at: string | null; due_at: string | null; site_id: string | null; }
 interface Satisfaction { rating: number; created_at: string; }
-interface Churn { client_id: string; risk_level: string; manual_override: boolean; score: number; reason: string | null; churned_at: string | null; notes: string | null; }
+interface Churn { client_id: string; risk_level: string; manual_override: boolean; score: number; reason: string | null; churned_at: string | null; notes: string | null; last_assessed_at: string | null; }
 interface ChurnLog { id: string; action: string; from_status: string | null; to_status: string | null; notes: string | null; performed_at: string; }
 
 const STATUS_COLORS: Record<string, string> = {
