@@ -1,62 +1,82 @@
-# Plan: Technology Department Restructure + Incident & Client Updates
+# Client Profile — Multi-Site, Contracts, Onboarding, Performance & Churn
 
-## 1. Roles & Department Reorganization
+## What gets built
 
-**Technology department** now contains: `technology_manager`, `network_manager`, `technology_engineer`, `network_engineer`, `client_experience` (kept under Technology since CX is the closure/SLA arm).
+A dedicated **Client Profile page** at `/crm/clients/:id` with tabbed sections, accessible by clicking any client in the existing client list. It centralizes everything about a client and their sites.
 
-- **Remove `support_agent` role** from the system (enum value retained for backward compat; UI option removed; existing users migrated to `network_engineer`).
-- **Technology Manager**: superset of Network Manager — manages incidents, surveys, installations, network ops. Dashboard combines all four.
-- **Network Manager**: keep current role and dashboard (unchanged).
-- **Technology Engineer**: can work incidents but **no longer sees** Survey Queue / Installation Queue sidebar items or `/crm/technology/dashboard` (redirects to incident-focused engineer dashboard).
-- **Network Engineer**: gains incident management (create + work incidents).
+### Tabs on the Client Profile
 
-## 2. Incident Permissions
+1. **Overview** — Summary card (active sites, MRC total, open incidents, churn risk badge, CSAT avg), recent activity stream.
+2. **Sites** — List of all the client's sites with status, location, service type, bandwidth, go-live date. Add / edit / view site → opens a Site Detail drawer with its own sub-tabs (Contract, Onboarding, Incidents, Performance).
+3. **Contracts** — Per-site contracts (MRC, NRC, start/end, renewal date, billing reference, status). Highlights upcoming renewals.
+4. **Onboarding** — Pipeline view (Survey → Install → Test → Live) across all sites currently being onboarded, with per-stage owners, tasks, attachments.
+5. **Performance** — Per-client and per-site: incident count, MTTR, SLA compliance %, open vs resolved, monthly trend (Recharts).
+6. **Churn** — Auto-computed risk score + manual override + churn log (date, reason, retention actions).
+7. **Contacts** — Existing client contacts (reuse current component).
 
-- **Can create incidents**: admin, technology_manager, technology_engineer, network_manager, network_engineer (NOT client_experience anymore).
-- **Can work/update incidents**: same set + client_experience (for closure/notes).
-- Update RLS on `incidents`, `incident_notes`, `incident_history`, `incident_closures`, `incident_tasks`, `incident_time_entries`, `incident_approvals` accordingly.
-- `canManageIncidents` in `AuthContext` updated; "Create Incident" button hidden for client_experience.
+### Sales / Tech integration
 
-## 3. Department-Scoped Assignment
+- Incidents get an optional `site_id` so they can be tied to a specific site (existing incidents stay valid — site is nullable).
+- Onboarding pipeline can be auto-seeded when a deal is `closed_won` (creates a site in `survey` stage).
 
-In `IncidentCreateDialog` (and any other assignment dropdown that filters by department), when a department is chosen the user list shows **only profiles whose `profiles.department` matches**. Backfill `profiles.department` for the five Technology roles via a one-time SQL update so dropdowns aren't empty.
+## Data model (new tables)
 
-## 4. Client Contacts (multiple emails & phones per client)
+```text
+client_sites
+  id, client_id, name, location, gps_address,
+  service_type, bandwidth, status (onboarding|active|suspended|churned),
+  go_live_date, notes, created_at/by, updated_at
 
-New table `public.client_contacts`:
-- `client_id` (FK clients), `name`, `email`, `phone`, `role` (e.g. "Billing", "Technical"), `is_primary`
-- RLS: same read scope as `clients`; staff with client write access can manage.
+site_contracts
+  id, site_id, mrc, nrc, contract_start, contract_end,
+  renewal_date, contract_duration_months, billing_reference,
+  status (active|expired|cancelled|pending), notes
 
-UI: on Client detail/list, add a "Contacts" section with **Add Contact** button → dialog to add multiple rows; edit/delete per row.
+site_onboarding
+  id, site_id, current_stage (survey|install|test|live),
+  survey_owner, install_owner, test_owner,
+  survey_completed_at, install_completed_at, test_completed_at, live_at,
+  notes
 
-## 5. Email Notification on Flagged Incidents
+site_onboarding_tasks
+  id, site_id, stage, title, assigned_to, due_date,
+  status (open|in_progress|done), completed_at, created_by
 
-When an incident is created **or escalated/flagged high-priority**, send an email to the Technology team via the existing `send-incident-email` edge function:
-- Recipients: all profiles with role in `technology_manager`, `technology_engineer` (collected at send time).
-- Trigger points:
-  1. Incident creation (already partially wired — extend to also CC tech team, not only the assignee).
-  2. Status change to `escalated` or priority change to `critical` — new client-side hook in `IncidentDetail` post-update.
+client_churn
+  client_id (PK), risk_level (low|medium|high|churned),
+  manual_override (bool), score (int 0-100),
+  reason, churned_at, last_assessed_at, notes
 
-## Technical Summary
+client_churn_log
+  id, client_id, action (status_change|retention_action),
+  from_status, to_status, notes, performed_by, performed_at
 
-**Migration**
-- Update RLS policies on all incident tables to include `network_engineer` for INSERT/UPDATE and remove `client_experience` from INSERT-incident.
-- `UPDATE user_roles SET role='network_engineer' WHERE role='support_agent'`.
-- Backfill `profiles.department='Technology'` for affected roles.
-- Create `client_contacts` table + RLS + `updated_at` trigger.
+incidents.site_id  ← new nullable FK column
+```
 
-**Frontend**
-- `AuthContext.tsx`: `canManageIncidents` → add `network_engineer`, `network_manager`; add `canCreateIncidents` (excludes `client_experience`).
-- `CRMSidebar.tsx`: remove Surveys/Installations from technology_engineer view; add Incidents for network_engineer; remove support_agent references; under CX remove create-incident shortcut.
-- `CRMDashboard.tsx`: technology_engineer → engineer-focused (incidents) dashboard, not the queue dashboard.
-- `TechnologyDashboard.tsx`: include network ops widgets for technology_manager.
-- `IncidentList.tsx` / `IncidentCreateDialog.tsx`: hide "Create" for CX; assignment dropdown filtered by selected department; default department list updated.
-- New `src/components/crm/ClientContacts.tsx` mounted on client detail.
-- `UserManagement.tsx`: remove `support_agent` from selectable roles.
+Auto-churn score is computed in a Postgres function from: recent incident volume, SLA breaches, CSAT average, overdue invoices, days since last activity. Staff can override.
 
-**Edge function**
-- `send-incident-email`: accept `cc_emails` array; UI call sites collect Technology team emails and pass them in for create + flag events.
+RLS: existing patterns — authenticated read; admin / network manager / technology manager / network engineer / technology engineer / client_experience / sales for inserts/updates; admin for deletes.
 
-No new packages.
+## UI / files
 
-Awaiting approval before applying the migration and code changes.
+- New page: `src/pages/crm/ClientDetail.tsx` (tabs + sections)
+- New components in `src/components/crm/client/`:
+  - `ClientOverview.tsx`
+  - `SiteList.tsx` + `SiteFormDialog.tsx` + `SiteDetailDrawer.tsx`
+  - `ContractList.tsx` + `ContractFormDialog.tsx`
+  - `OnboardingBoard.tsx` (stage columns, drag via @dnd-kit) + `OnboardingTaskDialog.tsx`
+  - `ClientPerformance.tsx` (Recharts charts driven by incidents)
+  - `ChurnPanel.tsx` (auto score, manual override, churn log)
+- `ClientList.tsx` — make each row clickable, route to `/crm/clients/:id`.
+- `App.tsx` — add `/crm/clients/:id` route.
+- `IncidentCreateDialog.tsx` — add optional Site selector that appears once a client is chosen.
+- `IncidentDetail.tsx` — show site name if linked.
+
+## Notes / non-goals
+
+- No automated uptime polling — uptime/availability is out of scope (you picked Incident & SLA only).
+- No financial-health panel in this round.
+- Existing incidents remain valid; site link is optional and additive.
+
+Shall I proceed with the migration and build?
