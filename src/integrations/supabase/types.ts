@@ -89,6 +89,78 @@ export type Database = {
         }
         Relationships: []
       }
+      client_churn: {
+        Row: {
+          churned_at: string | null
+          client_id: string
+          last_assessed_at: string
+          manual_override: boolean
+          notes: string | null
+          reason: string | null
+          risk_level: Database["public"]["Enums"]["churn_risk"]
+          score: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          churned_at?: string | null
+          client_id: string
+          last_assessed_at?: string
+          manual_override?: boolean
+          notes?: string | null
+          reason?: string | null
+          risk_level?: Database["public"]["Enums"]["churn_risk"]
+          score?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          churned_at?: string | null
+          client_id?: string
+          last_assessed_at?: string
+          manual_override?: boolean
+          notes?: string | null
+          reason?: string | null
+          risk_level?: Database["public"]["Enums"]["churn_risk"]
+          score?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      client_churn_log: {
+        Row: {
+          action: string
+          client_id: string
+          from_status: string | null
+          id: string
+          notes: string | null
+          performed_at: string
+          performed_by: string | null
+          to_status: string | null
+        }
+        Insert: {
+          action: string
+          client_id: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          to_status?: string | null
+        }
+        Update: {
+          action?: string
+          client_id?: string
+          from_status?: string | null
+          id?: string
+          notes?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          to_status?: string | null
+        }
+        Relationships: []
+      }
       client_contacts: {
         Row: {
           client_id: string
@@ -186,6 +258,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      client_sites: {
+        Row: {
+          bandwidth: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          go_live_date: string | null
+          gps_address: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          service_type: Database["public"]["Enums"]["service_type"] | null
+          status: Database["public"]["Enums"]["site_status"]
+          updated_at: string
+        }
+        Insert: {
+          bandwidth?: string | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          go_live_date?: string | null
+          gps_address?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+          status?: Database["public"]["Enums"]["site_status"]
+          updated_at?: string
+        }
+        Update: {
+          bandwidth?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          go_live_date?: string | null
+          gps_address?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          service_type?: Database["public"]["Enums"]["service_type"] | null
+          status?: Database["public"]["Enums"]["site_status"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       clients: {
         Row: {
@@ -864,6 +984,7 @@ export type Database = {
           reopened_count: number
           resolved_at: string | null
           service_type: Database["public"]["Enums"]["service_type"] | null
+          site_id: string | null
           source: string
           status: Database["public"]["Enums"]["incident_status"]
           sub_category: string | null
@@ -892,6 +1013,7 @@ export type Database = {
           reopened_count?: number
           resolved_at?: string | null
           service_type?: Database["public"]["Enums"]["service_type"] | null
+          site_id?: string | null
           source?: string
           status?: Database["public"]["Enums"]["incident_status"]
           sub_category?: string | null
@@ -920,6 +1042,7 @@ export type Database = {
           reopened_count?: number
           resolved_at?: string | null
           service_type?: Database["public"]["Enums"]["service_type"] | null
+          site_id?: string | null
           source?: string
           status?: Database["public"]["Enums"]["incident_status"]
           sub_category?: string | null
@@ -942,6 +1065,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
             referencedColumns: ["id"]
           },
           {
@@ -1904,6 +2034,174 @@ export type Database = {
         }
         Relationships: []
       }
+      site_contracts: {
+        Row: {
+          billing_reference: string | null
+          contract_duration_months: number | null
+          contract_end: string | null
+          contract_start: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          mrc: number
+          notes: string | null
+          nrc: number
+          renewal_date: string | null
+          site_id: string
+          status: Database["public"]["Enums"]["contract_status"]
+          updated_at: string
+        }
+        Insert: {
+          billing_reference?: string | null
+          contract_duration_months?: number | null
+          contract_end?: string | null
+          contract_start?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mrc?: number
+          notes?: string | null
+          nrc?: number
+          renewal_date?: string | null
+          site_id: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          updated_at?: string
+        }
+        Update: {
+          billing_reference?: string | null
+          contract_duration_months?: number | null
+          contract_end?: string | null
+          contract_start?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          mrc?: number
+          notes?: string | null
+          nrc?: number
+          renewal_date?: string | null
+          site_id?: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_contracts_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_onboarding: {
+        Row: {
+          created_at: string
+          current_stage: Database["public"]["Enums"]["onboarding_stage"]
+          id: string
+          install_completed_at: string | null
+          install_owner: string | null
+          live_at: string | null
+          notes: string | null
+          site_id: string
+          survey_completed_at: string | null
+          survey_owner: string | null
+          test_completed_at: string | null
+          test_owner: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_stage?: Database["public"]["Enums"]["onboarding_stage"]
+          id?: string
+          install_completed_at?: string | null
+          install_owner?: string | null
+          live_at?: string | null
+          notes?: string | null
+          site_id: string
+          survey_completed_at?: string | null
+          survey_owner?: string | null
+          test_completed_at?: string | null
+          test_owner?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_stage?: Database["public"]["Enums"]["onboarding_stage"]
+          id?: string
+          install_completed_at?: string | null
+          install_owner?: string | null
+          live_at?: string | null
+          notes?: string | null
+          site_id?: string
+          survey_completed_at?: string | null
+          survey_owner?: string | null
+          test_completed_at?: string | null
+          test_owner?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_onboarding_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: true
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_onboarding_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_date: string | null
+          id: string
+          site_id: string
+          stage: Database["public"]["Enums"]["onboarding_stage"]
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          site_id: string
+          stage: Database["public"]["Enums"]["onboarding_stage"]
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          site_id?: string
+          stage?: Database["public"]["Enums"]["onboarding_stage"]
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_onboarding_tasks_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_surveys: {
         Row: {
           assigned_at: string | null
@@ -2109,6 +2407,10 @@ export type Database = {
         Returns: boolean
       }
       can_close_incident: { Args: { _user_id: string }; Returns: boolean }
+      compute_client_churn_score: {
+        Args: { _client_id: string }
+        Returns: number
+      }
       dunning_sweep: { Args: never; Returns: number }
       generate_monthly_recurring_invoices: { Args: never; Returns: number }
       get_user_role: {
@@ -2186,6 +2488,8 @@ export type Database = {
         | "finance_officer"
         | "hr_officer"
       approval_status: "pending" | "approved" | "rejected"
+      churn_risk: "low" | "medium" | "high" | "churned"
+      contract_status: "pending" | "active" | "expired" | "cancelled"
       deal_service_type: "fiber_home" | "dedicated_business" | "enterprise_link"
       deal_stage:
         | "new_lead"
@@ -2220,6 +2524,7 @@ export type Database = {
       lead_source: "referral" | "website" | "walk_in" | "campaign"
       lead_status: "new" | "contacted" | "qualified" | "unqualified"
       lead_type: "home" | "sme" | "enterprise"
+      onboarding_stage: "survey" | "install" | "test" | "live"
       pay_item_calc: "fixed" | "percent_of_basic"
       pay_item_type: "allowance" | "deduction" | "employer_cost"
       payment_method:
@@ -2247,6 +2552,7 @@ export type Database = {
         | "blocked"
       quotation_status: "draft" | "sent" | "accepted" | "rejected"
       service_type: "home" | "enterprise"
+      site_status: "onboarding" | "active" | "suspended" | "churned"
       survey_feasibility: "pending" | "yes" | "no"
       survey_status: "scheduled" | "completed" | "cancelled"
     }
@@ -2392,6 +2698,8 @@ export const Constants = {
         "hr_officer",
       ],
       approval_status: ["pending", "approved", "rejected"],
+      churn_risk: ["low", "medium", "high", "churned"],
+      contract_status: ["pending", "active", "expired", "cancelled"],
       deal_service_type: [
         "fiber_home",
         "dedicated_business",
@@ -2433,6 +2741,7 @@ export const Constants = {
       lead_source: ["referral", "website", "walk_in", "campaign"],
       lead_status: ["new", "contacted", "qualified", "unqualified"],
       lead_type: ["home", "sme", "enterprise"],
+      onboarding_stage: ["survey", "install", "test", "live"],
       pay_item_calc: ["fixed", "percent_of_basic"],
       pay_item_type: ["allowance", "deduction", "employer_cost"],
       payment_method: [
@@ -2463,6 +2772,7 @@ export const Constants = {
       ],
       quotation_status: ["draft", "sent", "accepted", "rejected"],
       service_type: ["home", "enterprise"],
+      site_status: ["onboarding", "active", "suspended", "churned"],
       survey_feasibility: ["pending", "yes", "no"],
       survey_status: ["scheduled", "completed", "cancelled"],
     },

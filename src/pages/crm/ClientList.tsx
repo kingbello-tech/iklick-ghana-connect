@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ export default function ClientList() {
   const [pageSize, setPageSize] = useState(25);
   const { canManageIncidents, isAdmin } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [form, setForm] = useState(emptyForm);
 
   const fetchClients = async () => {
@@ -167,14 +169,14 @@ export default function ClientList() {
                 </thead>
                 <tbody>
                   {paginated.map((c) => (
-                    <tr key={c.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                    <tr key={c.id} className="border-b border-border hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate(`/crm/clients/${c.id}`)}>
                       <td className="p-3 text-foreground font-medium">{c.name}</td>
                       <td className="p-3 text-muted-foreground">{c.email || "—"}</td>
                       <td className="p-3 text-muted-foreground">{c.phone || "—"}</td>
                       <td className="p-3 text-muted-foreground">{c.location || "—"}</td>
                       <td className="p-3"><Badge variant="outline" className="capitalize text-[10px]">{c.service_type}</Badge></td>
                       {canManageIncidents && (
-                        <td className="p-3 text-right">
+                        <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-1">
                             <Button variant="ghost" size="icon" className="h-8 w-8" title="Contacts" onClick={() => openContacts(c)}>
                               <UsersIcon className="h-4 w-4" />
