@@ -670,6 +670,18 @@ export default function IncidentDetail() {
                     <span className="text-muted-foreground">Client:</span>
                     <span className="text-foreground">{clientName || "—"}</span>
                   </div>
+                  {(incident as any).site_id && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Site:</span>
+                      <Link
+                        to={`/crm/clients/${incident.client_id}`}
+                        className="text-foreground hover:text-primary underline-offset-2 hover:underline"
+                      >
+                        {sites.find((s) => s.id === (incident as any).site_id)?.name || "—"}
+                      </Link>
+                    </div>
+                  )}
                   {incident.location && (
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-muted-foreground" />
