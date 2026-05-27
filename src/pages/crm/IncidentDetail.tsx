@@ -537,12 +537,15 @@ export default function IncidentDetail() {
                       if (h.field_changed === "client_id") {
                         return clients.find((c) => c.id === val)?.name || val;
                       }
+                      if (h.field_changed === "site_id") {
+                        return sites.find((s) => s.id === val)?.name || val;
+                      }
                       if (h.field_changed === "assigned_to") {
                         return profiles[val]?.full_name || val;
                       }
                       return val.replace(/_/g, " ");
                     };
-                    const fieldLabel = h.field_changed === "client_id" ? "client" : h.field_changed === "assigned_to" ? "assignee" : h.field_changed.replace(/_/g, " ");
+                    const fieldLabel = h.field_changed === "client_id" ? "client" : h.field_changed === "site_id" ? "site" : h.field_changed === "assigned_to" ? "assignee" : h.field_changed.replace(/_/g, " ");
                     return (
                       <div key={h.id} className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                         <Clock className="h-3 w-3 shrink-0" />
