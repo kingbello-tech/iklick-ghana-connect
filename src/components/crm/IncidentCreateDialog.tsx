@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -16,6 +16,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Client = Database["public"]["Tables"]["clients"]["Row"];
 type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type Site = Database["public"]["Tables"]["client_sites"]["Row"];
 
 interface Props {
   open: boolean;
@@ -116,10 +117,12 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [additionalClientIds, setAdditionalClientIds] = useState<string[]>([]);
+  const [sites, setSites] = useState<Site[]>([]);
   const [form, setForm] = useState({
     title: "",
     description: "",
     client_id: "",
+    site_id: "",
     priority: "medium" as Database["public"]["Enums"]["incident_priority"],
     service_type: "home" as Database["public"]["Enums"]["service_type"],
     issue_category: "",
@@ -134,12 +137,25 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
     setForm({
       ...form,
       client_id: clientId,
+      site_id: "",
       service_type: client ? client.service_type : form.service_type,
       department: "",
       assigned_to: "",
     });
     setAdditionalClientIds((ids) => ids.filter((id) => id !== clientId));
   };
+
+  useEffect(() => {
+    if (!form.client_id) { setSites([]); return; }
+    (async () => {
+      const { data } = await supabase
+        .from("client_sites")
+        .select("*")
+        .eq("client_id", form.client_id)
+        .order("name");
+      setSites((data as Site[]) || []);
+    })();
+  }, [form.client_id]);
 
   const filteredProfiles = form.department
     ? profiles.filter((p) => p.department === form.department)
@@ -154,6 +170,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
         title: form.title,
         description: form.description || null,
         client_id: form.client_id || null,
+        site_id: form.site_id || null,
         priority: form.priority,
         service_type: form.service_type,
         issue_category: form.issue_category || null,
@@ -238,7 +255,7 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
 
       toast({ title: "Incident created", description: allClients.length > 1 ? `Notifications sent to ${allClients.length} clients.` : undefined });
       onOpenChange(false);
-      setForm({ title: "", description: "", client_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", termination_pop: "", department: "", assigned_to: "" });
+      setForm({ title: "", description: "", client_id: "", site_id: "", priority: "medium", service_type: "home", issue_category: "", location: "", termination_pop: "", department: "", assigned_to: "" });
       setAdditionalClientIds([]);
       onCreated();
     } catch (err: any) {
@@ -297,6 +314,24 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
               primaryId={form.client_id}
               onChange={setAdditionalClientIds}
             />
+          )}
+          {form.client_id && (
+            <Select value={form.site_id} onValueChange={(v) => setForm({ ...form, site_id: v })}>
+              <SelectTrigger>
+                <SelectValue placeholder={sites.length ? "Select Site (optional)" : "No sites for this client"} />
+              </SelectTrigger>
+              <SelectContent>
+                {sites.length === 0 ? (
+                  <SelectItem value="none" disabled>No sites — add one in the client profile</SelectItem>
+                ) : (
+                  sites.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}{s.location ? ` — ${s.location}` : ""}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           )}
           <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <Input placeholder="Termination POP (where the client takes their internet from)" value={form.termination_pop} onChange={(e) => setForm({ ...form, termination_pop: e.target.value })} />
