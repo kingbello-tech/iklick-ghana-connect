@@ -27,7 +27,7 @@ export default function SLAPolicies() {
     if (data) {
       setPolicies(data);
       const initial: Record<string, { response: number; resolution: number }> = {};
-      data.forEach((p) => { initial[p.id] = { response: p.response_time_minutes, resolution: p.resolution_time_minutes }; });
+      data.forEach((p) => { initial[p.id] = { response: p.response_time_minutes / 60, resolution: p.resolution_time_minutes / 60 }; });
       setEdits(initial);
     }
     setLoading(false);
@@ -40,8 +40,8 @@ export default function SLAPolicies() {
     if (!edit) return;
     setSaving(policy.id);
     const { error } = await supabase.from("sla_policies").update({
-      response_time_minutes: edit.response,
-      resolution_time_minutes: edit.resolution,
+      response_time_minutes: Math.round(edit.response * 60),
+      resolution_time_minutes: Math.round(edit.resolution * 60),
     }).eq("id", policy.id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -73,21 +73,23 @@ export default function SLAPolicies() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Response Time (minutes)</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Response Time (hours)</label>
                     <Input
                       type="number"
-                      min={1}
+                      min={0}
+                      step={0.25}
                       value={edit.response}
-                      onChange={(e) => setEdits({ ...edits, [policy.id]: { ...edit, response: parseInt(e.target.value) || 0 } })}
+                      onChange={(e) => setEdits({ ...edits, [policy.id]: { ...edit, response: parseFloat(e.target.value) || 0 } })}
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-muted-foreground mb-1 block">Resolution Time (minutes)</label>
+                    <label className="text-xs text-muted-foreground mb-1 block">Resolution Time (hours)</label>
                     <Input
                       type="number"
-                      min={1}
+                      min={0}
+                      step={0.25}
                       value={edit.resolution}
-                      onChange={(e) => setEdits({ ...edits, [policy.id]: { ...edit, resolution: parseInt(e.target.value) || 0 } })}
+                      onChange={(e) => setEdits({ ...edits, [policy.id]: { ...edit, resolution: parseFloat(e.target.value) || 0 } })}
                     />
                   </div>
                 </div>
@@ -95,7 +97,7 @@ export default function SLAPolicies() {
                   size="sm"
                   className="mt-3"
                   onClick={() => savePolicy(policy)}
-                  disabled={saving === policy.id || (edit.response === policy.response_time_minutes && edit.resolution === policy.resolution_time_minutes)}
+                  disabled={saving === policy.id || (Math.round(edit.response * 60) === policy.response_time_minutes && Math.round(edit.resolution * 60) === policy.resolution_time_minutes)}
                 >
                   {saving === policy.id ? "Saving..." : "Save Changes"}
                 </Button>
