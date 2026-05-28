@@ -49,9 +49,12 @@ export function IncidentExportDialog({ open, onOpenChange }: Props) {
       const profMap = Object.fromEntries((profRes.data || []).map((p: any) => [p.user_id, p.full_name]));
       const closureMap = Object.fromEntries(closures.map((c: any) => [c.incident_id, c]));
 
-      const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Termination POP", "Assigned To", "Created", "Resolved", "Closed", "Root Cause", "Recommendation", "Resolution"];
+      const headers = ["Incident #", "Title", "Client", "Priority", "Status", "Category", "Service", "Location", "Termination POP", "Assigned To", "Created", "Resolved", "Closed", "Resolution Time (h)", "Root Cause", "Recommendation", "Resolution"];
       const rows = (incRes.data || []).map((i: any) => {
         const c = closureMap[i.id] || {};
+        const resHours = i.resolved_at
+          ? ((new Date(i.resolved_at).getTime() - new Date(i.created_at).getTime()) / 3600000).toFixed(2)
+          : "";
         return [
         i.incident_number, i.title,
         i.client_id ? clientMap[i.client_id] || "" : "",
@@ -61,6 +64,7 @@ export function IncidentExportDialog({ open, onOpenChange }: Props) {
         i.created_at ? format(new Date(i.created_at), "yyyy-MM-dd HH:mm") : "",
         i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
         i.closed_at ? format(new Date(i.closed_at), "yyyy-MM-dd HH:mm") : "",
+        resHours,
         c.root_cause || "",
         c.recommendation || "",
         c.resolution || "",
