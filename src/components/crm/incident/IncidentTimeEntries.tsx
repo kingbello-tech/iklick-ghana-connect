@@ -25,7 +25,7 @@ export function IncidentTimeEntries({ incidentId }: { incidentId: string }) {
   const { toast } = useToast();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [profiles, setProfiles] = useState<Record<string, string>>({});
-  const [minutes, setMinutes] = useState("");
+  const [hours, setHours] = useState("");
   const [billable, setBillable] = useState(false);
   const [note, setNote] = useState("");
 
@@ -41,13 +41,14 @@ export function IncidentTimeEntries({ incidentId }: { incidentId: string }) {
   useEffect(() => { load(); }, [incidentId]);
 
   const add = async () => {
-    const m = parseInt(minutes, 10);
-    if (!m || m <= 0 || !user) return;
+    const h = parseFloat(hours);
+    if (!h || h <= 0 || !user) return;
+    const m = Math.round(h * 60);
     const { error } = await (supabase as any).from("incident_time_entries").insert({
       incident_id: incidentId, logged_by: user.id, minutes: m, billable, note: note || null,
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setMinutes(""); setBillable(false); setNote("");
+    setHours(""); setBillable(false); setNote("");
     load();
   };
 
@@ -63,7 +64,7 @@ export function IncidentTimeEntries({ incidentId }: { incidentId: string }) {
       <CardHeader className="pb-2">
         <CardTitle className="text-sm text-muted-foreground flex items-center justify-between">
           <span>Time Logged</span>
-          <span className="text-foreground font-mono">{Math.floor(total / 60)}h {total % 60}m</span>
+          <span className="text-foreground font-mono">{(total / 60).toFixed(2)}h</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -73,7 +74,7 @@ export function IncidentTimeEntries({ incidentId }: { incidentId: string }) {
             <div className="flex-1">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-medium">{profiles[e.logged_by] || "User"}</span>
-                <Badge variant="outline" className="text-[9px]">{e.minutes}m</Badge>
+                <Badge variant="outline" className="text-[9px]">{(e.minutes / 60).toFixed(2)}h</Badge>
                 {e.billable && <Badge variant="outline" className="text-[9px]">Billable</Badge>}
                 <span className="text-muted-foreground">{format(new Date(e.created_at), "MMM d, HH:mm")}</span>
               </div>
@@ -86,11 +87,11 @@ export function IncidentTimeEntries({ incidentId }: { incidentId: string }) {
         ))}
         <div className="space-y-2 pt-2 border-t border-border">
           <div className="grid grid-cols-3 gap-2">
-            <Input type="number" min={1} placeholder="Minutes" value={minutes} onChange={(e) => setMinutes(e.target.value)} />
+            <Input type="number" min={0} step={0.25} placeholder="Hours" value={hours} onChange={(e) => setHours(e.target.value)} />
             <label className="flex items-center gap-2 text-xs">
               <Checkbox checked={billable} onCheckedChange={(v) => setBillable(!!v)} /> Billable
             </label>
-            <Button onClick={add} disabled={!minutes} size="sm">Log Time</Button>
+            <Button onClick={add} disabled={!hours} size="sm">Log Time</Button>
           </div>
           <Input placeholder="What did you do? (optional)" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
