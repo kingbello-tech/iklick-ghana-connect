@@ -69,7 +69,6 @@ const RANGES: { label: string; days: number }[] = [
 
 function fmtMins(mins: number) {
   if (!isFinite(mins) || mins <= 0) return "—";
-  if (mins < 60) return `${Math.round(mins)}m`;
   const h = mins / 60;
   if (h < 48) return `${h.toFixed(1)}h`;
   return `${(h / 24).toFixed(1)}d`;
