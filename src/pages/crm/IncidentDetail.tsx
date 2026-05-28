@@ -343,6 +343,7 @@ export default function IncidentDetail() {
             <SLATimerBadge
               createdAt={incident.created_at}
               targetMinutes={slaMinutes}
+              resolvedAt={incident.resolved_at ?? incident.closed_at ?? null}
               resolved={incident.status === "resolved" || incident.status === "closed"}
             />
           </div>

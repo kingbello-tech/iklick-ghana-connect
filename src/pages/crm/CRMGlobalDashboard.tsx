@@ -130,21 +130,24 @@ export default function CRMGlobalDashboard() {
     (i) => i.resolved_at && new Date(i.resolved_at).toDateString() === new Date().toDateString()
   ).length;
 
-  // SLA stats over window (only resolved)
-  const resolvedInWindow = inWindow.filter((i) => i.resolved_at);
+  // SLA stats over window — use resolved_at OR closed_at as end time; only count incidents with a policy
+  const finishedInWindow = inWindow.filter((i) => i.resolved_at || i.closed_at);
   let breaches = 0;
   let totalMTTR = 0;
-  for (const i of resolvedInWindow) {
-    const mins = differenceInMinutes(new Date(i.resolved_at!), new Date(i.created_at));
+  let slaEligible = 0;
+  let slaMet = 0;
+  for (const i of finishedInWindow) {
+    const end = new Date((i.resolved_at || i.closed_at)!);
+    const mins = differenceInMinutes(end, new Date(i.created_at));
     totalMTTR += mins;
     const target = slaByPriority[i.priority as string];
-    if (target && mins > target) breaches++;
+    if (!target) continue;
+    slaEligible++;
+    if (mins > target) breaches++;
+    else slaMet++;
   }
-  const mttr = resolvedInWindow.length > 0 ? totalMTTR / resolvedInWindow.length : 0;
-  const slaCompliance =
-    resolvedInWindow.length > 0
-      ? Math.round(((resolvedInWindow.length - breaches) / resolvedInWindow.length) * 100)
-      : 0;
+  const mttr = finishedInWindow.length > 0 ? totalMTTR / finishedInWindow.length : 0;
+  const slaCompliance = slaEligible > 0 ? Math.round((slaMet / slaEligible) * 100) : 0;
 
   // Open backlog age
   const now = new Date();
@@ -244,8 +247,8 @@ export default function CRMGlobalDashboard() {
 
   const statCards = [
     { label: "Active Incidents", value: activeAll.length, sub: `${critical} critical · ${escalated} escalated`, icon: AlertTriangle, color: "text-orange-500" },
-    { label: `MTTR (${rangeDays}d)`, value: fmtMins(mttr), sub: `${resolvedInWindow.length} resolved`, icon: Timer, color: "text-blue-500" },
-    { label: `SLA Compliance (${rangeDays}d)`, value: resolvedInWindow.length > 0 ? `${slaCompliance}%` : "—", sub: `${breaches} breach${breaches === 1 ? "" : "es"}`, icon: ShieldCheck, color: slaCompliance >= 90 ? "text-green-500" : slaCompliance >= 75 ? "text-yellow-500" : "text-destructive" },
+    { label: `MTTR (${rangeDays}d)`, value: fmtMins(mttr), sub: `${finishedInWindow.length} resolved`, icon: Timer, color: "text-blue-500" },
+    { label: `SLA Compliance (${rangeDays}d)`, value: slaEligible > 0 ? `${slaCompliance}%` : "—", sub: `${slaMet}/${slaEligible} met · ${breaches} breach${breaches === 1 ? "" : "es"}`, icon: ShieldCheck, color: slaCompliance >= 90 ? "text-green-500" : slaCompliance >= 75 ? "text-yellow-500" : "text-destructive" },
     { label: "Backlog at Risk", value: breached + atRisk, sub: `${breached} breached · ${atRisk} nearing`, icon: Zap, color: "text-destructive" },
   ];
 
@@ -309,9 +312,9 @@ export default function CRMGlobalDashboard() {
         <CardContent className="space-y-3">
           {(["critical", "high", "medium", "low"] as const).map((p) => {
             const target = slaByPriority[p];
-            const list = resolvedInWindow.filter((i) => i.priority === p);
+            const list = finishedInWindow.filter((i) => i.priority === p);
             const ontime = list.filter(
-              (i) => differenceInMinutes(new Date(i.resolved_at!), new Date(i.created_at)) <= (target || Infinity)
+              (i) => differenceInMinutes(new Date((i.resolved_at || i.closed_at)!), new Date(i.created_at)) <= (target || Infinity)
             ).length;
             const pct = list.length > 0 ? Math.round((ontime / list.length) * 100) : 0;
             return (
