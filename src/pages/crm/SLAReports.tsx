@@ -176,8 +176,8 @@ export default function SLAReports() {
                         {a.sla.resolution === "at_risk" ? "At Risk" : a.sla.resolution === "on_track" ? "On Track" : a.sla.resolution}
                       </Badge>
                     </td>
-                    <td className="p-3 text-muted-foreground text-xs">{typeof a.sla.resolutionMins === "number" ? `${Math.round(a.sla.resolutionMins)} min` : "—"}</td>
-                    <td className="p-3 text-muted-foreground text-xs">{typeof a.sla.targetMins === "number" ? `${a.sla.targetMins} min` : "—"}</td>
+                    <td className="p-3 text-muted-foreground text-xs">{typeof a.sla.resolutionMins === "number" ? `${(a.sla.resolutionMins / 60).toFixed(1)} h` : "—"}</td>
+                    <td className="p-3 text-muted-foreground text-xs">{typeof a.sla.targetMins === "number" ? `${(a.sla.targetMins / 60).toFixed(1)} h` : "—"}</td>
                   </tr>
                 ))}
               </tbody>
