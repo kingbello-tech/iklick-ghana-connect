@@ -20,16 +20,17 @@ export function SLATimerBadge({
       </Badge>
     );
   }
+  const hrs = (remaining / 60).toFixed(1);
   if (remaining < targetMinutes * 0.25) {
     return (
       <Badge className="text-[10px] bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/40">
-        {remaining < 60 ? `${remaining}m left` : `${(remaining / 60).toFixed(1)}h left`}
+        {hrs}h left
       </Badge>
     );
   }
   return (
     <Badge className="text-[10px] bg-green-500/15 text-green-600 dark:text-green-400 border-green-500/40">
-      {remaining < 60 ? `${remaining}m` : `${(remaining / 60).toFixed(1)}h`}
+      {hrs}h
     </Badge>
   );
 }

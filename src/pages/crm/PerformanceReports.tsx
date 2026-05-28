@@ -172,7 +172,7 @@ export default function PerformanceReports() {
                         <td className="p-3 text-muted-foreground">{u.assigned}</td>
                         <td className="p-3 text-foreground">{u.resolved}</td>
                         <td className="p-3 text-foreground">{u.assigned > 0 ? `${((u.resolved / u.assigned) * 100).toFixed(0)}%` : "—"}</td>
-                        <td className="p-3 text-muted-foreground">{u.avgResolutionMins > 0 ? `${u.avgResolutionMins} min` : "—"}</td>
+                        <td className="p-3 text-muted-foreground">{u.avgResolutionMins > 0 ? `${(u.avgResolutionMins / 60).toFixed(1)} h` : "—"}</td>
                         <td className="p-3">
                           <Link to={`/crm/performance/staff/${u.userId}`}>
                             <Button variant="ghost" size="sm"><ExternalLink className="h-3 w-3 mr-1" />View</Button>

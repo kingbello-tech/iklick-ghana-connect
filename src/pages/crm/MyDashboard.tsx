@@ -37,7 +37,6 @@ const RANGES = [{ label: "7d", days: 7 }, { label: "30d", days: 30 }, { label: "
 
 function fmtMins(mins: number) {
   if (!isFinite(mins) || mins <= 0) return "—";
-  if (mins < 60) return `${Math.round(mins)}m`;
   const h = mins / 60;
   if (h < 48) return `${h.toFixed(1)}h`;
   return `${(h / 24).toFixed(1)}d`;
@@ -153,7 +152,7 @@ export default function MyDashboard() {
       priority: i.priority,
       created_at: format(new Date(i.created_at), "yyyy-MM-dd HH:mm"),
       resolved_at: i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
-      resolution_mins: i.resolved_at ? differenceInMinutes(new Date(i.resolved_at), new Date(i.created_at)) : "",
+      resolution_hours: i.resolved_at ? (differenceInMinutes(new Date(i.resolved_at), new Date(i.created_at)) / 60).toFixed(2) : "",
     }));
     if (data.length === 0) return;
     const headers = Object.keys(data[0]);

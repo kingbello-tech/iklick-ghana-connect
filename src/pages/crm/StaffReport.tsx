@@ -71,7 +71,7 @@ export default function StaffReport() {
       priority: i.priority,
       created_at: format(new Date(i.created_at), "yyyy-MM-dd HH:mm"),
       resolved_at: i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
-      resolution_mins: i.resolved_at ? differenceInMinutes(new Date(i.resolved_at), new Date(i.created_at)) : "",
+      resolution_hours: i.resolved_at ? (differenceInMinutes(new Date(i.resolved_at), new Date(i.created_at)) / 60).toFixed(2) : "",
     }));
     if (data.length === 0) return;
     const headers = Object.keys(data[0]);
@@ -107,7 +107,7 @@ export default function StaffReport() {
           { label: "Total Assigned", value: incidents.length, icon: AlertTriangle, color: "text-primary" },
           { label: "Active", value: activeIncidents.length, icon: Clock, color: "text-orange-500" },
           { label: "Resolved", value: resolvedIncidents.length, icon: CheckCircle, color: "text-green-500" },
-          { label: "Avg Resolution", value: avgResolutionMins > 0 ? `${avgResolutionMins}m` : "—", icon: Clock, color: "text-blue-500" },
+          { label: "Avg Resolution", value: avgResolutionMins > 0 ? `${(avgResolutionMins / 60).toFixed(1)}h` : "—", icon: Clock, color: "text-blue-500" },
         ].map((s) => (
           <Card key={s.label}>
             <CardContent className="p-4 flex items-center gap-4">
