@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Calendar, Percent, ClipboardCheck, Wrench } from "lucide-react";
+import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check } from "lucide-react";
 
 const STAGES = [
   { value: "new_lead", label: "Lead", color: "bg-blue-500" },
@@ -62,6 +62,18 @@ interface SiteSurvey {
   assigned_to: string | null;
 }
 
+interface Quotation {
+  id: string;
+  deal_id: string;
+  installation_cost: number | null;
+  monthly_cost: number | null;
+  status: string;
+  version: number;
+  document_url: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
 const emptyForm = {
   title: "",
   mrc: "",
@@ -76,11 +88,13 @@ const emptyForm = {
 };
 
 export default function SalesPipeline() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [surveys, setSurveys] = useState<SiteSurvey[]>([]);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", document_url: "", notes: "" });
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -88,14 +102,16 @@ export default function SalesPipeline() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchData = async () => {
-    const [dealsRes, profilesRes, surveysRes] = await Promise.all([
+    const [dealsRes, profilesRes, surveysRes, quotesRes] = await Promise.all([
       supabase.from("deals").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("user_id, full_name"),
       supabase.from("site_surveys").select("*").order("requested_at", { ascending: false }),
+      supabase.from("quotations").select("*").order("created_at", { ascending: false }),
     ]);
     if (dealsRes.data) setDeals(dealsRes.data as unknown as Deal[]);
     if (profilesRes.data) setProfiles(profilesRes.data);
     if (surveysRes.data) setSurveys(surveysRes.data as unknown as SiteSurvey[]);
+    if (quotesRes.data) setQuotations(quotesRes.data as unknown as Quotation[]);
     setLoading(false);
   };
 
@@ -225,6 +241,7 @@ export default function SalesPipeline() {
 
   const openEdit = (deal: Deal) => {
     setSelected(deal);
+    setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), document_url: "", notes: "" });
     setForm({
       title: deal.title,
       mrc: String(deal.mrc || 0),
@@ -238,6 +255,48 @@ export default function SalesPipeline() {
       notes: deal.notes || "",
     });
     setEditOpen(true);
+  };
+
+  const handleDeleteDeal = async (deal: Deal) => {
+    if (!confirm(`Delete deal "${deal.title}"? This cannot be undone.`)) return;
+    const { error } = await supabase.from("deals").delete().eq("id", deal.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deal deleted" }); fetchData(); }
+  };
+
+  const addQuotation = async () => {
+    if (!user || !selected) return;
+    const dealQuotes = quotations.filter(q => q.deal_id === selected.id);
+    const nextVersion = dealQuotes.length ? Math.max(...dealQuotes.map(q => q.version)) + 1 : 1;
+    const { error } = await supabase.from("quotations").insert({
+      deal_id: selected.id,
+      installation_cost: parseFloat(quoteForm.installation_cost) || 0,
+      monthly_cost: parseFloat(quoteForm.monthly_cost) || 0,
+      document_url: quoteForm.document_url || null,
+      notes: quoteForm.notes || null,
+      version: nextVersion,
+      status: "draft" as any,
+      created_by: user.id,
+    });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: `Quotation v${nextVersion} added` });
+      setQuoteForm({ installation_cost: "", monthly_cost: String(selected.mrc || ""), document_url: "", notes: "" });
+      fetchData();
+    }
+  };
+
+  const setQuotationStatus = async (q: Quotation, status: "sent" | "accepted" | "rejected") => {
+    const { error } = await supabase.from("quotations").update({ status: status as any }).eq("id", q.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: `Quotation marked ${status}` }); fetchData(); }
+  };
+
+  const deleteQuotation = async (q: Quotation) => {
+    if (!confirm(`Delete quotation v${q.version}?`)) return;
+    const { error } = await supabase.from("quotations").delete().eq("id", q.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Quotation deleted" }); fetchData(); }
   };
 
   const totalPipeline = deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((s, d) => s + Number(d.tcv || d.value), 0);
