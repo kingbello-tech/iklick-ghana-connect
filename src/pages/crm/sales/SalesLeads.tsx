@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Search, Users, UserCheck, UserX, Phone, ArrowRightCircle } from "lucide-react";
+import { Plus, Search, Users, UserCheck, UserX, Phone, ArrowRightCircle, Trash2 } from "lucide-react";
 import { TablePagination } from "@/components/crm/TablePagination";
 
 const LEAD_TYPES = ["home", "sme", "enterprise"] as const;
@@ -68,7 +68,7 @@ const emptyForm = {
 };
 
 export default function SalesLeads() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -190,6 +190,13 @@ export default function SalesLeads() {
     await supabase.from("leads").update({ converted_deal_id: deal.id, status: "qualified" as any }).eq("id", lead.id);
     toast({ title: "Lead converted", description: "Deal created in the pipeline." });
     fetchData();
+  };
+
+  const handleDelete = async (lead: Lead) => {
+    if (!confirm(`Delete lead "${lead.name}"? This cannot be undone.`)) return;
+    const { error } = await supabase.from("leads").delete().eq("id", lead.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Lead deleted" }); fetchData(); }
   };
 
   const filtered = leads.filter(l => {
@@ -344,6 +351,11 @@ export default function SalesLeads() {
                     ) : (
                       <Button variant="ghost" size="sm" onClick={() => handleConvert(lead)} title="Convert to deal">
                         <ArrowRightCircle className="h-4 w-4 mr-1" />Convert
+                      </Button>
+                    )}
+                    {isAdmin && (
+                      <Button variant="ghost" size="sm" onClick={() => handleDelete(lead)} title="Delete lead" className="text-red-500 hover:text-red-600">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     )}
                   </div>
