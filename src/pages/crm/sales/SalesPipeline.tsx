@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check } from "lucide-react";
+import { Attachments } from "@/components/crm/Attachments";
 
 const STAGES = [
   { value: "new_lead", label: "Lead", color: "bg-blue-500" },
@@ -94,7 +95,7 @@ export default function SalesPipeline() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [surveys, setSurveys] = useState<SiteSurvey[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", document_url: "", notes: "" });
+  const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", notes: "" });
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -241,7 +242,7 @@ export default function SalesPipeline() {
 
   const openEdit = (deal: Deal) => {
     setSelected(deal);
-    setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), document_url: "", notes: "" });
+    setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), notes: "" });
     setForm({
       title: deal.title,
       mrc: String(deal.mrc || 0),
@@ -272,7 +273,6 @@ export default function SalesPipeline() {
       deal_id: selected.id,
       installation_cost: parseFloat(quoteForm.installation_cost) || 0,
       monthly_cost: parseFloat(quoteForm.monthly_cost) || 0,
-      document_url: quoteForm.document_url || null,
       notes: quoteForm.notes || null,
       version: nextVersion,
       status: "draft" as any,
@@ -281,7 +281,7 @@ export default function SalesPipeline() {
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
       toast({ title: `Quotation v${nextVersion} added` });
-      setQuoteForm({ installation_cost: "", monthly_cost: String(selected.mrc || ""), document_url: "", notes: "" });
+      setQuoteForm({ installation_cost: "", monthly_cost: String(selected.mrc || ""), notes: "" });
       fetchData();
     }
   };
@@ -513,33 +513,33 @@ export default function SalesPipeline() {
                 {dealQuotes.length === 0 && (
                   <p className="text-xs text-muted-foreground italic">No quotations yet.</p>
                 )}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {dealQuotes.map(q => (
-                    <div key={q.id} className="flex items-center gap-2 p-2 rounded border border-border bg-background">
-                      <Badge variant="outline" className="text-xs">v{q.version}</Badge>
-                      <Badge variant="outline" className={`text-xs ${statusColor[q.status] || ""}`}>{q.status}</Badge>
-                      <div className="text-xs text-muted-foreground flex-1 min-w-0">
-                        <span>Install: ₵{Number(q.installation_cost || 0).toLocaleString()}</span>
-                        <span className="mx-2">·</span>
-                        <span>MRC: ₵{Number(q.monthly_cost || 0).toLocaleString()}</span>
-                        {q.document_url && (
-                          <> · <a href={q.document_url} target="_blank" rel="noreferrer" className="text-primary underline">document</a></>
+                    <div key={q.id} className="p-2 rounded border border-border bg-background space-y-2">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge variant="outline" className="text-xs">v{q.version}</Badge>
+                        <Badge variant="outline" className={`text-xs ${statusColor[q.status] || ""}`}>{q.status}</Badge>
+                        <div className="text-xs text-muted-foreground flex-1 min-w-0">
+                          <span>Install: ₵{Number(q.installation_cost || 0).toLocaleString()}</span>
+                          <span className="mx-2">·</span>
+                          <span>MRC: ₵{Number(q.monthly_cost || 0).toLocaleString()}</span>
+                        </div>
+                        {q.status === "draft" && (
+                          <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "sent")}>Mark Sent</Button>
                         )}
-                      </div>
-                      {q.status === "draft" && (
-                        <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "sent")}>Mark Sent</Button>
-                      )}
-                      {q.status !== "accepted" && (
-                        <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "accepted")}>
-                          <Check className="h-3 w-3 mr-1" />Accept
+                        {q.status !== "accepted" && (
+                          <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "accepted")}>
+                            <Check className="h-3 w-3 mr-1" />Accept
+                          </Button>
+                        )}
+                        {q.status !== "rejected" && q.status !== "accepted" && (
+                          <Button size="sm" variant="ghost" onClick={() => setQuotationStatus(q, "rejected")}>Reject</Button>
+                        )}
+                        <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteQuotation(q)}>
+                          <Trash2 className="h-3 w-3" />
                         </Button>
-                      )}
-                      {q.status !== "rejected" && q.status !== "accepted" && (
-                        <Button size="sm" variant="ghost" onClick={() => setQuotationStatus(q, "rejected")}>Reject</Button>
-                      )}
-                      <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteQuotation(q)}>
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      </div>
+                      <Attachments entityType="quotation" entityId={q.id} compact />
                     </div>
                   ))}
                 </div>
@@ -556,14 +556,11 @@ export default function SalesPipeline() {
                       <Input type="number" step="0.01" value={quoteForm.monthly_cost} onChange={e => setQuoteForm({ ...quoteForm, monthly_cost: e.target.value })} />
                     </div>
                     <div className="col-span-2">
-                      <Label className="text-xs">Document URL (optional)</Label>
-                      <Input placeholder="https://… link to signed PDF" value={quoteForm.document_url} onChange={e => setQuoteForm({ ...quoteForm, document_url: e.target.value })} />
-                    </div>
-                    <div className="col-span-2">
                       <Label className="text-xs">Notes</Label>
                       <Textarea rows={2} value={quoteForm.notes} onChange={e => setQuoteForm({ ...quoteForm, notes: e.target.value })} />
                     </div>
                   </div>
+                  <p className="text-[10px] text-muted-foreground">After adding, upload the signed quotation document via Attach file on the row above.</p>
                   <Button type="button" size="sm" onClick={addQuotation} className="w-full">
                     <Plus className="h-3 w-3 mr-1" />Add Quotation
                   </Button>

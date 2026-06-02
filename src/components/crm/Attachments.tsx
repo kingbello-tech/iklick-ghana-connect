@@ -9,7 +9,7 @@ import { format } from "date-fns";
 
 const MAX_BYTES = 1024 * 1024; // 1 MB
 
-export type AttachmentEntity = "incident" | "incident_note" | "invoice" | "employee" | "site_survey";
+export type AttachmentEntity = "incident" | "incident_note" | "invoice" | "employee" | "site_survey" | "quotation";
 
 type Row = {
   id: string;
