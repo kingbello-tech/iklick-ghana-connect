@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check } from "lucide-react";
+import { Attachments } from "@/components/crm/Attachments";
 
 const STAGES = [
   { value: "new_lead", label: "Lead", color: "bg-blue-500" },
@@ -94,7 +95,7 @@ export default function SalesPipeline() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [surveys, setSurveys] = useState<SiteSurvey[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", document_url: "", notes: "" });
+  const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", notes: "" });
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -241,7 +242,7 @@ export default function SalesPipeline() {
 
   const openEdit = (deal: Deal) => {
     setSelected(deal);
-    setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), document_url: "", notes: "" });
+    setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), notes: "" });
     setForm({
       title: deal.title,
       mrc: String(deal.mrc || 0),
@@ -272,7 +273,6 @@ export default function SalesPipeline() {
       deal_id: selected.id,
       installation_cost: parseFloat(quoteForm.installation_cost) || 0,
       monthly_cost: parseFloat(quoteForm.monthly_cost) || 0,
-      document_url: quoteForm.document_url || null,
       notes: quoteForm.notes || null,
       version: nextVersion,
       status: "draft" as any,
@@ -281,7 +281,7 @@ export default function SalesPipeline() {
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
       toast({ title: `Quotation v${nextVersion} added` });
-      setQuoteForm({ installation_cost: "", monthly_cost: String(selected.mrc || ""), document_url: "", notes: "" });
+      setQuoteForm({ installation_cost: "", monthly_cost: String(selected.mrc || ""), notes: "" });
       fetchData();
     }
   };
