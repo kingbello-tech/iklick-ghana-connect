@@ -491,6 +491,86 @@ export default function SalesPipeline() {
               </div>
             );
           })()}
+          {selected && (() => {
+            const dealQuotes = quotations.filter(q => q.deal_id === selected.id);
+            const statusColor: Record<string, string> = {
+              draft: "bg-muted text-muted-foreground",
+              sent: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+              accepted: "bg-green-500/20 text-green-400 border-green-500/30",
+              rejected: "bg-red-500/20 text-red-400 border-red-500/30",
+            };
+            return (
+              <div className="mb-4 p-4 rounded-lg border border-border bg-muted/30 space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold text-foreground">Quotations</p>
+                  <Badge variant="outline" className="ml-auto text-xs">{dealQuotes.length}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  A quotation is required to move to <b>Negotiation</b>. An <b>accepted</b> quotation (plus a completed site survey) is required to mark the deal as <b>Closed Won</b>.
+                </p>
+
+                {dealQuotes.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">No quotations yet.</p>
+                )}
+                <div className="space-y-2">
+                  {dealQuotes.map(q => (
+                    <div key={q.id} className="flex items-center gap-2 p-2 rounded border border-border bg-background">
+                      <Badge variant="outline" className="text-xs">v{q.version}</Badge>
+                      <Badge variant="outline" className={`text-xs ${statusColor[q.status] || ""}`}>{q.status}</Badge>
+                      <div className="text-xs text-muted-foreground flex-1 min-w-0">
+                        <span>Install: ₵{Number(q.installation_cost || 0).toLocaleString()}</span>
+                        <span className="mx-2">·</span>
+                        <span>MRC: ₵{Number(q.monthly_cost || 0).toLocaleString()}</span>
+                        {q.document_url && (
+                          <> · <a href={q.document_url} target="_blank" rel="noreferrer" className="text-primary underline">document</a></>
+                        )}
+                      </div>
+                      {q.status === "draft" && (
+                        <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "sent")}>Mark Sent</Button>
+                      )}
+                      {q.status !== "accepted" && (
+                        <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "accepted")}>
+                          <Check className="h-3 w-3 mr-1" />Accept
+                        </Button>
+                      )}
+                      {q.status !== "rejected" && q.status !== "accepted" && (
+                        <Button size="sm" variant="ghost" onClick={() => setQuotationStatus(q, "rejected")}>Reject</Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteQuotation(q)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-border space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Add quotation</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Installation (₵)</Label>
+                      <Input type="number" step="0.01" value={quoteForm.installation_cost} onChange={e => setQuoteForm({ ...quoteForm, installation_cost: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Monthly (₵)</Label>
+                      <Input type="number" step="0.01" value={quoteForm.monthly_cost} onChange={e => setQuoteForm({ ...quoteForm, monthly_cost: e.target.value })} />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs">Document URL (optional)</Label>
+                      <Input placeholder="https://… link to signed PDF" value={quoteForm.document_url} onChange={e => setQuoteForm({ ...quoteForm, document_url: e.target.value })} />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs">Notes</Label>
+                      <Textarea rows={2} value={quoteForm.notes} onChange={e => setQuoteForm({ ...quoteForm, notes: e.target.value })} />
+                    </div>
+                  </div>
+                  <Button type="button" size="sm" onClick={addQuotation} className="w-full">
+                    <Plus className="h-3 w-3 mr-1" />Add Quotation
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
           {renderDealForm(handleEdit, "Save Changes")}
         </DialogContent>
       </Dialog>
