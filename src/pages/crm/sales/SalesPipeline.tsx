@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Calendar, Percent, ClipboardCheck, Wrench } from "lucide-react";
+import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check } from "lucide-react";
 
 const STAGES = [
   { value: "new_lead", label: "Lead", color: "bg-blue-500" },
@@ -62,6 +62,18 @@ interface SiteSurvey {
   assigned_to: string | null;
 }
 
+interface Quotation {
+  id: string;
+  deal_id: string;
+  installation_cost: number | null;
+  monthly_cost: number | null;
+  status: string;
+  version: number;
+  document_url: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
 const emptyForm = {
   title: "",
   mrc: "",
@@ -76,11 +88,13 @@ const emptyForm = {
 };
 
 export default function SalesPipeline() {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [surveys, setSurveys] = useState<SiteSurvey[]>([]);
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", document_url: "", notes: "" });
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -88,14 +102,16 @@ export default function SalesPipeline() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchData = async () => {
-    const [dealsRes, profilesRes, surveysRes] = await Promise.all([
+    const [dealsRes, profilesRes, surveysRes, quotesRes] = await Promise.all([
       supabase.from("deals").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("user_id, full_name"),
       supabase.from("site_surveys").select("*").order("requested_at", { ascending: false }),
+      supabase.from("quotations").select("*").order("created_at", { ascending: false }),
     ]);
     if (dealsRes.data) setDeals(dealsRes.data as unknown as Deal[]);
     if (profilesRes.data) setProfiles(profilesRes.data);
     if (surveysRes.data) setSurveys(surveysRes.data as unknown as SiteSurvey[]);
+    if (quotesRes.data) setQuotations(quotesRes.data as unknown as Quotation[]);
     setLoading(false);
   };
 
@@ -225,6 +241,7 @@ export default function SalesPipeline() {
 
   const openEdit = (deal: Deal) => {
     setSelected(deal);
+    setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), document_url: "", notes: "" });
     setForm({
       title: deal.title,
       mrc: String(deal.mrc || 0),
@@ -238,6 +255,48 @@ export default function SalesPipeline() {
       notes: deal.notes || "",
     });
     setEditOpen(true);
+  };
+
+  const handleDeleteDeal = async (deal: Deal) => {
+    if (!confirm(`Delete deal "${deal.title}"? This cannot be undone.`)) return;
+    const { error } = await supabase.from("deals").delete().eq("id", deal.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Deal deleted" }); fetchData(); }
+  };
+
+  const addQuotation = async () => {
+    if (!user || !selected) return;
+    const dealQuotes = quotations.filter(q => q.deal_id === selected.id);
+    const nextVersion = dealQuotes.length ? Math.max(...dealQuotes.map(q => q.version)) + 1 : 1;
+    const { error } = await supabase.from("quotations").insert({
+      deal_id: selected.id,
+      installation_cost: parseFloat(quoteForm.installation_cost) || 0,
+      monthly_cost: parseFloat(quoteForm.monthly_cost) || 0,
+      document_url: quoteForm.document_url || null,
+      notes: quoteForm.notes || null,
+      version: nextVersion,
+      status: "draft" as any,
+      created_by: user.id,
+    });
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else {
+      toast({ title: `Quotation v${nextVersion} added` });
+      setQuoteForm({ installation_cost: "", monthly_cost: String(selected.mrc || ""), document_url: "", notes: "" });
+      fetchData();
+    }
+  };
+
+  const setQuotationStatus = async (q: Quotation, status: "sent" | "accepted" | "rejected") => {
+    const { error } = await supabase.from("quotations").update({ status: status as any }).eq("id", q.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: `Quotation marked ${status}` }); fetchData(); }
+  };
+
+  const deleteQuotation = async (q: Quotation) => {
+    if (!confirm(`Delete quotation v${q.version}?`)) return;
+    const { error } = await supabase.from("quotations").delete().eq("id", q.id);
+    if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
+    else { toast({ title: "Quotation deleted" }); fetchData(); }
   };
 
   const totalPipeline = deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((s, d) => s + Number(d.tcv || d.value), 0);
@@ -358,6 +417,11 @@ export default function SalesPipeline() {
                             <Wrench className="h-3 w-3 mr-1" />Move to Installation
                           </Button>
                         )}
+                      {isAdmin && (
+                        <Button size="sm" variant="ghost" className="w-full mt-1 text-red-500 hover:text-red-600" onClick={() => handleDeleteDeal(deal)}>
+                          <Trash2 className="h-3 w-3 mr-1" />Delete
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -424,6 +488,86 @@ export default function SalesPipeline() {
                 {survey.status !== "completed" && (
                   <p className="text-xs text-muted-foreground italic">Awaiting Technology team to complete the survey.</p>
                 )}
+              </div>
+            );
+          })()}
+          {selected && (() => {
+            const dealQuotes = quotations.filter(q => q.deal_id === selected.id);
+            const statusColor: Record<string, string> = {
+              draft: "bg-muted text-muted-foreground",
+              sent: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+              accepted: "bg-green-500/20 text-green-400 border-green-500/30",
+              rejected: "bg-red-500/20 text-red-400 border-red-500/30",
+            };
+            return (
+              <div className="mb-4 p-4 rounded-lg border border-border bg-muted/30 space-y-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold text-foreground">Quotations</p>
+                  <Badge variant="outline" className="ml-auto text-xs">{dealQuotes.length}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  A quotation is required to move to <b>Negotiation</b>. An <b>accepted</b> quotation (plus a completed site survey) is required to mark the deal as <b>Closed Won</b>.
+                </p>
+
+                {dealQuotes.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">No quotations yet.</p>
+                )}
+                <div className="space-y-2">
+                  {dealQuotes.map(q => (
+                    <div key={q.id} className="flex items-center gap-2 p-2 rounded border border-border bg-background">
+                      <Badge variant="outline" className="text-xs">v{q.version}</Badge>
+                      <Badge variant="outline" className={`text-xs ${statusColor[q.status] || ""}`}>{q.status}</Badge>
+                      <div className="text-xs text-muted-foreground flex-1 min-w-0">
+                        <span>Install: ₵{Number(q.installation_cost || 0).toLocaleString()}</span>
+                        <span className="mx-2">·</span>
+                        <span>MRC: ₵{Number(q.monthly_cost || 0).toLocaleString()}</span>
+                        {q.document_url && (
+                          <> · <a href={q.document_url} target="_blank" rel="noreferrer" className="text-primary underline">document</a></>
+                        )}
+                      </div>
+                      {q.status === "draft" && (
+                        <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "sent")}>Mark Sent</Button>
+                      )}
+                      {q.status !== "accepted" && (
+                        <Button size="sm" variant="outline" onClick={() => setQuotationStatus(q, "accepted")}>
+                          <Check className="h-3 w-3 mr-1" />Accept
+                        </Button>
+                      )}
+                      {q.status !== "rejected" && q.status !== "accepted" && (
+                        <Button size="sm" variant="ghost" onClick={() => setQuotationStatus(q, "rejected")}>Reject</Button>
+                      )}
+                      <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => deleteQuotation(q)}>
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-border space-y-2">
+                  <p className="text-xs font-semibold text-foreground">Add quotation</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Installation (₵)</Label>
+                      <Input type="number" step="0.01" value={quoteForm.installation_cost} onChange={e => setQuoteForm({ ...quoteForm, installation_cost: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label className="text-xs">Monthly (₵)</Label>
+                      <Input type="number" step="0.01" value={quoteForm.monthly_cost} onChange={e => setQuoteForm({ ...quoteForm, monthly_cost: e.target.value })} />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs">Document URL (optional)</Label>
+                      <Input placeholder="https://… link to signed PDF" value={quoteForm.document_url} onChange={e => setQuoteForm({ ...quoteForm, document_url: e.target.value })} />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs">Notes</Label>
+                      <Textarea rows={2} value={quoteForm.notes} onChange={e => setQuoteForm({ ...quoteForm, notes: e.target.value })} />
+                    </div>
+                  </div>
+                  <Button type="button" size="sm" onClick={addQuotation} className="w-full">
+                    <Plus className="h-3 w-3 mr-1" />Add Quotation
+                  </Button>
+                </div>
               </div>
             );
           })()}
