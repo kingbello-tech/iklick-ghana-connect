@@ -417,6 +417,11 @@ export default function SalesPipeline() {
                             <Wrench className="h-3 w-3 mr-1" />Move to Installation
                           </Button>
                         )}
+                      {isAdmin && (
+                        <Button size="sm" variant="ghost" className="w-full mt-1 text-red-500 hover:text-red-600" onClick={() => handleDeleteDeal(deal)}>
+                          <Trash2 className="h-3 w-3 mr-1" />Delete
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
