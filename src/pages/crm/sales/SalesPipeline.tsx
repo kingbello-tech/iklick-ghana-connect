@@ -50,6 +50,7 @@ interface Deal {
 }
 
 interface Profile { user_id: string; full_name: string | null; }
+interface Client { id: string; name: string; }
 interface SiteSurvey {
   id: string;
   deal_id: string;
@@ -77,6 +78,7 @@ interface Quotation {
 
 const emptyForm = {
   title: "",
+  client_id: "__none__",
   mrc: "",
   nrc: "",
   contract_duration_months: "12",
@@ -93,6 +95,7 @@ export default function SalesPipeline() {
   const { toast } = useToast();
   const [deals, setDeals] = useState<Deal[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [surveys, setSurveys] = useState<SiteSurvey[]>([]);
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [quoteForm, setQuoteForm] = useState({ installation_cost: "", monthly_cost: "", notes: "" });
@@ -103,14 +106,16 @@ export default function SalesPipeline() {
   const [form, setForm] = useState(emptyForm);
 
   const fetchData = async () => {
-    const [dealsRes, profilesRes, surveysRes, quotesRes] = await Promise.all([
+    const [dealsRes, profilesRes, clientsRes, surveysRes, quotesRes] = await Promise.all([
       supabase.from("deals").select("*").order("created_at", { ascending: false }),
       supabase.from("profiles").select("user_id, full_name"),
+      supabase.from("clients").select("id, name").order("name"),
       supabase.from("site_surveys").select("*").order("requested_at", { ascending: false }),
       supabase.from("quotations").select("*").order("created_at", { ascending: false }),
     ]);
     if (dealsRes.data) setDeals(dealsRes.data as unknown as Deal[]);
     if (profilesRes.data) setProfiles(profilesRes.data);
+    if (clientsRes.data) setClients(clientsRes.data as Client[]);
     if (surveysRes.data) setSurveys(surveysRes.data as unknown as SiteSurvey[]);
     if (quotesRes.data) setQuotations(quotesRes.data as unknown as Quotation[]);
     setLoading(false);
@@ -128,6 +133,7 @@ export default function SalesPipeline() {
 
   const buildPayload = () => ({
     title: form.title,
+    client_id: form.client_id && form.client_id !== "__none__" ? form.client_id : null,
     mrc,
     nrc,
     contract_duration_months: months,
@@ -245,6 +251,7 @@ export default function SalesPipeline() {
     setQuoteForm({ installation_cost: "", monthly_cost: String(deal.mrc || ""), notes: "" });
     setForm({
       title: deal.title,
+      client_id: (deal as any).client_id || "__none__",
       mrc: String(deal.mrc || 0),
       nrc: String(deal.nrc || 0),
       contract_duration_months: String(deal.contract_duration_months || 12),
