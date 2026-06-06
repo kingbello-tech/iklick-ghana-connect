@@ -84,10 +84,15 @@ const hrAdminItems = [
   { title: "Statutory Settings", url: "/crm/hr/statutory-settings", icon: ScrollText },
 ];
 
+const serviceDeliveryItems = [
+  { title: "SD Dashboard", url: "/crm/service-delivery/dashboard", icon: FolderKanban },
+  { title: "Projects", url: "/crm/projects", icon: FolderKanban },
+];
+
 export function CRMSidebar() {
   const location = useLocation();
   const { state, toggleSidebar } = useSidebar();
-  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, hasHRAccess, user } = useAuth();
+  const { signOut, isAdmin, profile, role, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, hasHRAccess, hasServiceDeliveryAccess, user } = useAuth();
   const collapsed = state === "collapsed";
   const isCX = role === "client_experience" || role === "network_manager" || isAdmin;
   const isNetworkManager = role === "network_manager";
