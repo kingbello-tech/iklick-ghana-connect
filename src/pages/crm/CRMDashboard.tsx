@@ -6,6 +6,7 @@ import CXDashboard from "./CXDashboard";
 import NetworkManagerDashboard from "./NetworkManagerDashboard";
 import TechEngineerDashboard from "./TechEngineerDashboard";
 import HRDashboard from "./HRDashboard";
+import ServiceDeliveryDashboard from "./projects/ServiceDeliveryDashboard";
 
 export default function CRMDashboard() {
   const { isAdmin, role } = useAuth();
@@ -18,6 +19,7 @@ export default function CRMDashboard() {
     return <Navigate to="/crm/technology/dashboard" replace />;
   if (role === "finance_officer")
     return <Navigate to="/crm/finance/dashboard" replace />;
+  if (role === "service_delivery") return <ServiceDeliveryDashboard />;
 
   // Role-specific dashboards built in this rewire
   if (role === "network_manager") return <NetworkManagerDashboard />;
