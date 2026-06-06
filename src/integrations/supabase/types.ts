@@ -2487,6 +2487,7 @@ export type Database = {
         | "technology_manager"
         | "finance_officer"
         | "hr_officer"
+        | "service_delivery"
       approval_status: "pending" | "approved" | "rejected"
       churn_risk: "low" | "medium" | "high" | "churned"
       contract_status: "pending" | "active" | "expired" | "cancelled"
@@ -2696,6 +2697,7 @@ export const Constants = {
         "technology_manager",
         "finance_officer",
         "hr_officer",
+        "service_delivery",
       ],
       approval_status: ["pending", "approved", "rejected"],
       churn_risk: ["low", "medium", "high", "churned"],
