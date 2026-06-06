@@ -2478,6 +2478,28 @@ export type Database = {
         }
         Returns: undefined
       }
+      submit_survey_response: {
+        Args: { _feedback: string; _rating: number; _token: string }
+        Returns: undefined
+      }
+      validate_intake_token: {
+        Args: { _token: string }
+        Returns: {
+          active: boolean
+          id: string
+        }[]
+      }
+      validate_survey_token: {
+        Args: { _token: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          expires_at: string
+          id: string
+          incident_id: string
+          used: boolean
+        }[]
+      }
     }
     Enums: {
       activity_type: "call" | "email" | "meeting" | "follow_up"

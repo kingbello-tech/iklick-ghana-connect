@@ -28,20 +28,15 @@ export default function SurveyPage() {
     if (!token) { setError("Invalid survey link"); setLoading(false); return; }
 
     const validate = async () => {
-      const { data, error: err } = await supabase
-        .from("survey_tokens")
-        .select("*")
-        .eq("token", token)
-        .maybeSingle();
-
+      const { data: rows, error: err } = await (supabase as any)
+        .rpc("validate_survey_token", { _token: token });
+      const data = Array.isArray(rows) ? rows[0] : null;
       if (err || !data) { setError("Invalid or expired survey link"); setLoading(false); return; }
       if (data.used) { setError("This survey has already been completed. Thank you!"); setLoading(false); return; }
       if (new Date(data.expires_at) < new Date()) { setError("This survey link has expired"); setLoading(false); return; }
 
       setTokenData(data);
-
-      const { data: client } = await supabase.from("clients").select("name").eq("id", data.client_id).maybeSingle();
-      if (client) setClientName(client.name);
+      if (data.client_name) setClientName(data.client_name);
       setLoading(false);
     };
     validate();
@@ -51,16 +46,12 @@ export default function SurveyPage() {
     if (!rating || !selectedComment || !tokenData) return;
     setSubmitting(true);
     try {
-      const { error: insertErr } = await supabase.from("client_satisfaction").insert({
-        client_id: tokenData.client_id,
-        incident_id: tokenData.incident_id || null,
-        rating,
-        feedback: selectedComment,
-        surveyed_by: "00000000-0000-0000-0000-000000000000",
+      const { error: rpcErr } = await (supabase as any).rpc("submit_survey_response", {
+        _token: token,
+        _rating: rating,
+        _feedback: selectedComment,
       });
-      if (insertErr) throw insertErr;
-
-      await supabase.from("survey_tokens").update({ used: true }).eq("id", tokenData.id);
+      if (rpcErr) throw rpcErr;
       setSubmitted(true);
     } catch (err: any) {
       setError(err.message || "Failed to submit survey");
