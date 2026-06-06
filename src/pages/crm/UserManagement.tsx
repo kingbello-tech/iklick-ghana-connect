@@ -316,6 +316,7 @@ export default function UserManagement() {
                   <SelectItem value="technology_engineer">Technology Engineer</SelectItem>
                   <SelectItem value="finance_officer">Finance Officer</SelectItem>
                   <SelectItem value="hr_officer">HR Officer</SelectItem>
+                <SelectItem value="service_delivery">Service Delivery</SelectItem>
                   <SelectItem value="viewer">Viewer</SelectItem>
                 </SelectContent>
               </Select>
