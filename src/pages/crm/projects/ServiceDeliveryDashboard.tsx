@@ -30,6 +30,13 @@ export default function ServiceDeliveryDashboard() {
     (p) => p.target_end_date && new Date(p.target_end_date) < new Date() && p.status !== "completed"
   );
 
+  const cols = [
+    { header: "Code", cell: (p: any) => <span className="font-mono text-xs">{p.code}</span> },
+    { header: "Name", cell: (p: any) => <span className="truncate">{p.name}</span> },
+    { header: "Status", cell: (p: any) => <Badge variant="outline" className="capitalize text-[10px]">{String(p.status).replace("_", " ")}</Badge> },
+    { header: "Health", cell: (p: any) => <Badge variant="outline" className="capitalize text-[10px]">{p.health}</Badge> },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -48,13 +55,6 @@ export default function ServiceDeliveryDashboard() {
         { label: "At Risk", value: atRisk.length, icon: AlertTriangle, color: "text-amber-500" },
         { label: "Overdue", value: overdue.length, icon: Clock, color: "text-destructive" },
       ]} />
-
-  const cols = [
-    { header: "Code", cell: (p: any) => <span className="font-mono text-xs">{p.code}</span> },
-    { header: "Name", cell: (p: any) => <span className="truncate">{p.name}</span> },
-    { header: "Status", cell: (p: any) => <Badge variant="outline" className="capitalize text-[10px]">{String(p.status).replace("_"," ")}</Badge> },
-    { header: "Health", cell: (p: any) => <Badge variant="outline" className="capitalize text-[10px]">{p.health}</Badge> },
-  ];
 
       <div className="grid lg:grid-cols-2 gap-4">
         <QueueTable
