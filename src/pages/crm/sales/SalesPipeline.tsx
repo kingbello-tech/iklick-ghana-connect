@@ -313,6 +313,17 @@ export default function SalesPipeline() {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2"><Label>Title *</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required /></div>
+        <div className="col-span-2">
+          <Label>Client</Label>
+          <Select value={form.client_id} onValueChange={v => setForm({ ...form, client_id: v })}>
+            <SelectTrigger><SelectValue placeholder="Select client (optional)" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">No client (prospect)</SelectItem>
+              {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground mt-1">On close-won, a site is auto-created under this client.</p>
+        </div>
         <div>
           <Label>Service Category *</Label>
           <Select value={form.isp_category} onValueChange={v => setForm({ ...form, isp_category: v })}>
