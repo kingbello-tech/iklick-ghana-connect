@@ -30,12 +30,9 @@ export default function IntakeForm() {
     document.title = "Service Request — iKlick";
     (async () => {
       if (!token) { setChecking(false); return; }
-      const { data } = await supabase
-        .from("intake_links")
-        .select("id, active")
-        .eq("token", token)
-        .maybeSingle();
-      setValid(!!data && data.active);
+      const { data } = await (supabase as any).rpc("validate_intake_token", { _token: token });
+      const row = Array.isArray(data) ? data[0] : null;
+      setValid(!!row && row.active);
       setChecking(false);
     })();
   }, [token]);
