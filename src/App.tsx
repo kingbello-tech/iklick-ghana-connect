@@ -50,6 +50,7 @@ import StatutoryReportsStub from "./pages/crm/hr/StatutoryReportsStub";
 import MyPayslipsStub from "./pages/crm/MyPayslipsStub";
 import ProjectList from "./pages/crm/projects/ProjectList";
 import ProjectDetail from "./pages/crm/projects/ProjectDetail";
+import ServiceDeliveryDashboard from "./pages/crm/projects/ServiceDeliveryDashboard";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const SALES_ROLES = ["admin", "sales_representative", "sales_manager"] as any;
 const TECH_ROLES = ["admin", "technology_engineer", "technology_manager"] as any;
 const FINANCE_ROLES = ["admin", "finance_officer"] as any;
 const HR_ROLES = ["admin", "finance_officer", "hr_officer"] as any;
+const SERVICE_DELIVERY_ROLES = ["admin", "service_delivery"] as any;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -86,6 +88,7 @@ const App = () => (
                 <Route path="clients/:id" element={<ClientDetail />} />
                 <Route path="projects" element={<ProjectList />} />
                 <Route path="projects/:id" element={<ProjectDetail />} />
+                <Route path="service-delivery/dashboard" element={<ProtectedRoute allowedRoles={SERVICE_DELIVERY_ROLES}><ServiceDeliveryDashboard /></ProtectedRoute>} />
                 <Route path="satisfaction" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><ClientSatisfaction /></ProtectedRoute>} />
                 <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience", "network_manager"]}><SLAReports /></ProtectedRoute>} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />

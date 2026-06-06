@@ -40,8 +40,9 @@ export default function ProjectList() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState<string>("");
+  const [department, setDepartment] = useState<string>("service_delivery");
 
-  const canCreate = isAdmin || role === "technology_manager" || role === "network_manager" || role === "sales_manager";
+  const canCreate = isAdmin || role === "technology_manager" || role === "network_manager" || role === "sales_manager" || role === "service_delivery";
 
   const load = async () => {
     const [p, c] = await Promise.all([
@@ -56,10 +57,10 @@ export default function ProjectList() {
   const create = async () => {
     if (!name.trim() || !user) return;
     const { error } = await (supabase as any).from("projects").insert({
-      name, client_id: clientId || null, created_by: user.id, owner_id: user.id, start_date: new Date().toISOString().slice(0, 10),
+      name, client_id: clientId || null, department, created_by: user.id, owner_id: user.id, start_date: new Date().toISOString().slice(0, 10),
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setOpen(false); setName(""); setClientId("");
+    setOpen(false); setName(""); setClientId(""); setDepartment("service_delivery");
     load();
   };
 
@@ -92,6 +93,19 @@ export default function ProjectList() {
                       {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Department</label>
+                  <Select value={department} onValueChange={setDepartment}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="service_delivery">Service Delivery</SelectItem>
+                      <SelectItem value="sales">Sales</SelectItem>
+                      <SelectItem value="technology">Technology</SelectItem>
+                      <SelectItem value="finance">Finance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-muted-foreground mt-1">Determines which managers can see this project.</p>
                 </div>
               </div>
               <DialogFooter>

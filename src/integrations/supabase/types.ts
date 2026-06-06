@@ -1785,6 +1785,7 @@ export type Database = {
           created_at: string
           created_by: string
           deal_id: string | null
+          department: string | null
           description: string | null
           health: Database["public"]["Enums"]["project_health"]
           id: string
@@ -1803,6 +1804,7 @@ export type Database = {
           created_at?: string
           created_by: string
           deal_id?: string | null
+          department?: string | null
           description?: string | null
           health?: Database["public"]["Enums"]["project_health"]
           id?: string
@@ -1821,6 +1823,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           deal_id?: string | null
+          department?: string | null
           description?: string | null
           health?: Database["public"]["Enums"]["project_health"]
           id?: string
@@ -2427,6 +2430,10 @@ export type Database = {
         Returns: boolean
       }
       has_sales_access: { Args: { _user_id: string }; Returns: boolean }
+      has_service_delivery_access: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       has_technology_access: { Args: { _user_id: string }; Returns: boolean }
       invoice_approval_threshold: { Args: never; Returns: number }
       is_project_member: {

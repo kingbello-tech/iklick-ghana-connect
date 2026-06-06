@@ -41,7 +41,7 @@ export default function ProjectDetail() {
   const [milestoneDate, setMilestoneDate] = useState("");
   const [newMember, setNewMember] = useState<string>("");
 
-  const canManage = isAdmin || role === "technology_manager" || role === "network_manager" || role === "sales_manager" || project?.owner_id === user?.id;
+  const canManage = isAdmin || role === "technology_manager" || role === "network_manager" || role === "sales_manager" || role === "service_delivery" || project?.owner_id === user?.id;
 
   const load = async () => {
     if (!id) return;
