@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useDepartmentProfiles } from "@/lib/assignment";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,7 @@ export default function SalesPipeline() {
   const [editOpen, setEditOpen] = useState(false);
   const [selected, setSelected] = useState<Deal | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const { profiles: salesProfiles } = useDepartmentProfiles("sales");
 
   const fetchData = async () => {
     const [dealsRes, profilesRes, clientsRes, surveysRes, quotesRes] = await Promise.all([
@@ -356,7 +358,7 @@ export default function SalesPipeline() {
             <SelectTrigger><SelectValue placeholder="Unassigned" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="__unassigned__">Unassigned</SelectItem>
-              {profiles.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unknown"}</SelectItem>)}
+              {salesProfiles.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unknown"}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
