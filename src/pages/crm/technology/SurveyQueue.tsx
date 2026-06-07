@@ -75,6 +75,7 @@ export default function SurveyQueue() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const { profiles: techProfiles } = useDepartmentProfiles("technology");
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<Survey | null>(null);
