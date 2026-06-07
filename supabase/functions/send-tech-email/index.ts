@@ -6,6 +6,8 @@
 //   - install_assigned:  engineer assigned to install    -> engineer
 //   - install_closed:    install marked completed        -> tech alias
 
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -14,6 +16,16 @@ const corsHeaders = {
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
 const TECH_ALIAS = 'technology@iklickgh.com';
 const FINANCE_ALIAS = 'finance@iklickgh.com';
+
+const escapeHtml = (s: unknown): string => {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
 
 type NotifyType =
   | 'survey_requested'
@@ -47,12 +59,15 @@ interface Payload {
 }
 
 const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boolean } => {
-  const dealLine = p.deal_title ? `<strong>Deal:</strong> ${p.deal_title}` : '';
-  const clientLine = p.client_name ? `<br/><strong>Client:</strong> ${p.client_name}` : '';
-  const locationLine = p.location ? `<br/><strong>Location:</strong> ${p.location}` : '';
-  const categoryLine = p.isp_category ? `<br/><strong>Category:</strong> ${p.isp_category}` : '';
-  const scheduledLine = p.scheduled_date ? `<br/><strong>Scheduled:</strong> ${p.scheduled_date}` : '';
-  const notesLine = p.notes ? `<br/><strong>Notes:</strong> ${p.notes}` : '';
+  const dealLine = p.deal_title ? `<strong>Deal:</strong> ${escapeHtml(p.deal_title)}` : '';
+  const clientLine = p.client_name ? `<br/><strong>Client:</strong> ${escapeHtml(p.client_name)}` : '';
+  const locationLine = p.location ? `<br/><strong>Location:</strong> ${escapeHtml(p.location)}` : '';
+  const categoryLine = p.isp_category ? `<br/><strong>Category:</strong> ${escapeHtml(p.isp_category)}` : '';
+  const scheduledLine = p.scheduled_date ? `<br/><strong>Scheduled:</strong> ${escapeHtml(p.scheduled_date)}` : '';
+  const notesLine = p.notes ? `<br/><strong>Notes:</strong> ${escapeHtml(p.notes)}` : '';
+  const engName = escapeHtml(p.engineer_name ?? '');
+  const assignedBy = p.assigned_by_name ? ` by ${escapeHtml(p.assigned_by_name)}` : '';
+  const salesName = escapeHtml(p.sales_rep_name ?? '');
 
   const wrap = (heading: string, intro: string, footer = '') => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; color: #1a1a1a;">
@@ -83,20 +98,20 @@ const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boole
         toAlias: false,
         subject: `[Site Survey Assigned] ${p.deal_title ?? ''}`,
         html: wrap(
-          `Hello ${p.engineer_name ?? 'Engineer'},`,
-          `You have been assigned to a site survey${p.assigned_by_name ? ` by ${p.assigned_by_name}` : ''}. Please review and confirm the schedule.`,
+          `Hello ${engName || 'Engineer'},`,
+          `You have been assigned to a site survey${assignedBy}. Please review and confirm the schedule.`,
           'Login to the CRM to view full details.'
         ),
       };
     case 'survey_closed': {
-      const feas = p.feasibility ? `<br/><strong>Feasibility:</strong> ${p.feasibility}` : '';
-      const cost = p.cost_estimate ? `<br/><strong>Cost Estimate:</strong> ₵${p.cost_estimate}` : '';
+      const feas = p.feasibility ? `<br/><strong>Feasibility:</strong> ${escapeHtml(p.feasibility)}` : '';
+      const cost = p.cost_estimate ? `<br/><strong>Cost Estimate:</strong> ₵${escapeHtml(p.cost_estimate)}` : '';
       return {
         toAlias: true,
         subject: `[Site Survey Completed] ${p.deal_title ?? ''}`,
         html: wrap(
           'Site Survey Completed',
-          `The site survey has been marked <strong>completed</strong>${p.engineer_name ? ` by ${p.engineer_name}` : ''}.`,
+          `The site survey has been marked <strong>completed</strong>${engName ? ` by ${engName}` : ''}.`,
           'Review the survey outcome and prepare next steps.'
         ).replace('</div>\n      ', `${feas}${cost}</div>\n      `),
       };
@@ -106,8 +121,8 @@ const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boole
         toAlias: false,
         subject: `[Installation Assigned] ${p.deal_title ?? ''}`,
         html: wrap(
-          `Hello ${p.engineer_name ?? 'Engineer'},`,
-          `You have been assigned to an installation${p.assigned_by_name ? ` by ${p.assigned_by_name}` : ''}. Please coordinate with the client and confirm the schedule.`,
+          `Hello ${engName || 'Engineer'},`,
+          `You have been assigned to an installation${assignedBy}. Please coordinate with the client and confirm the schedule.`,
           'Login to the CRM to view full details.'
         ),
       };
@@ -117,26 +132,26 @@ const buildEmail = (p: Payload): { subject: string; html: string; toAlias: boole
         subject: `[Installation Completed] ${p.deal_title ?? ''}`,
         html: wrap(
           'Installation Completed',
-          `The installation has been marked <strong>completed</strong>${p.engineer_name ? ` by ${p.engineer_name}` : ''}.`,
+          `The installation has been marked <strong>completed</strong>${engName ? ` by ${engName}` : ''}.`,
           'Service is now ready for handover to operations.'
         ),
       };
     case 'survey_completed_to_sales': {
-      const feas = p.feasibility ? `<br/><strong>Feasibility:</strong> ${p.feasibility}` : '';
-      const cost = p.cost_estimate ? `<br/><strong>Cost Estimate:</strong> ₵${p.cost_estimate}` : '';
+      const feas = p.feasibility ? `<br/><strong>Feasibility:</strong> ${escapeHtml(p.feasibility)}` : '';
+      const cost = p.cost_estimate ? `<br/><strong>Cost Estimate:</strong> ₵${escapeHtml(p.cost_estimate)}` : '';
       return {
         toAlias: false,
         subject: `[Site Survey Completed - Action Required] ${p.deal_title ?? ''}`,
         html: wrap(
-          `Hello ${p.sales_rep_name ?? 'Sales Representative'},`,
+          `Hello ${salesName || 'Sales Representative'},`,
           `The site survey for your deal has been <strong>completed</strong>. The deal is now ready for <strong>negotiation</strong>.`,
           'Login to the CRM to review survey results and continue the deal.'
         ).replace('</div>\n      ', `${feas}${cost}</div>\n      `),
       };
     }
     case 'install_completed_to_finance': {
-      const mrcLine = p.mrc ? `<br/><strong>MRC:</strong> ₵${p.mrc}` : '';
-      const nrcLine = p.nrc ? `<br/><strong>NRC:</strong> ₵${p.nrc}` : '';
+      const mrcLine = p.mrc ? `<br/><strong>MRC:</strong> ₵${escapeHtml(p.mrc)}` : '';
+      const nrcLine = p.nrc ? `<br/><strong>NRC:</strong> ₵${escapeHtml(p.nrc)}` : '';
       return {
         toAlias: false, // route to finance alias separately
         subject: `[Installation Completed - Billing Required] ${p.deal_title ?? ''}`,
@@ -192,6 +207,26 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
   try {
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(
+      authHeader.replace('Bearer ', '')
+    );
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const payload = (await req.json()) as Payload;
     if (!payload?.type) {
       return new Response(JSON.stringify({ error: 'Missing type' }), {
