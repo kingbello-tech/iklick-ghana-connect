@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   DndContext, DragEndEvent, DragOverlay, PointerSensor, useDraggable, useDroppable, useSensor, useSensors,
 } from "@dnd-kit/core";
+import { useDepartmentProfiles, Department } from "@/lib/assignment";
 
 type Task = {
   id: string;
@@ -83,18 +84,24 @@ export function ProjectKanban({ projectId }: { projectId: string }) {
   const { toast } = useToast();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [profiles, setProfiles] = useState<Record<string, string>>({});
+  const [projectDept, setProjectDept] = useState<Department | null>(null);
+  const { profiles: deptProfiles } = useDepartmentProfiles(projectDept);
+  const profiles = useMemo(
+    () => Object.fromEntries(deptProfiles.map((p) => [p.user_id, p.full_name || "User"])),
+    [deptProfiles]
+  );
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
 
   const load = async () => {
-    const [t, p] = await Promise.all([
+    const [t, proj] = await Promise.all([
       (supabase as any).from("project_tasks").select("*").eq("project_id", projectId).order("sort_order"),
-      supabase.from("profiles").select("user_id, full_name"),
+      (supabase as any).from("projects").select("department").eq("id", projectId).maybeSingle(),
     ]);
     setTasks(t.data || []);
-    setProfiles(Object.fromEntries((p.data || []).map((x: any) => [x.user_id, x.full_name || "User"])));
+    const dept = (proj.data?.department as Department | undefined) || "service_delivery";
+    setProjectDept(dept);
   };
   useEffect(() => { load(); }, [projectId]);
 
