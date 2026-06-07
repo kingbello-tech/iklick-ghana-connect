@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2 } from "lucide-react";
+import { useDepartmentProfiles } from "@/lib/assignment";
 
 type Task = {
   id: string;
@@ -23,7 +24,7 @@ export function IncidentTasks({ incidentId }: { incidentId: string }) {
   const { user, role } = useAuth();
   const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [profiles, setProfiles] = useState<{ user_id: string; full_name: string | null }[]>([]);
+  const { profiles } = useDepartmentProfiles("technology");
   const [title, setTitle] = useState("");
   const [assignTo, setAssignTo] = useState<string>("");
   const [dueDate, setDueDate] = useState("");
@@ -31,12 +32,8 @@ export function IncidentTasks({ incidentId }: { incidentId: string }) {
   const isAdmin = role === "admin" || role === "network_manager";
 
   const load = async () => {
-    const [t, p] = await Promise.all([
-      (supabase as any).from("incident_tasks").select("*").eq("incident_id", incidentId).order("created_at", { ascending: true }),
-      supabase.from("profiles").select("user_id, full_name"),
-    ]);
+    const t = await (supabase as any).from("incident_tasks").select("*").eq("incident_id", incidentId).order("created_at", { ascending: true });
     setTasks(t.data || []);
-    setProfiles(p.data || []);
   };
 
   useEffect(() => { load(); }, [incidentId]);
