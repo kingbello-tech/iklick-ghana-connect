@@ -67,11 +67,13 @@ const emptyForm = {
   notes: "",
 };
 
+import { useDepartmentProfiles } from "@/lib/assignment";
+
 export default function SalesLeads() {
   const { user, isAdmin } = useAuth();
   const { toast } = useToast();
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const { profiles } = useDepartmentProfiles("sales");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -84,12 +86,8 @@ export default function SalesLeads() {
   const [pageSize, setPageSize] = useState(25);
 
   const fetchData = async () => {
-    const [leadsRes, profilesRes] = await Promise.all([
-      supabase.from("leads").select("*").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("user_id, full_name"),
-    ]);
+    const leadsRes = await supabase.from("leads").select("*").order("created_at", { ascending: false });
     if (leadsRes.data) setLeads(leadsRes.data as unknown as Lead[]);
-    if (profilesRes.data) setProfiles(profilesRes.data);
     setLoading(false);
   };
 
