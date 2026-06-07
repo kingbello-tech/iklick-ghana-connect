@@ -2444,6 +2444,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
       log_audit: {
         Args: {
           _action: string

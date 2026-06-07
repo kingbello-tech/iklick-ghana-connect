@@ -1,3 +1,5 @@
+import { createClient } from 'npm:@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -5,12 +7,43 @@ const corsHeaders = {
 
 const GATEWAY_URL = 'https://connector-gateway.lovable.dev/microsoft_outlook';
 
+const escapeHtml = (s: unknown): string => {
+  if (s === null || s === undefined) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
+    // Require authenticated caller
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(
+      authHeader.replace('Bearer ', '')
+    );
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
@@ -25,6 +58,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Escape all user-controlled fields used in HTML
+    const e_incident_number = escapeHtml(incident_number);
+    const e_title = escapeHtml(title);
+    const e_description = escapeHtml(description);
+    const e_priority = escapeHtml(priority || 'medium');
+    const e_flag_reason = escapeHtml(flag_reason || '');
+    const safe_ticket_url = typeof ticket_url === 'string' && /^https?:\/\//i.test(ticket_url) ? ticket_url : '';
+
     const results: { client?: string; assigned?: string; tech_team?: string } = {};
 
     const buildHtml = (recipientName: string, isClient: boolean, isUpdate: boolean = false, isClosed: boolean = false) => `
@@ -33,7 +74,7 @@ Deno.serve(async (req) => {
           <h1 style="margin: 0; font-size: 20px;">${isClosed ? 'Ticket Closed' : isUpdate ? 'Ticket Update' : 'Incident Notification'}</h1>
         </div>
         <div style="border: 1px solid #e0e0e0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
-          <p>Dear ${recipientName},</p>
+          <p>Dear ${escapeHtml(recipientName)},</p>
           <p>${isClosed
             ? 'Your support ticket has been closed. Thank you for choosing iKlick. If you experience the issue again, please reach out and we will be happy to assist.'
             : isUpdate
@@ -45,23 +86,23 @@ Deno.serve(async (req) => {
           <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
             <tr style="background: #f5f5f5;">
               <td style="padding: 10px; font-weight: bold; border: 1px solid #e0e0e0;">Ticket ID</td>
-              <td style="padding: 10px; border: 1px solid #e0e0e0;">${incident_number}</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;">${e_incident_number}</td>
             </tr>
             <tr>
               <td style="padding: 10px; font-weight: bold; border: 1px solid #e0e0e0;">Title</td>
-              <td style="padding: 10px; border: 1px solid #e0e0e0;">${title}</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;">${e_title}</td>
             </tr>
             <tr style="background: #f5f5f5;">
               <td style="padding: 10px; font-weight: bold; border: 1px solid #e0e0e0;">Priority</td>
-              <td style="padding: 10px; border: 1px solid #e0e0e0; text-transform: capitalize;">${priority || 'medium'}</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0; text-transform: capitalize;">${e_priority}</td>
             </tr>
             ${description ? `
             <tr>
               <td style="padding: 10px; font-weight: bold; border: 1px solid #e0e0e0;">${isUpdate ? 'Update' : isClosed ? 'Resolution' : 'Description'}</td>
-              <td style="padding: 10px; border: 1px solid #e0e0e0;">${description}</td>
+              <td style="padding: 10px; border: 1px solid #e0e0e0;">${e_description}</td>
             </tr>` : ''}
           </table>
-          ${ticket_url && !isClient ? `<p style="margin: 20px 0;"><a href="${ticket_url}" style="display: inline-block; background: #1a1a2e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Ticket</a></p>` : ''}
+          ${safe_ticket_url && !isClient ? `<p style="margin: 20px 0;"><a href="${escapeHtml(safe_ticket_url)}" style="display: inline-block; background: #1a1a2e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Ticket</a></p>` : ''}
           <p style="color: #666; font-size: 12px; margin-top: 24px;">This is an automated notification. Please do not reply directly to this email.</p>
         </div>
       </div>
@@ -128,14 +169,14 @@ Deno.serve(async (req) => {
             </div>
             <div style="border: 1px solid #e0e0e0; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
               <p>Hello Technology Team,</p>
-              <p>${flag_reason || 'An incident has been flagged and requires attention.'}</p>
+              <p>${e_flag_reason || 'An incident has been flagged and requires attention.'}</p>
               <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-                <tr style="background: #f5f5f5;"><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Ticket ID</td><td style="padding:10px;border:1px solid #e0e0e0;">${incident_number}</td></tr>
-                <tr><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Title</td><td style="padding:10px;border:1px solid #e0e0e0;">${title}</td></tr>
-                <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Priority</td><td style="padding:10px;border:1px solid #e0e0e0;text-transform:capitalize;">${priority || 'medium'}</td></tr>
-                ${description ? `<tr><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Description</td><td style="padding:10px;border:1px solid #e0e0e0;">${description}</td></tr>` : ''}
+                <tr style="background: #f5f5f5;"><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Ticket ID</td><td style="padding:10px;border:1px solid #e0e0e0;">${e_incident_number}</td></tr>
+                <tr><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Title</td><td style="padding:10px;border:1px solid #e0e0e0;">${e_title}</td></tr>
+                <tr style="background:#f5f5f5;"><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Priority</td><td style="padding:10px;border:1px solid #e0e0e0;text-transform:capitalize;">${e_priority}</td></tr>
+                ${description ? `<tr><td style="padding:10px;font-weight:bold;border:1px solid #e0e0e0;">Description</td><td style="padding:10px;border:1px solid #e0e0e0;">${e_description}</td></tr>` : ''}
               </table>
-              ${ticket_url ? `<p style="margin: 20px 0;"><a href="${ticket_url}" style="display: inline-block; background: #b91c1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Ticket</a></p>` : ''}
+              ${safe_ticket_url ? `<p style="margin: 20px 0;"><a href="${escapeHtml(safe_ticket_url)}" style="display: inline-block; background: #b91c1c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Ticket</a></p>` : ''}
               <p style="color: #666; font-size: 12px; margin-top: 24px;">This is an automated notification.</p>
             </div>
           </div>`;
