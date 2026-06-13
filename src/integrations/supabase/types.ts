@@ -2410,6 +2410,10 @@ export type Database = {
         Returns: boolean
       }
       can_close_incident: { Args: { _user_id: string }; Returns: boolean }
+      can_execute_project: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       compute_client_churn_score: {
         Args: { _client_id: string }
         Returns: number
