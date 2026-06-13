@@ -2440,11 +2440,13 @@ export type Database = {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
+      is_project_mgmt_user: { Args: { _user_id: string }; Returns: boolean }
       is_sales_manager_or_admin: {
         Args: { _user_id: string }
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_technology_user: { Args: { _user_id: string }; Returns: boolean }
       log_audit: {
         Args: {
           _action: string

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
+import { useDepartmentProfiles } from "@/lib/assignment";
 
 type Project = {
   id: string;
@@ -41,8 +42,10 @@ export default function ProjectList() {
   const [name, setName] = useState("");
   const [clientId, setClientId] = useState<string>("");
   const [department, setDepartment] = useState<string>("service_delivery");
+  const [ownerId, setOwnerId] = useState<string>("");
+  const { profiles: techProfiles } = useDepartmentProfiles("technology", { includeAdmins: false });
 
-  const canCreate = isAdmin || role === "technology_manager" || role === "network_manager" || role === "sales_manager" || role === "service_delivery";
+  const canCreate = isAdmin || role === "service_delivery" || role === "technology_manager" || role === "network_manager" || role === "technology_engineer" || role === "network_engineer";
 
   const load = async () => {
     const [p, c] = await Promise.all([
@@ -55,12 +58,12 @@ export default function ProjectList() {
   useEffect(() => { load(); }, []);
 
   const create = async () => {
-    if (!name.trim() || !user) return;
+    if (!name.trim() || !user || !ownerId) return;
     const { error } = await (supabase as any).from("projects").insert({
-      name, client_id: clientId || null, department, created_by: user.id, owner_id: user.id, start_date: new Date().toISOString().slice(0, 10),
+      name, client_id: clientId || null, department, created_by: user.id, owner_id: ownerId, start_date: new Date().toISOString().slice(0, 10),
     });
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    setOpen(false); setName(""); setClientId(""); setDepartment("service_delivery");
+    setOpen(false); setName(""); setClientId(""); setDepartment("service_delivery"); setOwnerId("");
     load();
   };
 
@@ -99,18 +102,32 @@ export default function ProjectList() {
                   <Select value={department} onValueChange={setDepartment}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="service_delivery">Service Delivery</SelectItem>
-                      <SelectItem value="sales">Sales</SelectItem>
+                      <SelectItem value="service_delivery">Project Management</SelectItem>
                       <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-[10px] text-muted-foreground mt-1">Determines which managers can see this project.</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Only Project Management and Technology can see projects.</p>
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground">Assign to (Technology)</label>
+                  <Select value={ownerId} onValueChange={setOwnerId}>
+                    <SelectTrigger><SelectValue placeholder="Select a technology user" /></SelectTrigger>
+                    <SelectContent>
+                      {techProfiles.map((p) => (
+                        <SelectItem key={p.user_id} value={p.user_id}>
+                          {p.full_name || "User"} {p.role ? `· ${p.role.replace(/_/g, " ")}` : ""}
+                        </SelectItem>
+                      ))}
+                      {techProfiles.length === 0 && (
+                        <div className="px-2 py-1.5 text-xs text-muted-foreground">No technology users available</div>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-                <Button onClick={create} disabled={!name.trim()}>Create</Button>
+                <Button onClick={create} disabled={!name.trim() || !ownerId}>Create</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
