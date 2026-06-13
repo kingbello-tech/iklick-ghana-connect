@@ -5,21 +5,26 @@ import { QueueTable } from "@/components/crm/dashboard/QueueTable";
 import { Badge } from "@/components/ui/badge";
 import { QuickActions } from "@/components/crm/dashboard/QuickActions";
 import { FolderKanban, Activity, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ServiceDeliveryDashboard() {
+  const { toast } = useToast();
   const [projects, setProjects] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("projects")
         .select("*")
         .order("created_at", { ascending: false });
+      if (error) {
+        toast({ title: "Could not load projects", description: error.message, variant: "destructive" });
+      }
       setProjects(data || []);
       setLoading(false);
     })();
-  }, []);
+  }, [toast]);
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
@@ -42,7 +47,7 @@ export default function ServiceDeliveryDashboard() {
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-semibold">Service Delivery</h1>
-          <p className="text-sm text-muted-foreground">All projects in the Service Delivery department</p>
+          <p className="text-sm text-muted-foreground">All projects managed by Service Delivery and executed by Technology</p>
         </div>
         <QuickActions actions={[
           { label: "All Projects", to: "/crm/projects", icon: FolderKanban },
@@ -58,11 +63,11 @@ export default function ServiceDeliveryDashboard() {
 
       <div className="grid lg:grid-cols-2 gap-4">
         <QueueTable
-          title={`Active (${active.length})`}
-          rows={active.slice(0, 10)}
+          title={`All Projects (${projects.length})`}
+          rows={projects.slice(0, 10)}
           columns={cols}
           rowHref={(r: any) => `/crm/projects/${r.id}`}
-          empty="No active projects"
+          empty="No projects yet"
         />
         <QueueTable
           title={`At Risk / Overdue (${atRisk.length + overdue.length})`}
