@@ -2440,11 +2440,19 @@ export type Database = {
       }
       has_technology_access: { Args: { _user_id: string }; Returns: boolean }
       invoice_approval_threshold: { Args: never; Returns: number }
+      is_explicit_project_member: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_project_member: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
       is_project_mgmt_user: { Args: { _user_id: string }; Returns: boolean }
+      is_project_owner: {
+        Args: { _project_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_sales_manager_or_admin: {
         Args: { _user_id: string }
         Returns: boolean
