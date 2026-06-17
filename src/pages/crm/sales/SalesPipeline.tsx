@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Attachments } from "@/components/crm/Attachments";
 
 const STAGES = [
@@ -107,6 +108,11 @@ export default function SalesPipeline() {
   const [form, setForm] = useState(emptyForm);
   const { profiles: salesProfiles } = useDepartmentProfiles("sales");
 
+  const [search, setSearch] = useState("");
+  const [filterStage, setFilterStage] = useState("__all__");
+  const [filterCategory, setFilterCategory] = useState("__all__");
+  const [filterAssignee, setFilterAssignee] = useState("__all__");
+
   const fetchData = async () => {
     const [dealsRes, profilesRes, clientsRes, surveysRes, quotesRes] = await Promise.all([
       supabase.from("deals").select("*").order("created_at", { ascending: false }),
@@ -126,6 +132,19 @@ export default function SalesPipeline() {
   useEffect(() => { fetchData(); }, []);
 
   const profileMap = Object.fromEntries(profiles.map(p => [p.user_id, p.full_name || "Unknown"]));
+
+  const filteredDeals = deals.filter(d => {
+    const q = search.trim().toLowerCase();
+    if (q && !(d.title?.toLowerCase().includes(q) || (d.notes || "").toLowerCase().includes(q))) return false;
+    if (filterStage !== "__all__" && d.stage !== filterStage) return false;
+    if (filterCategory !== "__all__" && (d.isp_category || "__none__") !== filterCategory) return false;
+    if (filterAssignee !== "__all__") {
+      if (filterAssignee === "__unassigned__" ? !!d.assigned_to : d.assigned_to !== filterAssignee) return false;
+    }
+    return true;
+  });
+  const hasActiveFilters = !!search || filterStage !== "__all__" || filterCategory !== "__all__" || filterAssignee !== "__all__";
+  const clearFilters = () => { setSearch(""); setFilterStage("__all__"); setFilterCategory("__all__"); setFilterAssignee("__all__"); };
 
   const mrc = parseFloat(form.mrc) || 0;
   const nrc = parseFloat(form.nrc) || 0;
@@ -395,9 +414,56 @@ export default function SalesPipeline() {
         <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{deals.length > 0 ? Math.round((deals.filter(d => d.stage === "closed_won").length / deals.length) * 100) : 0}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
       </div>
 
+      <Card>
+        <CardContent className="pt-4 pb-4">
+          <div className="flex flex-col md:flex-row gap-3 md:items-center">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search deals by title or notes..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <Select value={filterStage} onValueChange={setFilterStage}>
+              <SelectTrigger className="md:w-[160px]"><SelectValue placeholder="Stage" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All stages</SelectItem>
+                {STAGES.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={filterCategory} onValueChange={setFilterCategory}>
+              <SelectTrigger className="md:w-[180px]"><SelectValue placeholder="Category" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All categories</SelectItem>
+                {ISP_CATEGORIES.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                <SelectItem value="__none__">Uncategorized</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={filterAssignee} onValueChange={setFilterAssignee}>
+              <SelectTrigger className="md:w-[180px]"><SelectValue placeholder="Assignee" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__all__">All assignees</SelectItem>
+                <SelectItem value="__unassigned__">Unassigned</SelectItem>
+                {salesProfiles.map(p => <SelectItem key={p.user_id} value={p.user_id}>{p.full_name || "Unknown"}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters}>
+                <X className="h-4 w-4 mr-1" />Clear
+              </Button>
+            )}
+          </div>
+          {hasActiveFilters && (
+            <p className="text-xs text-muted-foreground mt-2">Showing {filteredDeals.length} of {deals.length} deals</p>
+          )}
+        </CardContent>
+      </Card>
+
       <div className="flex gap-4 overflow-x-auto pb-4">
         {activeStages.map(stage => {
-          const stageDeals = deals.filter(d => d.stage === stage.value);
+          const stageDeals = filteredDeals.filter(d => d.stage === stage.value);
           const stageValue = stageDeals.reduce((s, d) => s + Number(d.tcv || d.value), 0);
           return (
             <div key={stage.value} className="min-w-[280px] flex-shrink-0">
@@ -453,9 +519,9 @@ export default function SalesPipeline() {
 
       <div className="grid grid-cols-2 gap-4">
         <Card>
-          <CardHeader><CardTitle className="text-green-400 text-sm">Closed Won ({deals.filter(d => d.stage === "closed_won").length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-green-400 text-sm">Closed Won ({filteredDeals.filter(d => d.stage === "closed_won").length})</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {deals.filter(d => d.stage === "closed_won").map(d => (
+            {filteredDeals.filter(d => d.stage === "closed_won").map(d => (
               <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
                 <span className="text-sm text-foreground">{d.title}</span>
                 <span className="text-sm font-semibold text-green-400">₵{Number(d.tcv || d.value).toLocaleString()}</span>
@@ -464,9 +530,9 @@ export default function SalesPipeline() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-red-400 text-sm">Closed Lost ({deals.filter(d => d.stage === "closed_lost").length})</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-red-400 text-sm">Closed Lost ({filteredDeals.filter(d => d.stage === "closed_lost").length})</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {deals.filter(d => d.stage === "closed_lost").map(d => (
+            {filteredDeals.filter(d => d.stage === "closed_lost").map(d => (
               <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
                 <span className="text-sm text-foreground">{d.title}</span>
                 <span className="text-sm font-semibold text-red-400">₵{Number(d.tcv || d.value).toLocaleString()}</span>
