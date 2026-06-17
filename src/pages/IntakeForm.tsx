@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, MapPin } from "lucide-react";
 
 export default function IntakeForm() {
   const { token } = useParams<{ token: string }>();
@@ -16,6 +16,7 @@ export default function IntakeForm() {
   const [valid, setValid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [locating, setLocating] = useState(false);
   const [form, setForm] = useState({
     name: "",
     address: "",
@@ -39,10 +40,35 @@ export default function IntakeForm() {
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  const useMyLocation = () => {
+    if (!navigator.geolocation) {
+      toast({ title: "Not supported", description: "Geolocation isn't available in this browser.", variant: "destructive" });
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        update("gps_address", `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+        setLocating(false);
+      },
+      (err) => {
+        toast({ title: "Location unavailable", description: err.message, variant: "destructive" });
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.phone.trim()) {
-      toast({ title: "Missing info", description: "Name and contact number are required.", variant: "destructive" });
+    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.gps_address.trim()) {
+      toast({ title: "Missing info", description: "Name, contact number, email and GPS/coordinates are required.", variant: "destructive" });
+      return;
+    }
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+    if (!emailOk) {
+      toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive" });
       return;
     }
     setSubmitting(true);
@@ -113,8 +139,14 @@ export default function IntakeForm() {
                 <Input id="address" value={form.address} onChange={(e) => update("address", e.target.value)} maxLength={300} />
               </div>
               <div>
-                <Label htmlFor="gps">GPS address</Label>
-                <Input id="gps" placeholder="e.g. GA-123-4567" value={form.gps_address} onChange={(e) => update("gps_address", e.target.value)} maxLength={50} />
+                <Label htmlFor="gps">GPS address / coordinates *</Label>
+                <div className="flex gap-2">
+                  <Input id="gps" placeholder="e.g. GA-123-4567 or 5.6037, -0.1870" value={form.gps_address} onChange={(e) => update("gps_address", e.target.value)} required maxLength={100} />
+                  <Button type="button" variant="outline" onClick={useMyLocation} disabled={locating}>
+                    {locating ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                    <span className="ml-2 hidden sm:inline">Use my location</span>
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -122,8 +154,8 @@ export default function IntakeForm() {
                   <Input id="phone" type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} required maxLength={30} />
                 </div>
                 <div>
-                  <Label htmlFor="email">Email address</Label>
-                  <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} maxLength={255} />
+                  <Label htmlFor="email">Email address *</Label>
+                  <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} required maxLength={255} />
                 </div>
               </div>
               <div>
