@@ -17,6 +17,7 @@ import LoginPage from "./pages/LoginPage";
 import CRMDashboard from "./pages/crm/CRMDashboard";
 import IncidentList from "./pages/crm/IncidentList";
 import IncidentDetail from "./pages/crm/IncidentDetail";
+import RecurringIssues from "./pages/crm/RecurringIssues";
 import ClientList from "./pages/crm/ClientList";
 import ClientDetail from "./pages/crm/ClientDetail";
 import UserManagement from "./pages/crm/UserManagement";
@@ -84,6 +85,7 @@ const App = () => (
                 <Route path="help" element={<Help />} />
                 <Route path="incidents" element={<IncidentList />} />
                 <Route path="incidents/:id" element={<IncidentDetail />} />
+                <Route path="recurring-issues" element={<ProtectedRoute allowedRoles={["admin","client_experience","technology_manager","technology_engineer","network_manager","network_engineer","support_agent"]}><RecurringIssues /></ProtectedRoute>} />
                 <Route path="clients" element={<ClientList />} />
                 <Route path="clients/:id" element={<ClientDetail />} />
                 <Route path="projects" element={<ProjectList />} />
