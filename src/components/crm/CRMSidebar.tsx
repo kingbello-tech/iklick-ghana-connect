@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -29,6 +29,7 @@ const navItems = [
 
 const cxItems = [
   { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
+  { title: "Recurring Issues", url: "/crm/recurring-issues", icon: Repeat },
   { title: "Satisfaction", url: "/crm/satisfaction", icon: Heart },
   { title: "SLA Reports", url: "/crm/sla-reports", icon: Clock },
 ];
@@ -62,6 +63,7 @@ const salesItems = [
 const technologyItems = [
   { title: "Tech Dashboard", url: "/crm/technology/dashboard", icon: Wifi },
   { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
+  { title: "Recurring Issues", url: "/crm/recurring-issues", icon: Repeat },
   { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
   { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
 ];
