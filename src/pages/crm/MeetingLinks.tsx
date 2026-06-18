@@ -125,7 +125,7 @@ export default function MeetingLinks() {
   const updateRow = (i: number, k: keyof Avail, v: any) => setAvail(avail.map((r,idx) => idx===i ? { ...r, [k]: v } : r));
 
   const publicUrl = slug ? `${window.location.origin}/${slug}` : "";
-  const brandedUrl = slug ? `https://meet.iklick.com/${slug}` : "";
+  const brandedUrl = slug ? `https://meet.iklickgh.com/${slug}` : "";
 
   if (loading) return <div className="p-8 flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Loading…</div>;
 
