@@ -1422,11 +1422,20 @@ export type Database = {
           cancel_token: string
           created_at: string
           end_at: string
+          guest_action_token: string
+          guest_decided_at: string | null
+          guest_decision: string | null
           guest_email: string
           guest_name: string
+          host_action_token: string
           host_id: string
+          host_message: string | null
+          host_responded_at: string | null
+          host_response: string
           id: string
           notes: string | null
+          proposed_end_at: string | null
+          proposed_start_at: string | null
           start_at: string
           status: string
         }
@@ -1434,11 +1443,20 @@ export type Database = {
           cancel_token?: string
           created_at?: string
           end_at: string
+          guest_action_token?: string
+          guest_decided_at?: string | null
+          guest_decision?: string | null
           guest_email: string
           guest_name: string
+          host_action_token?: string
           host_id: string
+          host_message?: string | null
+          host_responded_at?: string | null
+          host_response?: string
           id?: string
           notes?: string | null
+          proposed_end_at?: string | null
+          proposed_start_at?: string | null
           start_at: string
           status?: string
         }
@@ -1446,11 +1464,20 @@ export type Database = {
           cancel_token?: string
           created_at?: string
           end_at?: string
+          guest_action_token?: string
+          guest_decided_at?: string | null
+          guest_decision?: string | null
           guest_email?: string
           guest_name?: string
+          host_action_token?: string
           host_id?: string
+          host_message?: string | null
+          host_responded_at?: string | null
+          host_response?: string
           id?: string
           notes?: string | null
+          proposed_end_at?: string | null
+          proposed_start_at?: string | null
           start_at?: string
           status?: string
         }
@@ -2744,6 +2771,44 @@ export type Database = {
       }
       dunning_sweep: { Args: never; Returns: number }
       generate_monthly_recurring_invoices: { Args: never; Returns: number }
+      get_booking_by_guest_token: {
+        Args: { _token: string }
+        Returns: {
+          booking_id: string
+          end_at: string
+          guest_decision: string
+          guest_email: string
+          guest_name: string
+          host_display_name: string
+          host_message: string
+          host_response: string
+          proposed_end_at: string
+          proposed_start_at: string
+          start_at: string
+          status: string
+          teams_join_url: string
+          timezone: string
+        }[]
+      }
+      get_booking_by_host_token: {
+        Args: { _token: string }
+        Returns: {
+          booking_id: string
+          end_at: string
+          guest_email: string
+          guest_name: string
+          guest_notes: string
+          host_display_name: string
+          host_response: string
+          host_user_id: string
+          proposed_start_at: string
+          slug: string
+          start_at: string
+          status: string
+          teams_join_url: string
+          timezone: string
+        }[]
+      }
       get_booking_by_token: {
         Args: { _token: string }
         Returns: {
@@ -2762,6 +2827,19 @@ export type Database = {
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      guest_decide_reschedule: {
+        Args: { _accept: boolean; _token: string }
+        Returns: {
+          booking_id: string
+          end_at: string
+          guest_email: string
+          guest_name: string
+          host_display_name: string
+          host_user_id: string
+          start_at: string
+          status: string
+        }[]
       }
       has_finance_access: { Args: { _user_id: string }; Returns: boolean }
       has_hr_access: { Args: { _user_id: string }; Returns: boolean }
@@ -2893,6 +2971,24 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      respond_to_booking: {
+        Args: {
+          _action: string
+          _message?: string
+          _proposed_start?: string
+          _token: string
+        }
+        Returns: {
+          booking_id: string
+          end_at: string
+          guest_action_token: string
+          guest_email: string
+          guest_name: string
+          host_display_name: string
+          proposed_start_at: string
+          start_at: string
+        }[]
       }
       submit_survey_response: {
         Args: { _feedback: string; _rating: number; _token: string }
