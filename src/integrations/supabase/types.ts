@@ -1347,6 +1347,180 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_availability: {
+        Row: {
+          created_at: string
+          end_time: string
+          host_id: string
+          id: string
+          start_time: string
+          weekday: number
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          host_id: string
+          id?: string
+          start_time: string
+          weekday: number
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          host_id?: string
+          id?: string
+          start_time?: string
+          weekday?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_availability_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_hosts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_blackouts: {
+        Row: {
+          created_at: string
+          end_at: string
+          host_id: string
+          id: string
+          reason: string | null
+          start_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_at: string
+          host_id: string
+          id?: string
+          reason?: string | null
+          start_at: string
+        }
+        Update: {
+          created_at?: string
+          end_at?: string
+          host_id?: string
+          id?: string
+          reason?: string | null
+          start_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_blackouts_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_hosts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_bookings: {
+        Row: {
+          cancel_token: string
+          created_at: string
+          end_at: string
+          guest_email: string
+          guest_name: string
+          host_id: string
+          id: string
+          notes: string | null
+          start_at: string
+          status: string
+        }
+        Insert: {
+          cancel_token?: string
+          created_at?: string
+          end_at: string
+          guest_email: string
+          guest_name: string
+          host_id: string
+          id?: string
+          notes?: string | null
+          start_at: string
+          status?: string
+        }
+        Update: {
+          cancel_token?: string
+          created_at?: string
+          end_at?: string
+          guest_email?: string
+          guest_name?: string
+          host_id?: string
+          id?: string
+          notes?: string | null
+          start_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_bookings_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_hosts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_hosts: {
+        Row: {
+          advance_notice_hours: number
+          avatar_url: string | null
+          bio: string | null
+          buffer_minutes: number
+          created_at: string
+          display_name: string
+          id: string
+          is_active: boolean
+          max_days_ahead: number
+          slot_minutes: number
+          slug: string
+          teams_join_url: string
+          timezone: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          advance_notice_hours?: number
+          avatar_url?: string | null
+          bio?: string | null
+          buffer_minutes?: number
+          created_at?: string
+          display_name: string
+          id?: string
+          is_active?: boolean
+          max_days_ahead?: number
+          slot_minutes?: number
+          slug: string
+          teams_join_url: string
+          timezone?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          advance_notice_hours?: number
+          avatar_url?: string | null
+          bio?: string | null
+          buffer_minutes?: number
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_active?: boolean
+          max_days_ahead?: number
+          slot_minutes?: number
+          slug?: string
+          teams_join_url?: string
+          timezone?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -2509,10 +2683,51 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      meeting_booked_slots: {
+        Row: {
+          end_at: string | null
+          host_id: string | null
+          start_at: string | null
+        }
+        Insert: {
+          end_at?: string | null
+          host_id?: string | null
+          start_at?: string | null
+        }
+        Update: {
+          end_at?: string | null
+          host_id?: string | null
+          start_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_bookings_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "meeting_hosts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       auto_escalate_stale_incidents: { Args: never; Returns: number }
+      book_meeting: {
+        Args: {
+          _guest_email: string
+          _guest_name: string
+          _notes?: string
+          _slug: string
+          _start_at: string
+        }
+        Returns: {
+          booking_id: string
+          cancel_token: string
+          display_name: string
+          end_at: string
+          teams_join_url: string
+        }[]
+      }
       can_access_attachment: {
         Args: { _entity_id: string; _entity_type: string }
         Returns: boolean
@@ -2522,12 +2737,28 @@ export type Database = {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
+      cancel_meeting_booking: { Args: { _token: string }; Returns: boolean }
       compute_client_churn_score: {
         Args: { _client_id: string }
         Returns: number
       }
       dunning_sweep: { Args: never; Returns: number }
       generate_monthly_recurring_invoices: { Args: never; Returns: number }
+      get_booking_by_token: {
+        Args: { _token: string }
+        Returns: {
+          booking_id: string
+          display_name: string
+          end_at: string
+          guest_email: string
+          guest_name: string
+          slug: string
+          start_at: string
+          status: string
+          teams_join_url: string
+          timezone: string
+        }[]
+      }
       get_user_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
