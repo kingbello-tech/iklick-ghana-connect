@@ -1,0 +1,229 @@
+// Public edge function that sends Outlook emails for the meeting booking workflow.
+// Types:
+//   - host_pending:   guest booked a meeting → email host with Accept/Decline/Reschedule action links
+//   - guest_response: host responded (accept/decline/reschedule) → email guest with the outcome
+//   - host_confirmed: guest accepted or declined a proposed reschedule → email host with the final outcome
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
+const DEFAULT_APP_ORIGIN = "https://iklickgh.com";
+
+const esc = (s: unknown): string => {
+  if (s === null || s === undefined) return "";
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+};
+
+const fmtDate = (iso: string, tz?: string) => {
+  try {
+    return new Date(iso).toLocaleString("en-GB", {
+      timeZone: tz || undefined,
+      weekday: "short", year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+};
+
+const wrap = (title: string, intro: string, inner: string, footer = "") => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; padding: 20px; color: #1a1a1a;">
+    <h2 style="color:#1a1a1a;margin:0 0 12px;">${title}</h2>
+    <p style="margin:0 0 16px;">${intro}</p>
+    <div style="background:#f5f7fa;padding:14px 16px;border-radius:8px;border-left:4px solid #2563eb;">
+      ${inner}
+    </div>
+    ${footer ? `<div style="margin-top:20px;">${footer}</div>` : ""}
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:24px 0 12px;"/>
+    <p style="font-size:12px;color:#888;margin:0;">iKlick Communications · Meetings</p>
+  </div>
+`;
+
+const btn = (href: string, label: string, bg: string) =>
+  `<a href="${href}" style="display:inline-block;background:${bg};color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600;margin:4px 6px 4px 0;">${esc(label)}</a>`;
+
+const sendMail = async (to: string, subject: string, html: string) => {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
+  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
+  if (!OUTLOOK_KEY) throw new Error("MICROSOFT_OUTLOOK_API_KEY missing");
+
+  const res = await fetch(`${GATEWAY_URL}/me/sendMail`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "X-Connection-Api-Key": OUTLOOK_KEY,
+    },
+    body: JSON.stringify({
+      message: {
+        subject,
+        body: { contentType: "HTML", content: html },
+        toRecipients: [{ emailAddress: { address: to } }],
+      },
+    }),
+  });
+  if (!res.ok && res.status !== 202) {
+    const text = await res.text();
+    throw new Error(`Outlook send failed [${res.status}]: ${text}`);
+  }
+  return true;
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const body = await req.json();
+    const { type, booking_id, app_origin } = body ?? {};
+    if (!type || !booking_id) {
+      return new Response(JSON.stringify({ error: "type and booking_id required" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const origin = (typeof app_origin === "string" && app_origin.startsWith("http")) ? app_origin.replace(/\/+$/, "") : DEFAULT_APP_ORIGIN;
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+
+    const { data: bk, error: bkErr } = await supabase
+      .from("meeting_bookings")
+      .select("id, host_id, start_at, end_at, proposed_start_at, proposed_end_at, guest_name, guest_email, notes, status, host_response, guest_decision, host_action_token, guest_action_token, host_message")
+      .eq("id", booking_id)
+      .maybeSingle();
+    if (bkErr || !bk) throw new Error(`Booking not found: ${bkErr?.message || ""}`);
+
+    const { data: host, error: hErr } = await supabase
+      .from("meeting_hosts")
+      .select("user_id, display_name, slug, timezone, teams_join_url, slot_minutes")
+      .eq("id", bk.host_id)
+      .maybeSingle();
+    if (hErr || !host) throw new Error("Host not found");
+
+    // Resolve host email via auth.users
+    const { data: userRes, error: uErr } = await supabase.auth.admin.getUserById(host.user_id);
+    if (uErr || !userRes?.user?.email) throw new Error("Host email not found");
+    const hostEmail = userRes.user.email;
+
+    if (type === "host_pending") {
+      const respondUrl = `${origin}/booking/respond/${bk.host_action_token}`;
+      const when = fmtDate(bk.start_at, host.timezone);
+      const inner = `
+        <strong>Guest:</strong> ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;<br/>
+        <strong>When:</strong> ${esc(when)} (${esc(host.timezone)})<br/>
+        <strong>Duration:</strong> ${esc(host.slot_minutes)} mins
+        ${bk.notes ? `<br/><strong>Notes:</strong> ${esc(bk.notes)}` : ""}
+      `;
+      const footer = `
+        <p style="margin:0 0 10px;font-weight:600;">Respond to this request:</p>
+        ${btn(`${respondUrl}?action=accepted`, "Accept", "#16a34a")}
+        ${btn(`${respondUrl}?action=declined`, "Decline", "#dc2626")}
+        ${btn(`${respondUrl}?action=reschedule`, "Propose new time", "#2563eb")}
+        <p style="font-size:12px;color:#666;margin:12px 0 0;">Or open the link to respond: <a href="${respondUrl}">${respondUrl}</a></p>
+      `;
+      const html = wrap(
+        "New meeting request",
+        `${esc(bk.guest_name)} requested to book time with you.`,
+        inner,
+        footer,
+      );
+      await sendMail(hostEmail, `Meeting request from ${bk.guest_name}`, html);
+      return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (type === "guest_response") {
+      // Email guest about host's response
+      const hostName = host.display_name;
+      const teams = host.teams_join_url;
+      let subject = "";
+      let inner = "";
+      let footer = "";
+      let title = "";
+      let intro = "";
+
+      if (bk.host_response === "accepted") {
+        title = "Your meeting is confirmed";
+        subject = `Meeting confirmed with ${hostName}`;
+        intro = `${esc(hostName)} accepted your meeting request.`;
+        inner = `
+          <strong>When:</strong> ${esc(fmtDate(bk.start_at, host.timezone))} (${esc(host.timezone)})<br/>
+          <strong>Host:</strong> ${esc(hostName)}
+          ${bk.host_message ? `<br/><strong>Message:</strong> ${esc(bk.host_message)}` : ""}
+        `;
+        footer = teams ? btn(teams, "Join Microsoft Teams meeting", "#2563eb") : "";
+      } else if (bk.host_response === "declined") {
+        title = "Your meeting request was declined";
+        subject = `Meeting request declined by ${hostName}`;
+        intro = `Unfortunately, ${esc(hostName)} is not able to meet at the requested time.`;
+        inner = `
+          <strong>Requested time:</strong> ${esc(fmtDate(bk.start_at, host.timezone))}
+          ${bk.host_message ? `<br/><strong>Message:</strong> ${esc(bk.host_message)}` : ""}
+        `;
+        footer = `<a href="${origin}/meet/${esc(host.slug)}" style="color:#2563eb;">Book a different time</a>`;
+      } else if (bk.host_response === "reschedule" && bk.proposed_start_at) {
+        title = "New time proposed";
+        subject = `${hostName} proposed a new time`;
+        intro = `${esc(hostName)} can't meet at the originally requested time and proposed a new one. Please accept or decline.`;
+        const confirmUrl = `${origin}/booking/confirm/${bk.guest_action_token}`;
+        inner = `
+          <strong>Originally requested:</strong> ${esc(fmtDate(bk.start_at, host.timezone))}<br/>
+          <strong>Proposed new time:</strong> ${esc(fmtDate(bk.proposed_start_at, host.timezone))} (${esc(host.timezone)})
+          ${bk.host_message ? `<br/><strong>Message:</strong> ${esc(bk.host_message)}` : ""}
+        `;
+        footer = `
+          ${btn(`${confirmUrl}?decision=accept`, "Accept new time", "#16a34a")}
+          ${btn(`${confirmUrl}?decision=decline`, "Decline", "#dc2626")}
+          <p style="font-size:12px;color:#666;margin:12px 0 0;">Or open: <a href="${confirmUrl}">${confirmUrl}</a></p>
+        `;
+      } else {
+        throw new Error("Unexpected host_response state");
+      }
+
+      const html = wrap(title, intro, inner, footer);
+      await sendMail(bk.guest_email, subject, html);
+      return new Response(JSON.stringify({ success: true, sent_to: bk.guest_email }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (type === "host_confirmed") {
+      // Notify host of guest's decision on proposed reschedule
+      const accepted = bk.guest_decision === "accepted";
+      const title = accepted ? "Reschedule accepted" : "Reschedule declined";
+      const subject = accepted ? `${bk.guest_name} accepted the new time` : `${bk.guest_name} declined the new time`;
+      const intro = accepted
+        ? `${esc(bk.guest_name)} accepted your proposed new time. The meeting is confirmed.`
+        : `${esc(bk.guest_name)} declined the proposed new time. The booking has been cancelled.`;
+      const inner = `
+        <strong>Guest:</strong> ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;<br/>
+        <strong>Final time:</strong> ${esc(fmtDate(bk.start_at, host.timezone))} (${esc(host.timezone)})
+      `;
+      const footer = accepted && host.teams_join_url ? btn(host.teams_join_url, "Join Microsoft Teams meeting", "#2563eb") : "";
+      const html = wrap(title, intro, inner, footer);
+      await sendMail(hostEmail, subject, html);
+      return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: "Unknown type" }), {
+      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    console.error("meeting-emails error", err);
+    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});

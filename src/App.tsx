@@ -55,6 +55,8 @@ import ServiceDeliveryDashboard from "./pages/crm/projects/ServiceDeliveryDashbo
 import MeetingLinks from "./pages/crm/MeetingLinks";
 import BookMeeting from "./pages/BookMeeting";
 import BookingManage from "./pages/BookingManage";
+import BookingRespond from "./pages/BookingRespond";
+import BookingConfirm from "./pages/BookingConfirm";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +85,8 @@ const App = () => (
 
               {/* Public meeting booking pages */}
               <Route path="/booking/:token" element={<BookingManage />} />
+              <Route path="/booking/respond/:token" element={<BookingRespond />} />
+              <Route path="/booking/confirm/:token" element={<BookingConfirm />} />
               <Route path="/meet/:slug" element={<BookMeeting />} />
 
               {/* CRM routes */}
