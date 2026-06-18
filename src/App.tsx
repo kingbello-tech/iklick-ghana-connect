@@ -52,6 +52,9 @@ import MyPayslipsStub from "./pages/crm/MyPayslipsStub";
 import ProjectList from "./pages/crm/projects/ProjectList";
 import ProjectDetail from "./pages/crm/projects/ProjectDetail";
 import ServiceDeliveryDashboard from "./pages/crm/projects/ServiceDeliveryDashboard";
+import MeetingLinks from "./pages/crm/MeetingLinks";
+import BookMeeting from "./pages/BookMeeting";
+import BookingManage from "./pages/BookingManage";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +80,10 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/survey/:token" element={<SurveyPage />} />
               <Route path="/intake/:token" element={<IntakeForm />} />
+
+              {/* Public meeting booking pages */}
+              <Route path="/booking/:token" element={<BookingManage />} />
+              <Route path="/meet/:slug" element={<BookMeeting />} />
 
               {/* CRM routes */}
               <Route path="/crm" element={<ProtectedRoute><CRMLayout /></ProtectedRoute>}>
@@ -127,8 +134,11 @@ const App = () => (
                 <Route path="hr/payroll-runs" element={<ProtectedRoute allowedRoles={HR_ROLES}><PayrollRunsStub /></ProtectedRoute>} />
                 <Route path="hr/statutory-reports" element={<ProtectedRoute allowedRoles={HR_ROLES}><StatutoryReportsStub /></ProtectedRoute>} />
                 <Route path="me/payslips" element={<MyPayslipsStub />} />
+                <Route path="meeting-links" element={<MeetingLinks />} />
               </Route>
 
+              {/* Subdomain-style root slug booking. Keep last so it doesn't shadow other routes. */}
+              <Route path="/:slug" element={<BookMeeting />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>
