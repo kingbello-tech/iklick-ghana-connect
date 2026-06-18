@@ -53,6 +53,7 @@ import ProjectList from "./pages/crm/projects/ProjectList";
 import ProjectDetail from "./pages/crm/projects/ProjectDetail";
 import ServiceDeliveryDashboard from "./pages/crm/projects/ServiceDeliveryDashboard";
 import MeetingLinks from "./pages/crm/MeetingLinks";
+import OutlookCallback from "./pages/crm/OutlookCallback";
 import BookMeeting from "./pages/BookMeeting";
 import BookingManage from "./pages/BookingManage";
 import BookingRespond from "./pages/BookingRespond";
@@ -139,6 +140,7 @@ const App = () => (
                 <Route path="hr/statutory-reports" element={<ProtectedRoute allowedRoles={HR_ROLES}><StatutoryReportsStub /></ProtectedRoute>} />
                 <Route path="me/payslips" element={<MyPayslipsStub />} />
                 <Route path="meeting-links" element={<MeetingLinks />} />
+                <Route path="outlook/callback" element={<OutlookCallback />} />
               </Route>
 
               {/* Subdomain-style root slug booking. Keep last so it doesn't shadow other routes. */}

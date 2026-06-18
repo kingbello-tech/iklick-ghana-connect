@@ -12,7 +12,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
+const GRAPH_URL = "https://graph.microsoft.com/v1.0";
 const DEFAULT_APP_ORIGIN = "https://iklickgh.com";
 
 const esc = (s: unknown): string => {
@@ -48,18 +48,53 @@ const wrap = (title: string, intro: string, inner: string, footer = "") => `
 const btn = (href: string, label: string, bg: string) =>
   `<a href="${href}" style="display:inline-block;background:${bg};color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600;margin:4px 6px 4px 0;">${esc(label)}</a>`;
 
-const sendMail = async (to: string, subject: string, html: string) => {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
-  if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
-  if (!OUTLOOK_KEY) throw new Error("MICROSOFT_OUTLOOK_API_KEY missing");
+const getValidAccessToken = async (sb: any, hostUserId: string): Promise<string> => {
+  const { data: tok, error } = await sb
+    .from("meeting_host_outlook_tokens")
+    .select("access_token, refresh_token, expires_at")
+    .eq("user_id", hostUserId)
+    .maybeSingle();
+  if (error || !tok) throw new Error("Host has not connected their Outlook mailbox");
+  if (new Date(tok.expires_at).getTime() > Date.now() + 30_000) return tok.access_token;
 
-  const res = await fetch(`${GATEWAY_URL}/me/sendMail`, {
+  // Refresh
+  const TENANT = Deno.env.get("MS_OAUTH_TENANT_ID");
+  const CLIENT_ID = Deno.env.get("MS_OAUTH_CLIENT_ID");
+  const CLIENT_SECRET = Deno.env.get("MS_OAUTH_CLIENT_SECRET");
+  if (!TENANT || !CLIENT_ID || !CLIENT_SECRET) throw new Error("Microsoft OAuth credentials not configured");
+
+  const res = await fetch(`https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/token`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: CLIENT_ID,
+      client_secret: CLIENT_SECRET,
+      grant_type: "refresh_token",
+      refresh_token: tok.refresh_token,
+      scope: "offline_access openid profile email User.Read Mail.Send",
+    }).toString(),
+  });
+  const j = await res.json();
+  if (!res.ok) throw new Error(`Outlook token refresh failed: ${j.error_description || j.error || res.status}`);
+
+  const newExpires = new Date(Date.now() + (j.expires_in - 60) * 1000).toISOString();
+  await sb.from("meeting_host_outlook_tokens").update({
+    access_token: j.access_token,
+    refresh_token: j.refresh_token ?? tok.refresh_token,
+    expires_at: newExpires,
+    updated_at: new Date().toISOString(),
+  }).eq("user_id", hostUserId);
+
+  return j.access_token as string;
+};
+
+const sendMail = async (sb: any, hostUserId: string, to: string, subject: string, html: string) => {
+  const accessToken = await getValidAccessToken(sb, hostUserId);
+  const res = await fetch(`${GRAPH_URL}/me/sendMail`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "X-Connection-Api-Key": OUTLOOK_KEY,
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
       message: {
@@ -67,6 +102,7 @@ const sendMail = async (to: string, subject: string, html: string) => {
         body: { contentType: "HTML", content: html },
         toRecipients: [{ emailAddress: { address: to } }],
       },
+      saveToSentItems: true,
     }),
   });
   if (!res.ok && res.status !== 202) {
@@ -136,7 +172,7 @@ Deno.serve(async (req) => {
         inner,
         footer,
       );
-      await sendMail(hostEmail, `Meeting request from ${bk.guest_name}`, html);
+      await sendMail(supabase, host.user_id, hostEmail, `Meeting request from ${bk.guest_name}`, html);
       return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -191,7 +227,7 @@ Deno.serve(async (req) => {
       }
 
       const html = wrap(title, intro, inner, footer);
-      await sendMail(bk.guest_email, subject, html);
+      await sendMail(supabase, host.user_id, bk.guest_email, subject, html);
       return new Response(JSON.stringify({ success: true, sent_to: bk.guest_email }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -211,7 +247,7 @@ Deno.serve(async (req) => {
       `;
       const footer = accepted && host.teams_join_url ? btn(host.teams_join_url, "Join Microsoft Teams meeting", "#2563eb") : "";
       const html = wrap(title, intro, inner, footer);
-      await sendMail(hostEmail, subject, html);
+      await sendMail(supabase, host.user_id, hostEmail, subject, html);
       return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

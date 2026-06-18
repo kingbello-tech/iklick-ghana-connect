@@ -2769,27 +2769,6 @@ export type Database = {
           },
         ]
       }
-      meeting_host_outlook_status: {
-        Row: {
-          expires_at: string | null
-          outlook_email: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          expires_at?: string | null
-          outlook_email?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          expires_at?: string | null
-          outlook_email?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       auto_escalate_stale_incidents: { Args: never; Returns: number }
@@ -2876,6 +2855,14 @@ export type Database = {
           status: string
           teams_join_url: string
           timezone: string
+        }[]
+      }
+      get_my_outlook_connection: {
+        Args: never
+        Returns: {
+          expires_at: string
+          outlook_email: string
+          updated_at: string
         }[]
       }
       get_user_role: {
