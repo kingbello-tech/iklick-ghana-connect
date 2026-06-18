@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat, Video } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -295,6 +295,14 @@ export function CRMSidebar() {
                     <Link to="/crm/me/payslips" className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
                       <Receipt className="h-4 w-4 shrink-0" />
                       {!collapsed && <span>My Payslips</span>}
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/crm/meeting-links")}>
+                    <Link to="/crm/meeting-links" className="flex items-center gap-3 text-muted-foreground hover:text-foreground data-[active=true]:text-primary data-[active=true]:bg-primary/10">
+                      <Video className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span>Meeting Link</span>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
