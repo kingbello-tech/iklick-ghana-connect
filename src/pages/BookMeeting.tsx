@@ -191,8 +191,8 @@ export default function BookMeeting() {
               <CheckCircle2 className="h-6 w-6 text-emerald-500" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold">You're booked!</h1>
-              <p className="text-sm text-muted-foreground">A confirmation is on its way.</p>
+              <h1 className="text-xl font-semibold">Request sent!</h1>
+              <p className="text-sm text-muted-foreground">{confirmation.hostName} has been notified and will accept, decline, or propose a new time. You'll receive an email with their response.</p>
             </div>
           </div>
           <div className="rounded-lg border p-4 space-y-3 text-sm">
