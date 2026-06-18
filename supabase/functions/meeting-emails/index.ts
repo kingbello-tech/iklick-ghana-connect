@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
         inner,
         footer,
       );
-      await sendMail(hostEmail, `Meeting request from ${bk.guest_name}`, html);
+      await sendMail(supabase, host.user_id, hostEmail, `Meeting request from ${bk.guest_name}`, html);
       return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -227,7 +227,7 @@ Deno.serve(async (req) => {
       }
 
       const html = wrap(title, intro, inner, footer);
-      await sendMail(bk.guest_email, subject, html);
+      await sendMail(supabase, host.user_id, bk.guest_email, subject, html);
       return new Response(JSON.stringify({ success: true, sent_to: bk.guest_email }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
       `;
       const footer = accepted && host.teams_join_url ? btn(host.teams_join_url, "Join Microsoft Teams meeting", "#2563eb") : "";
       const html = wrap(title, intro, inner, footer);
-      await sendMail(hostEmail, subject, html);
+      await sendMail(supabase, host.user_id, hostEmail, subject, html);
       return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
