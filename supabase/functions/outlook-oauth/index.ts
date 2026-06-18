@@ -160,8 +160,21 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err) {
     console.error("outlook-oauth error", err);
+    const msg = (err as Error).message || "Unknown error";
+    let hint: string | undefined;
+    if (msg.includes("AADSTS7000215")) {
+      hint = "Microsoft rejected the client secret. In Lovable, update MS_OAUTH_CLIENT_SECRET with the secret's Value (not its ID) from Entra → App registrations → Certificates & secrets.";
+    } else if (msg.includes("AADSTS50011") || msg.includes("redirect_uri")) {
+      hint = "Redirect URI mismatch. Add the exact callback URL (…/crm/outlook/callback) to the Entra app registration's Redirect URIs.";
+    } else if (msg.includes("AADSTS650053") || msg.includes("scope")) {
+      hint = "A requested scope is not consented. Grant admin consent for Mail.Send, User.Read, and offline_access in Entra.";
+    }
     return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+    // Note: returning 200 so the client surfaces our error message instead of a generic non-2xx string.
+    return new Response(JSON.stringify({ success: false, error: msg, hint }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
