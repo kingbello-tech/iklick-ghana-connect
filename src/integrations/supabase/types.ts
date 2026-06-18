@@ -1499,6 +1499,114 @@ export type Database = {
           },
         ]
       }
+      problem_record_incidents: {
+        Row: {
+          incident_id: string
+          linked_at: string
+          linked_by: string | null
+          problem_record_id: string
+        }
+        Insert: {
+          incident_id: string
+          linked_at?: string
+          linked_by?: string | null
+          problem_record_id: string
+        }
+        Update: {
+          incident_id?: string
+          linked_at?: string
+          linked_by?: string | null
+          problem_record_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problem_record_incidents_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "problem_record_incidents_problem_record_id_fkey"
+            columns: ["problem_record_id"]
+            isOneToOne: false
+            referencedRelation: "problem_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      problem_records: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          fix_plan: string | null
+          id: string
+          issue_category: string | null
+          notes: string | null
+          owner_id: string | null
+          resolved_at: string | null
+          root_cause: string | null
+          site_id: string | null
+          status: Database["public"]["Enums"]["problem_record_status"]
+          sub_category: string | null
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          fix_plan?: string | null
+          id?: string
+          issue_category?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          resolved_at?: string | null
+          root_cause?: string | null
+          site_id?: string | null
+          status?: Database["public"]["Enums"]["problem_record_status"]
+          sub_category?: string | null
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          fix_plan?: string | null
+          id?: string
+          issue_category?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          resolved_at?: string | null
+          root_cause?: string | null
+          site_id?: string | null
+          status?: Database["public"]["Enums"]["problem_record_status"]
+          sub_category?: string | null
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "problem_records_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "problem_records_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "client_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -2493,6 +2601,68 @@ export type Database = {
         }
         Returns: undefined
       }
+      recurring_issue_patterns: {
+        Args: { _min_count?: number; _window_days?: number }
+        Returns: {
+          avg_resolution_minutes: number
+          breach_count: number
+          client_id: string
+          client_name: string
+          first_seen: string
+          incident_count: number
+          issue_category: string
+          last_seen: string
+          problem_record_id: string
+          problem_record_status: Database["public"]["Enums"]["problem_record_status"]
+          site_id: string
+          site_name: string
+          sub_category: string
+        }[]
+      }
+      recurring_pattern_incidents: {
+        Args: {
+          _client_id: string
+          _issue_category: string
+          _site_id: string
+          _sub_category: string
+          _window_days?: number
+        }
+        Returns: {
+          assigned_to: string | null
+          category_id: string | null
+          client_id: string | null
+          closed_at: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          due_at: string | null
+          first_response_at: string | null
+          id: string
+          impact: string | null
+          incident_number: string
+          issue_category: string | null
+          location: string | null
+          priority: Database["public"]["Enums"]["incident_priority"]
+          reopened_count: number
+          resolved_at: string | null
+          service_type: Database["public"]["Enums"]["service_type"] | null
+          site_id: string | null
+          source: string
+          status: Database["public"]["Enums"]["incident_status"]
+          sub_category: string | null
+          template_id: string | null
+          termination_pop: string | null
+          title: string
+          updated_at: string
+          urgency: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "incidents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       submit_survey_response: {
         Args: { _feedback: string; _rating: number; _token: string }
         Returns: undefined
@@ -2580,6 +2750,7 @@ export type Database = {
         | "card"
         | "other"
       payroll_run_status: "draft" | "approved" | "paid"
+      problem_record_status: "open" | "investigating" | "mitigated" | "resolved"
       project_health: "green" | "amber" | "red"
       project_status:
         | "planning"
@@ -2799,6 +2970,7 @@ export const Constants = {
         "other",
       ],
       payroll_run_status: ["draft", "approved", "paid"],
+      problem_record_status: ["open", "investigating", "mitigated", "resolved"],
       project_health: ["green", "amber", "red"],
       project_status: [
         "planning",
