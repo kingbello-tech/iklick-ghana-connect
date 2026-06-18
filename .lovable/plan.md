@@ -1,82 +1,54 @@
-# Client Profile — Multi-Site, Contracts, Onboarding, Performance & Churn
+## Recurring Issues Tracker
 
-## What gets built
+A new module that surfaces issues that keep coming back, so the team can act proactively instead of reactively fixing the same problem.
 
-A dedicated **Client Profile page** at `/crm/clients/:id` with tabbed sections, accessible by clicking any client in the existing client list. It centralizes everything about a client and their sites.
+### What it does
 
-### Tabs on the Client Profile
+- Groups incidents by **client + issue_category + sub_category** (and optionally **site**) over a rolling window (default last 90 days).
+- Flags a group as **recurring** when it crosses a configurable threshold (default ≥ 3 incidents in the window).
+- Shows trend (incidents/week), avg resolution time, last occurrence, SLA breaches, and the linked client/site.
+- Lets staff create a **Problem Record** from a recurring group to track root cause + permanent fix, with status (open / investigating / mitigated / resolved), owner, target date, and notes.
+- Sends a notification to Technology Manager when a new pattern crosses the threshold.
 
-1. **Overview** — Summary card (active sites, MRC total, open incidents, churn risk badge, CSAT avg), recent activity stream.
-2. **Sites** — List of all the client's sites with status, location, service type, bandwidth, go-live date. Add / edit / view site → opens a Site Detail drawer with its own sub-tabs (Contract, Onboarding, Incidents, Performance).
-3. **Contracts** — Per-site contracts (MRC, NRC, start/end, renewal date, billing reference, status). Highlights upcoming renewals.
-4. **Onboarding** — Pipeline view (Survey → Install → Test → Live) across all sites currently being onboarded, with per-stage owners, tasks, attachments.
-5. **Performance** — Per-client and per-site: incident count, MTTR, SLA compliance %, open vs resolved, monthly trend (Recharts).
-6. **Churn** — Auto-computed risk score + manual override + churn log (date, reason, retention actions).
-7. **Contacts** — Existing client contacts (reuse current component).
+### Where it lives
 
-### Sales / Tech integration
+- New page **`/crm/recurring-issues`** (sidebar entry under Technology / NOC area, visible to admin, technology_*, network_*, client_experience).
+- "View related incidents" drill-down opens the existing IncidentList filtered by the group.
+- Link on Client Detail page → "Recurring patterns for this client".
 
-- Incidents get an optional `site_id` so they can be tied to a specific site (existing incidents stay valid — site is nullable).
-- Onboarding pipeline can be auto-seeded when a deal is `closed_won` (creates a site in `survey` stage).
+### UI
 
-## Data model (new tables)
+- Top: filters (window 30/60/90/180 days, min occurrences slider, client, category, status of problem record).
+- KPI cards: Active patterns, New this week, Problem records open, Avg recurrence interval.
+- Table of recurring groups: Client · Category/Sub-category · Site · Count · Trend sparkline · Last seen · SLA breach % · Problem-record status · Actions (View incidents, Create/Open problem record).
+- Drawer for Problem Record: root cause, fix plan, owner, target date, status, activity log.
 
-```text
-client_sites
-  id, client_id, name, location, gps_address,
-  service_type, bandwidth, status (onboarding|active|suspended|churned),
-  go_live_date, notes, created_at/by, updated_at
+### Technical
 
-site_contracts
-  id, site_id, mrc, nrc, contract_start, contract_end,
-  renewal_date, contract_duration_months, billing_reference,
-  status (active|expired|cancelled|pending), notes
+New tables (with GRANTs + RLS):
 
-site_onboarding
-  id, site_id, current_stage (survey|install|test|live),
-  survey_owner, install_owner, test_owner,
-  survey_completed_at, install_completed_at, test_completed_at, live_at,
-  notes
+- `problem_records` — id, client_id, site_id, issue_category, sub_category, title, root_cause, fix_plan, owner_id, status, target_date, created_at/by, resolved_at, notes
+- `problem_record_incidents` — problem_record_id, incident_id (link table to attach incidents to a problem)
 
-site_onboarding_tasks
-  id, site_id, stage, title, assigned_to, due_date,
-  status (open|in_progress|done), completed_at, created_by
+RLS: read/write for admin, technology_manager, technology_engineer, network_manager, network_engineer, client_experience; read for support_agent.
 
-client_churn
-  client_id (PK), risk_level (low|medium|high|churned),
-  manual_override (bool), score (int 0-100),
-  reason, churned_at, last_assessed_at, notes
+Detection logic (SQL view + RPC):
 
-client_churn_log
-  id, client_id, action (status_change|retention_action),
-  from_status, to_status, notes, performed_by, performed_at
+- `recurring_issue_patterns(window_days int, min_count int)` security-definer function returning aggregated groups with counts, first/last seen, avg resolution minutes, breach %, linked problem_record_id.
+- Implemented as `SELECT client_id, issue_category, sub_category, site_id, count(*), min/max(created_at), ... FROM incidents WHERE created_at > now() - interval … GROUP BY … HAVING count(*) >= min_count`.
 
-incidents.site_id  ← new nullable FK column
-```
+Notifications:
 
-Auto-churn score is computed in a Postgres function from: recent incident volume, SLA breaches, CSAT average, overdue invoices, days since last activity. Staff can override.
+- Trigger on `incidents` insert: if the new incident causes a group to cross threshold for the first time (or in last 7 days), call `notify_role('technology_manager', 'recurring_pattern', …)`.
 
-RLS: existing patterns — authenticated read; admin / network manager / technology manager / network engineer / technology engineer / client_experience / sales for inserts/updates; admin for deletes.
+Frontend:
 
-## UI / files
+- `src/pages/crm/RecurringIssues.tsx` — list + filters + KPIs.
+- `src/components/crm/ProblemRecordDrawer.tsx` — create/edit problem record, attach incidents.
+- Add route in `App.tsx` and sidebar link.
+- React Query hooks calling the RPC and CRUD on `problem_records`.
 
-- New page: `src/pages/crm/ClientDetail.tsx` (tabs + sections)
-- New components in `src/components/crm/client/`:
-  - `ClientOverview.tsx`
-  - `SiteList.tsx` + `SiteFormDialog.tsx` + `SiteDetailDrawer.tsx`
-  - `ContractList.tsx` + `ContractFormDialog.tsx`
-  - `OnboardingBoard.tsx` (stage columns, drag via @dnd-kit) + `OnboardingTaskDialog.tsx`
-  - `ClientPerformance.tsx` (Recharts charts driven by incidents)
-  - `ChurnPanel.tsx` (auto score, manual override, churn log)
-- `ClientList.tsx` — make each row clickable, route to `/crm/clients/:id`.
-- `App.tsx` — add `/crm/clients/:id` route.
-- `IncidentCreateDialog.tsx` — add optional Site selector that appears once a client is chosen.
-- `IncidentDetail.tsx` — show site name if linked.
+### Out of scope
 
-## Notes / non-goals
-
-- No automated uptime polling — uptime/availability is out of scope (you picked Incident & SLA only).
-- No financial-health panel in this round.
-- Existing incidents remain valid; site link is optional and additive.
-
-Shall I proceed with the migration and build?
+- Auto root-cause inference / ML clustering (uses simple category+client grouping).
+- Email digest (in-app notification only for now).
