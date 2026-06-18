@@ -282,7 +282,7 @@ export default function BookMeeting() {
           </div>
         </Card>
         <p className="text-center text-xs text-muted-foreground mt-4">
-          Powered by iKlick · meet.iklick.com
+          Powered by iKlick · meet.iklickgh.com
         </p>
       </div>
     </div>
