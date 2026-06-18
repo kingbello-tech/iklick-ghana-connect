@@ -169,10 +169,7 @@ Deno.serve(async (req) => {
     } else if (msg.includes("AADSTS650053") || msg.includes("scope")) {
       hint = "A requested scope is not consented. Grant admin consent for Mail.Send, User.Read, and offline_access in Entra.";
     }
-    return new Response(JSON.stringify({ success: false, error: (err as Error).message }), {
-      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-    // Note: returning 200 so the client surfaces our error message instead of a generic non-2xx string.
+    // Return 200 so the client surfaces our error message instead of a generic non-2xx string.
     return new Response(JSON.stringify({ success: false, error: msg, hint }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
