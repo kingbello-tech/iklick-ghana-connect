@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2, Copy, ExternalLink, Plus, Trash2, Calendar as CalIcon } from "lucide-react";
+import { Loader2, Copy, ExternalLink, Plus, Trash2, Calendar as CalIcon, Mail, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 type Host = {
@@ -39,6 +40,10 @@ export default function MeetingLinks() {
   const [host, setHost] = useState<Host | null>(null);
   const [avail, setAvail] = useState<Avail[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [outlook, setOutlook] = useState<{ outlook_email: string | null; expires_at: string } | null>(null);
+  const [connecting, setConnecting] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // form fields
   const [slug, setSlug] = useState("");
@@ -55,6 +60,10 @@ export default function MeetingLinks() {
   const load = async () => {
     if (!user) return;
     setLoading(true);
+    // Load outlook connection status via SECURITY DEFINER RPC (tokens are never returned)
+    const { data: conn } = await supabase.rpc("get_my_outlook_connection");
+    const row = Array.isArray(conn) && conn.length > 0 ? conn[0] : null;
+    setOutlook(row ? { outlook_email: row.outlook_email, expires_at: row.expires_at } : null);
     const { data: hostRow } = await supabase
       .from("meeting_hosts")
       .select("*")
@@ -87,6 +96,40 @@ export default function MeetingLinks() {
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [user?.id]);
+
+  useEffect(() => {
+    if (searchParams.get("outlook") === "connected") {
+      toast.success("Outlook connected — bookings will now email from your mailbox.");
+      searchParams.delete("outlook");
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  const connectOutlook = async () => {
+    setConnecting(true);
+    try {
+      const redirect_uri = `${window.location.origin}/crm/outlook/callback`;
+      const { data, error } = await supabase.functions.invoke("outlook-oauth", {
+        body: { action: "start", redirect_uri },
+      });
+      if (error || !data?.url) throw new Error(error?.message || "Failed to start connection");
+      window.location.href = data.url;
+    } catch (e: any) {
+      toast.error(e.message || "Failed to connect Outlook");
+      setConnecting(false);
+    }
+  };
+
+  const disconnectOutlook = async () => {
+    if (!confirm("Disconnect your Outlook mailbox? New bookings will be blocked until you reconnect.")) return;
+    setDisconnecting(true);
+    const { error } = await supabase.from("meeting_host_outlook_tokens").delete().eq("user_id", user!.id);
+    setDisconnecting(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Outlook disconnected");
+    setOutlook(null);
+  };
 
   const saveProfile = async () => {
     if (!user) return;
@@ -135,6 +178,47 @@ export default function MeetingLinks() {
         <h1 className="text-2xl font-semibold">Meeting Link</h1>
         <p className="text-sm text-muted-foreground">Share a single link for people to book time with you on Microsoft Teams.</p>
       </div>
+
+      <Card className="p-5">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div className="flex items-start gap-3 min-w-0">
+            <Mail className="h-5 w-5 mt-0.5 text-primary shrink-0" />
+            <div className="min-w-0">
+              <p className="font-medium flex items-center gap-2">
+                Outlook mailbox
+                {outlook ? (
+                  <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400 font-normal"><CheckCircle2 className="h-3 w-3" />Connected</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400 font-normal"><AlertTriangle className="h-3 w-3" />Not connected</span>
+                )}
+              </p>
+              {outlook ? (
+                <p className="text-xs text-muted-foreground truncate">
+                  Booking emails are sent from <span className="font-mono">{outlook.outlook_email ?? "your mailbox"}</span>.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Connect your Microsoft 365 account so booking emails come from your own mailbox. Bookings are blocked until you connect.</p>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            {outlook ? (
+              <>
+                <Button variant="outline" size="sm" onClick={connectOutlook} disabled={connecting}>
+                  {connecting && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}Reconnect
+                </Button>
+                <Button variant="ghost" size="sm" onClick={disconnectOutlook} disabled={disconnecting}>
+                  {disconnecting && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}Disconnect
+                </Button>
+              </>
+            ) : (
+              <Button size="sm" onClick={connectOutlook} disabled={connecting}>
+                {connecting && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}Connect Outlook
+              </Button>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {host && (
         <Card className="p-5 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
