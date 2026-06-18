@@ -146,6 +146,14 @@ export default function BookMeeting() {
       teamsUrl: row.teams_join_url,
       hostName: row.display_name,
     });
+    // Fire-and-forget email notification to host
+    supabase.functions.invoke("meeting-emails", {
+      body: {
+        type: "host_pending",
+        booking_id: row.booking_id,
+        app_origin: window.location.origin,
+      },
+    }).catch((e) => console.warn("notify host failed", e));
   };
 
   const downloadCalendar = () => {
