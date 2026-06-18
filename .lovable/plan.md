@@ -1,54 +1,47 @@
-## Recurring Issues Tracker
+Build a lightweight scheduler at `meet.iklick.com/{slug}` where visitors book a slot and get a static Teams meeting link (admin-managed per user) plus a calendar invite.
 
-A new module that surfaces issues that keep coming back, so the team can act proactively instead of reactively fixing the same problem.
+## Flow
 
-### What it does
+1. Visitor opens `meet.iklick.com/john` (or `/meet/john` fallback).
+2. Sees host's name/title/photo + a 7-day availability grid (slots derived from host's working hours and existing bookings).
+3. Picks slot → enters name, email, optional notes → confirms.
+4. App stores booking, emails visitor + host with the host's static Teams URL and an `.ics` calendar attachment.
 
-- Groups incidents by **client + issue_category + sub_category** (and optionally **site**) over a rolling window (default last 90 days).
-- Flags a group as **recurring** when it crosses a configurable threshold (default ≥ 3 incidents in the window).
-- Shows trend (incidents/week), avg resolution time, last occurrence, SLA breaches, and the linked client/site.
-- Lets staff create a **Problem Record** from a recurring group to track root cause + permanent fix, with status (open / investigating / mitigated / resolved), owner, target date, and notes.
-- Sends a notification to Technology Manager when a new pattern crosses the threshold.
+## Data (new tables)
 
-### Where it lives
+- `meeting_hosts`: `user_id`, `slug` (unique), `display_name`, `title`, `teams_join_url`, `timezone`, `slot_minutes` (default 30), `buffer_minutes`, `avatar_url`, `is_active`.
+- `meeting_availability`: `host_id`, `weekday` (0–6), `start_time`, `end_time`. Multiple rows per host.
+- `meeting_blackouts`: `host_id`, `start_at`, `end_at`, `reason` (manual time-off).
+- `meeting_bookings`: `host_id`, `start_at`, `end_at`, `guest_name`, `guest_email`, `notes`, `status` (`confirmed`/`cancelled`), `cancel_token`, `created_at`.
 
-- New page **`/crm/recurring-issues`** (sidebar entry under Technology / NOC area, visible to admin, technology_*, network_*, client_experience).
-- "View related incidents" drill-down opens the existing IncidentList filtered by the group.
-- Link on Client Detail page → "Recurring patterns for this client".
+RLS: hosts manage own rows; `anon` can `SELECT` active hosts + availability + future bookings (for slot conflict checks) and `INSERT` a booking via a SECURITY DEFINER RPC `book_meeting(slug, start_at, name, email, notes)` that validates the slot is in availability, not blacked out, and not double-booked.
 
-### UI
+## Public booking page
 
-- Top: filters (window 30/60/90/180 days, min occurrences slider, client, category, status of problem record).
-- KPI cards: Active patterns, New this week, Problem records open, Avg recurrence interval.
-- Table of recurring groups: Client · Category/Sub-category · Site · Count · Trend sparkline · Last seen · SLA breach % · Problem-record status · Actions (View incidents, Create/Open problem record).
-- Drawer for Problem Record: root cause, fix plan, owner, target date, status, activity log.
+- Route `/{slug}` on a dedicated public layout (no CRM chrome). Also `/meet/{slug}` as fallback if subdomain DNS isn't ready.
+- React component fetches host + availability + upcoming bookings via anon client, generates slots client-side, posts to `book_meeting` RPC.
+- On success, shows confirmation with the Teams link, "Add to calendar" `.ics` download, and reschedule/cancel link using `cancel_token`.
 
-### Technical
+## Email + calendar
 
-New tables (with GRANTs + RLS):
+- Edge function `send-booking-confirmation` (triggered after RPC success from the client): renders host + guest emails with the Teams link and an inline `.ics` (METHOD:REQUEST, ORGANIZER=host, ATTENDEE=guest, LOCATION=Teams URL, DESCRIPTION includes join link). Uses Lovable Emails (existing domain).
+- No Microsoft Graph integration — meetings reuse the host's static Teams URL, so any join lands in the host's personal room.
 
-- `problem_records` — id, client_id, site_id, issue_category, sub_category, title, root_cause, fix_plan, owner_id, status, target_date, created_at/by, resolved_at, notes
-- `problem_record_incidents` — problem_record_id, incident_id (link table to attach incidents to a problem)
+## CRM admin (signed-in users)
 
-RLS: read/write for admin, technology_manager, technology_engineer, network_manager, network_engineer, client_experience; read for support_agent.
+New page `/crm/meeting-links` (admin + all staff for own profile):
+- "My link" card: slug, Teams URL, slot length, buffer, working hours editor (weekday + start/end rows), blackout date picker, copy-link button, preview link.
+- Admin tab: table of all hosts with toggle active, edit slug/URL.
+- No signature generator — just a prominent "Copy meeting link" button (the user said link only).
 
-Detection logic (SQL view + RPC):
+Sidebar entry "Meeting Links" under Operations/Profile group.
 
-- `recurring_issue_patterns(window_days int, min_count int)` security-definer function returning aggregated groups with counts, first/last seen, avg resolution minutes, breach %, linked problem_record_id.
-- Implemented as `SELECT client_id, issue_category, sub_category, site_id, count(*), min/max(created_at), ... FROM incidents WHERE created_at > now() - interval … GROUP BY … HAVING count(*) >= min_count`.
+## Subdomain
 
-Notifications:
+`meet.iklick.com` is set up by the user as a CNAME to the Lovable app domain; the SPA routes `/{slug}` to the booking page when `window.location.hostname === 'meet.iklick.com'`, otherwise treats `/{slug}` as normal. `/meet/{slug}` works on the main domain too.
 
-- Trigger on `incidents` insert: if the new incident causes a group to cross threshold for the first time (or in last 7 days), call `notify_role('technology_manager', 'recurring_pattern', …)`.
+## Out of scope
 
-Frontend:
-
-- `src/pages/crm/RecurringIssues.tsx` — list + filters + KPIs.
-- `src/components/crm/ProblemRecordDrawer.tsx` — create/edit problem record, attach incidents.
-- Add route in `App.tsx` and sidebar link.
-- React Query hooks calling the RPC and CRUD on `problem_records`.
-
-### Out of scope
-
-- Auto root-cause inference / ML clustering (uses simple category+client grouping).
-- Email digest (in-app notification only for now).
+- Microsoft Graph / per-meeting Teams link creation
+- Outlook signature HTML generator
+- Group/round-robin scheduling, paid bookings, reminders beyond initial confirmation
