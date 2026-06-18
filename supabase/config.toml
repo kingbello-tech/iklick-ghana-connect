@@ -1,1 +1,7 @@
 project_id = "tffhtsktcaskqhvpmwuk"
+
+[functions.meeting-emails]
+verify_jwt = false
+
+[functions.submit-intake]
+verify_jwt = false
