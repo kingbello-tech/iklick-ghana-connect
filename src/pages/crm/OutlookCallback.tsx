@@ -36,7 +36,9 @@ export default function OutlookCallback() {
       .then(({ data, error }) => {
         if (error || (data && data.success === false)) {
           setStatus("error");
-          setMessage((data && data.error) || error?.message || "Failed to connect Outlook");
+          const base = (data && data.error) || error?.message || "Failed to connect Outlook";
+          const hint = data && (data as any).hint;
+          setMessage(hint ? `${base}\n\n${hint}` : base);
           return;
         }
         setStatus("success");
