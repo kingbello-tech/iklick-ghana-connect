@@ -1,0 +1,1 @@
+ALTER VIEW public.meeting_booked_slots SET (security_invoker = true);
