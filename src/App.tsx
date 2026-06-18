@@ -140,6 +140,7 @@ const App = () => (
                 <Route path="hr/statutory-reports" element={<ProtectedRoute allowedRoles={HR_ROLES}><StatutoryReportsStub /></ProtectedRoute>} />
                 <Route path="me/payslips" element={<MyPayslipsStub />} />
                 <Route path="meeting-links" element={<MeetingLinks />} />
+                <Route path="outlook/callback" element={<OutlookCallback />} />
               </Route>
 
               {/* Subdomain-style root slug booking. Keep last so it doesn't shadow other routes. */}
