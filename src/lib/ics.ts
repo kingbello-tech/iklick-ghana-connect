@@ -27,7 +27,7 @@ export function buildIcs(opts: {
     `SUMMARY:${esc(opts.summary)}`,
     `DESCRIPTION:${esc(opts.description)}`,
     `LOCATION:${esc(opts.location)}`,
-    `ORGANIZER;CN=${esc(opts.organizerName)}:mailto:${opts.organizerEmail ?? "noreply@iklick.com"}`,
+    `ORGANIZER;CN=${esc(opts.organizerName)}:mailto:${opts.organizerEmail ?? "noreply@iklickgh.com"}`,
     `ATTENDEE;CN=${esc(opts.attendeeName)};RSVP=TRUE:mailto:${opts.attendeeEmail}`,
     "STATUS:CONFIRMED",
     "END:VEVENT",
