@@ -1491,6 +1491,39 @@ export type Database = {
           },
         ]
       }
+      meeting_host_outlook_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          outlook_email: string | null
+          refresh_token: string
+          scope: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          outlook_email?: string | null
+          refresh_token: string
+          scope?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          outlook_email?: string | null
+          refresh_token?: string
+          scope?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       meeting_hosts: {
         Row: {
           advance_notice_hours: number
@@ -2735,6 +2768,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      meeting_host_outlook_status: {
+        Row: {
+          expires_at: string | null
+          outlook_email: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          expires_at?: string | null
+          outlook_email?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          expires_at?: string | null
+          outlook_email?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
