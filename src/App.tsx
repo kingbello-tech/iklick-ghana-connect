@@ -53,6 +53,7 @@ import ProjectList from "./pages/crm/projects/ProjectList";
 import ProjectDetail from "./pages/crm/projects/ProjectDetail";
 import ServiceDeliveryDashboard from "./pages/crm/projects/ServiceDeliveryDashboard";
 import MeetingLinks from "./pages/crm/MeetingLinks";
+import OutlookCallback from "./pages/crm/OutlookCallback";
 import BookMeeting from "./pages/BookMeeting";
 import BookingManage from "./pages/BookingManage";
 import BookingRespond from "./pages/BookingRespond";
