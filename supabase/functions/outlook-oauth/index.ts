@@ -36,6 +36,41 @@ const hmac = async (data: string, secret: string): Promise<string> => {
   return b64url(sig);
 };
 
+const trimSecret = (value: string | undefined): string => (value ?? "").trim();
+
+const secretFingerprint = async (secret: string): Promise<string> => {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 12);
+};
+
+const oauthDiagnostics = async (tenant: string, clientId: string, rawSecret: string | undefined, secret: string) => ({
+  tenant,
+  clientIdSuffix: clientId.slice(-8),
+  secretLength: rawSecret?.length ?? 0,
+  secretTrimmedLength: secret.length,
+  secretHadSurroundingWhitespace: (rawSecret ?? "") !== secret,
+  secretFingerprint: await secretFingerprint(secret),
+});
+
+const microsoftTokenErrorDetails = (payload: any, status: number): string => {
+  const parts = [payload?.error_description || payload?.error || `HTTP ${status}`];
+  if (Array.isArray(payload?.error_codes) && payload.error_codes.length) parts.push(`error_codes=${payload.error_codes.join(",")}`);
+  if (payload?.trace_id) parts.push(`trace_id=${payload.trace_id}`);
+  if (payload?.correlation_id) parts.push(`correlation_id=${payload.correlation_id}`);
+  return parts.join(" | ");
+};
+
+const microsoftTokenErrorLog = (payload: any, status: number) => ({
+  status,
+  error: payload?.error,
+  error_codes: payload?.error_codes,
+  trace_id: payload?.trace_id,
+  correlation_id: payload?.correlation_id,
+});
+
 const signState = async (userId: string, secret: string): Promise<string> => {
   const payload = { sub: userId, iat: Date.now(), nonce: crypto.randomUUID() };
   const body = b64url(new TextEncoder().encode(JSON.stringify(payload)));
@@ -58,12 +93,14 @@ Deno.serve(async (req) => {
   try {
     const TENANT = Deno.env.get("MS_OAUTH_TENANT_ID");
     const CLIENT_ID = Deno.env.get("MS_OAUTH_CLIENT_ID");
-    const CLIENT_SECRET = Deno.env.get("MS_OAUTH_CLIENT_SECRET");
+    const RAW_CLIENT_SECRET = Deno.env.get("MS_OAUTH_CLIENT_SECRET");
+    const CLIENT_SECRET = trimSecret(RAW_CLIENT_SECRET);
     const SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const SU = Deno.env.get("SUPABASE_URL")!;
     if (!TENANT || !CLIENT_ID || !CLIENT_SECRET) {
       throw new Error("Microsoft OAuth credentials are not configured");
     }
+    const diagnostics = await oauthDiagnostics(TENANT, CLIENT_ID, RAW_CLIENT_SECRET, CLIENT_SECRET);
 
     const body = await req.json();
     const { action, redirect_uri } = body ?? {};
@@ -122,7 +159,11 @@ Deno.serve(async (req) => {
       });
       const tokenJson = await tokenRes.json();
       if (!tokenRes.ok) {
-        throw new Error(`Token exchange failed: ${tokenJson.error_description || tokenJson.error || tokenRes.status}`);
+        console.error("outlook-oauth token exchange failed", {
+          ...diagnostics,
+          microsoft: microsoftTokenErrorLog(tokenJson, tokenRes.status),
+        });
+        throw new Error(`Token exchange failed: ${microsoftTokenErrorDetails(tokenJson, tokenRes.status)}`);
       }
       const { access_token, refresh_token, expires_in, scope } = tokenJson;
       if (!refresh_token) throw new Error("No refresh_token returned (ensure offline_access scope is granted)");
@@ -163,7 +204,7 @@ Deno.serve(async (req) => {
     const msg = (err as Error).message || "Unknown error";
     let hint: string | undefined;
     if (msg.includes("AADSTS7000215")) {
-      hint = "Microsoft rejected the client secret. In Lovable, update MS_OAUTH_CLIENT_SECRET with the secret's Value (not its ID) from Entra → App registrations → Certificates & secrets.";
+      hint = "Microsoft rejected the client secret. Verify MS_OAUTH_CLIENT_SECRET is the Entra secret Value (not Secret ID), belongs to this client ID, and was created in the tenant configured by MS_OAUTH_TENANT_ID. If the Value is no longer visible, create a new client secret and update the secret with that new Value.";
     } else if (msg.includes("AADSTS50011") || msg.includes("redirect_uri")) {
       hint = "Redirect URI mismatch. Add the exact callback URL (…/crm/outlook/callback) to the Entra app registration's Redirect URIs.";
     } else if (msg.includes("AADSTS650053") || msg.includes("scope")) {
