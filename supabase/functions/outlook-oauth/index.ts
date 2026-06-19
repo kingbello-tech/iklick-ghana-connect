@@ -36,6 +36,41 @@ const hmac = async (data: string, secret: string): Promise<string> => {
   return b64url(sig);
 };
 
+const trimSecret = (value: string | undefined): string => (value ?? "").trim();
+
+const secretFingerprint = async (secret: string): Promise<string> => {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(secret));
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 12);
+};
+
+const oauthDiagnostics = async (tenant: string, clientId: string, rawSecret: string | undefined, secret: string) => ({
+  tenant,
+  clientIdSuffix: clientId.slice(-8),
+  secretLength: rawSecret?.length ?? 0,
+  secretTrimmedLength: secret.length,
+  secretHadSurroundingWhitespace: (rawSecret ?? "") !== secret,
+  secretFingerprint: await secretFingerprint(secret),
+});
+
+const microsoftTokenErrorDetails = (payload: any, status: number): string => {
+  const parts = [payload?.error_description || payload?.error || `HTTP ${status}`];
+  if (Array.isArray(payload?.error_codes) && payload.error_codes.length) parts.push(`error_codes=${payload.error_codes.join(",")}`);
+  if (payload?.trace_id) parts.push(`trace_id=${payload.trace_id}`);
+  if (payload?.correlation_id) parts.push(`correlation_id=${payload.correlation_id}`);
+  return parts.join(" | ");
+};
+
+const microsoftTokenErrorLog = (payload: any, status: number) => ({
+  status,
+  error: payload?.error,
+  error_codes: payload?.error_codes,
+  trace_id: payload?.trace_id,
+  correlation_id: payload?.correlation_id,
+});
+
 const signState = async (userId: string, secret: string): Promise<string> => {
   const payload = { sub: userId, iat: Date.now(), nonce: crypto.randomUUID() };
   const body = b64url(new TextEncoder().encode(JSON.stringify(payload)));
