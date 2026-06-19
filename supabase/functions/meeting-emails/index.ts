@@ -73,7 +73,7 @@ const getValidAccessToken = async (sb: any, hostUserId: string): Promise<string>
       client_secret: CLIENT_SECRET,
       grant_type: "refresh_token",
       refresh_token: tok.refresh_token,
-      scope: "offline_access openid profile email User.Read Mail.Send",
+      scope: "offline_access openid profile email User.Read Mail.Send Calendars.ReadWrite",
     }).toString(),
   });
   const j = await res.json();
@@ -112,6 +112,76 @@ const sendMail = async (sb: any, hostUserId: string, to: string, subject: string
     throw new Error(`Outlook send failed [${res.status}]: ${text}`);
   }
   return true;
+};
+
+// Create a calendar event on the host's Outlook calendar.
+// Adds the guest as attendee so they also receive a calendar invite + reminder.
+const createCalendarEvent = async (
+  sb: any,
+  hostUserId: string,
+  args: {
+    subject: string;
+    bodyHtml: string;
+    startISO: string;
+    endISO: string;
+    timezone: string;
+    guestName: string;
+    guestEmail: string;
+    hostName: string;
+    hostEmail: string;
+    teamsJoinUrl?: string | null;
+  },
+): Promise<{ id: string; webLink?: string } | null> => {
+  try {
+    const accessToken = await getValidAccessToken(sb, hostUserId);
+    const location = args.teamsJoinUrl
+      ? { displayName: "Microsoft Teams Meeting" }
+      : { displayName: "Online" };
+    const bodyContent = args.teamsJoinUrl
+      ? `${args.bodyHtml}<p><a href="${args.teamsJoinUrl}">Join Microsoft Teams meeting</a></p>`
+      : args.bodyHtml;
+    const res = await fetch(`${GRAPH_URL}/me/events`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        subject: args.subject,
+        body: { contentType: "HTML", content: bodyContent },
+        start: { dateTime: args.startISO, timeZone: args.timezone || "UTC" },
+        end: { dateTime: args.endISO, timeZone: args.timezone || "UTC" },
+        location,
+        isReminderOn: true,
+        reminderMinutesBeforeStart: 15,
+        attendees: [
+          {
+            emailAddress: { address: args.guestEmail, name: args.guestName },
+            type: "required",
+          },
+        ],
+      }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error("createCalendarEvent failed", res.status, json);
+      return null;
+    }
+    return { id: json.id, webLink: json.webLink };
+  } catch (err) {
+    console.error("createCalendarEvent error", err);
+    return null;
+  }
+};
+
+// Microsoft Graph wants datetimes without the timezone offset when timeZone is given.
+const toGraphDateTime = (iso: string): string => {
+  if (!iso) return iso;
+  // Strip trailing Z or +/-HH:MM offset, keep milliseconds out
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.0000000`;
 };
 
 Deno.serve(async (req) => {
