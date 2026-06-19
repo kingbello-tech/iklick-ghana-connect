@@ -48,6 +48,8 @@ const wrap = (title: string, intro: string, inner: string, footer = "") => `
 const btn = (href: string, label: string, bg: string) =>
   `<a href="${href}" style="display:inline-block;background:${bg};color:#fff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600;margin:4px 6px 4px 0;">${esc(label)}</a>`;
 
+const trimSecret = (value: string | undefined): string => (value ?? "").trim();
+
 const getValidAccessToken = async (sb: any, hostUserId: string): Promise<string> => {
   const { data: tok, error } = await sb
     .from("meeting_host_outlook_tokens")
@@ -60,7 +62,7 @@ const getValidAccessToken = async (sb: any, hostUserId: string): Promise<string>
   // Refresh
   const TENANT = Deno.env.get("MS_OAUTH_TENANT_ID");
   const CLIENT_ID = Deno.env.get("MS_OAUTH_CLIENT_ID");
-  const CLIENT_SECRET = Deno.env.get("MS_OAUTH_CLIENT_SECRET");
+  const CLIENT_SECRET = trimSecret(Deno.env.get("MS_OAUTH_CLIENT_SECRET"));
   if (!TENANT || !CLIENT_ID || !CLIENT_SECRET) throw new Error("Microsoft OAuth credentials not configured");
 
   const res = await fetch(`https://login.microsoftonline.com/${TENANT}/oauth2/v2.0/token`, {
