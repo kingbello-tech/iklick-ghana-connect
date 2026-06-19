@@ -73,7 +73,7 @@ const getValidAccessToken = async (sb: any, hostUserId: string): Promise<string>
       client_secret: CLIENT_SECRET,
       grant_type: "refresh_token",
       refresh_token: tok.refresh_token,
-      scope: "offline_access openid profile email User.Read Mail.Send",
+      scope: "offline_access openid profile email User.Read Mail.Send Calendars.ReadWrite",
     }).toString(),
   });
   const j = await res.json();
@@ -112,6 +112,76 @@ const sendMail = async (sb: any, hostUserId: string, to: string, subject: string
     throw new Error(`Outlook send failed [${res.status}]: ${text}`);
   }
   return true;
+};
+
+// Create a calendar event on the host's Outlook calendar.
+// Adds the guest as attendee so they also receive a calendar invite + reminder.
+const createCalendarEvent = async (
+  sb: any,
+  hostUserId: string,
+  args: {
+    subject: string;
+    bodyHtml: string;
+    startISO: string;
+    endISO: string;
+    timezone: string;
+    guestName: string;
+    guestEmail: string;
+    hostName: string;
+    hostEmail: string;
+    teamsJoinUrl?: string | null;
+  },
+): Promise<{ id: string; webLink?: string } | null> => {
+  try {
+    const accessToken = await getValidAccessToken(sb, hostUserId);
+    const location = args.teamsJoinUrl
+      ? { displayName: "Microsoft Teams Meeting" }
+      : { displayName: "Online" };
+    const bodyContent = args.teamsJoinUrl
+      ? `${args.bodyHtml}<p><a href="${args.teamsJoinUrl}">Join Microsoft Teams meeting</a></p>`
+      : args.bodyHtml;
+    const res = await fetch(`${GRAPH_URL}/me/events`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        subject: args.subject,
+        body: { contentType: "HTML", content: bodyContent },
+        start: { dateTime: args.startISO, timeZone: args.timezone || "UTC" },
+        end: { dateTime: args.endISO, timeZone: args.timezone || "UTC" },
+        location,
+        isReminderOn: true,
+        reminderMinutesBeforeStart: 15,
+        attendees: [
+          {
+            emailAddress: { address: args.guestEmail, name: args.guestName },
+            type: "required",
+          },
+        ],
+      }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      console.error("createCalendarEvent failed", res.status, json);
+      return null;
+    }
+    return { id: json.id, webLink: json.webLink };
+  } catch (err) {
+    console.error("createCalendarEvent error", err);
+    return null;
+  }
+};
+
+// Microsoft Graph wants datetimes without the timezone offset when timeZone is given.
+const toGraphDateTime = (iso: string): string => {
+  if (!iso) return iso;
+  // Strip trailing Z or +/-HH:MM offset, keep milliseconds out
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}.0000000`;
 };
 
 Deno.serve(async (req) => {
@@ -200,6 +270,19 @@ Deno.serve(async (req) => {
           ${bk.host_message ? `<br/><strong>Message:</strong> ${esc(bk.host_message)}` : ""}
         `;
         footer = teams ? btn(teams, "Join Microsoft Teams meeting", "#2563eb") : "";
+        // Add to host's Outlook calendar (with guest as attendee so they get an invite + reminder)
+        await createCalendarEvent(supabase, host.user_id, {
+          subject: `Meeting with ${bk.guest_name}`,
+          bodyHtml: `<p>Meeting with ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;</p>${bk.notes ? `<p>${esc(bk.notes)}</p>` : ""}`,
+          startISO: toGraphDateTime(bk.start_at),
+          endISO: toGraphDateTime(bk.end_at),
+          timezone: "UTC",
+          guestName: bk.guest_name,
+          guestEmail: bk.guest_email,
+          hostName,
+          hostEmail,
+          teamsJoinUrl: teams,
+        });
       } else if (bk.host_response === "declined") {
         title = "Your meeting request was declined";
         subject = `Meeting request declined by ${hostName}`;
@@ -250,6 +333,20 @@ Deno.serve(async (req) => {
       const footer = accepted && host.teams_join_url ? btn(host.teams_join_url, "Join Microsoft Teams meeting", "#2563eb") : "";
       const html = wrap(title, intro, inner, footer);
       await sendMail(supabase, host.user_id, hostEmail, subject, html);
+      if (accepted) {
+        await createCalendarEvent(supabase, host.user_id, {
+          subject: `Meeting with ${bk.guest_name}`,
+          bodyHtml: `<p>Meeting with ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;</p>${bk.notes ? `<p>${esc(bk.notes)}</p>` : ""}`,
+          startISO: toGraphDateTime(bk.start_at),
+          endISO: toGraphDateTime(bk.end_at),
+          timezone: "UTC",
+          guestName: bk.guest_name,
+          guestEmail: bk.guest_email,
+          hostName: host.display_name,
+          hostEmail,
+          teamsJoinUrl: host.teams_join_url,
+        });
+      }
       return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

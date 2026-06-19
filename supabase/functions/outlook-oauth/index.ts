@@ -10,7 +10,7 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const SCOPES = "offline_access openid profile email User.Read Mail.Send";
+const SCOPES = "offline_access openid profile email User.Read Mail.Send Calendars.ReadWrite";
 
 const b64url = (buf: ArrayBuffer | Uint8Array): string => {
   const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
