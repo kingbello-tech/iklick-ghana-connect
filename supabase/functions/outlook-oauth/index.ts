@@ -204,7 +204,7 @@ Deno.serve(async (req) => {
     const msg = (err as Error).message || "Unknown error";
     let hint: string | undefined;
     if (msg.includes("AADSTS7000215")) {
-      hint = "Microsoft rejected the client secret. In Lovable, update MS_OAUTH_CLIENT_SECRET with the secret's Value (not its ID) from Entra → App registrations → Certificates & secrets.";
+      hint = "Microsoft rejected the client secret. Verify MS_OAUTH_CLIENT_SECRET is the Entra secret Value (not Secret ID), belongs to this client ID, and was created in the tenant configured by MS_OAUTH_TENANT_ID. If the Value is no longer visible, create a new client secret and update the secret with that new Value.";
     } else if (msg.includes("AADSTS50011") || msg.includes("redirect_uri")) {
       hint = "Redirect URI mismatch. Add the exact callback URL (…/crm/outlook/callback) to the Entra app registration's Redirect URIs.";
     } else if (msg.includes("AADSTS650053") || msg.includes("scope")) {
