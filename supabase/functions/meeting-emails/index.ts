@@ -270,6 +270,19 @@ Deno.serve(async (req) => {
           ${bk.host_message ? `<br/><strong>Message:</strong> ${esc(bk.host_message)}` : ""}
         `;
         footer = teams ? btn(teams, "Join Microsoft Teams meeting", "#2563eb") : "";
+        // Add to host's Outlook calendar (with guest as attendee so they get an invite + reminder)
+        await createCalendarEvent(supabase, host.user_id, {
+          subject: `Meeting with ${bk.guest_name}`,
+          bodyHtml: `<p>Meeting with ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;</p>${bk.notes ? `<p>${esc(bk.notes)}</p>` : ""}`,
+          startISO: toGraphDateTime(bk.start_at),
+          endISO: toGraphDateTime(bk.end_at),
+          timezone: "UTC",
+          guestName: bk.guest_name,
+          guestEmail: bk.guest_email,
+          hostName,
+          hostEmail,
+          teamsJoinUrl: teams,
+        });
       } else if (bk.host_response === "declined") {
         title = "Your meeting request was declined";
         subject = `Meeting request declined by ${hostName}`;
@@ -320,6 +333,20 @@ Deno.serve(async (req) => {
       const footer = accepted && host.teams_join_url ? btn(host.teams_join_url, "Join Microsoft Teams meeting", "#2563eb") : "";
       const html = wrap(title, intro, inner, footer);
       await sendMail(supabase, host.user_id, hostEmail, subject, html);
+      if (accepted) {
+        await createCalendarEvent(supabase, host.user_id, {
+          subject: `Meeting with ${bk.guest_name}`,
+          bodyHtml: `<p>Meeting with ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;</p>${bk.notes ? `<p>${esc(bk.notes)}</p>` : ""}`,
+          startISO: toGraphDateTime(bk.start_at),
+          endISO: toGraphDateTime(bk.end_at),
+          timezone: "UTC",
+          guestName: bk.guest_name,
+          guestEmail: bk.guest_email,
+          hostName: host.display_name,
+          hostEmail,
+          teamsJoinUrl: host.teams_join_url,
+        });
+      }
       return new Response(JSON.stringify({ success: true, sent_to: hostEmail }), {
         status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
