@@ -283,6 +283,21 @@ Deno.serve(async (req) => {
           hostEmail,
           teamsJoinUrl: teams,
         });
+        // Also email the host (staff) a confirmation with the join link
+        const hostInner = `
+          <strong>Guest:</strong> ${esc(bk.guest_name)} &lt;${esc(bk.guest_email)}&gt;<br/>
+          <strong>When:</strong> ${esc(fmtDate(bk.start_at, host.timezone))} (${esc(host.timezone)})<br/>
+          <strong>Duration:</strong> ${esc(host.slot_minutes)} mins
+          ${bk.notes ? `<br/><strong>Notes:</strong> ${esc(bk.notes)}` : ""}
+        `;
+        const hostFooter = teams ? btn(teams, "Join Microsoft Teams meeting", "#2563eb") : "";
+        const hostHtml = wrap(
+          "Meeting confirmed",
+          `You accepted the meeting request from ${esc(bk.guest_name)}. It has been added to your Outlook calendar with a 15-minute reminder.`,
+          hostInner,
+          hostFooter,
+        );
+        await sendMail(supabase, host.user_id, hostEmail, `Meeting confirmed with ${bk.guest_name}`, hostHtml);
       } else if (bk.host_response === "declined") {
         title = "Your meeting request was declined";
         subject = `Meeting request declined by ${hostName}`;
