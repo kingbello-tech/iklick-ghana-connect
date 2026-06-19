@@ -93,12 +93,14 @@ Deno.serve(async (req) => {
   try {
     const TENANT = Deno.env.get("MS_OAUTH_TENANT_ID");
     const CLIENT_ID = Deno.env.get("MS_OAUTH_CLIENT_ID");
-    const CLIENT_SECRET = Deno.env.get("MS_OAUTH_CLIENT_SECRET");
+    const RAW_CLIENT_SECRET = Deno.env.get("MS_OAUTH_CLIENT_SECRET");
+    const CLIENT_SECRET = trimSecret(RAW_CLIENT_SECRET);
     const SR = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const SU = Deno.env.get("SUPABASE_URL")!;
     if (!TENANT || !CLIENT_ID || !CLIENT_SECRET) {
       throw new Error("Microsoft OAuth credentials are not configured");
     }
+    const diagnostics = await oauthDiagnostics(TENANT, CLIENT_ID, RAW_CLIENT_SECRET, CLIENT_SECRET);
 
     const body = await req.json();
     const { action, redirect_uri } = body ?? {};
@@ -157,7 +159,11 @@ Deno.serve(async (req) => {
       });
       const tokenJson = await tokenRes.json();
       if (!tokenRes.ok) {
-        throw new Error(`Token exchange failed: ${tokenJson.error_description || tokenJson.error || tokenRes.status}`);
+        console.error("outlook-oauth token exchange failed", {
+          ...diagnostics,
+          microsoft: microsoftTokenErrorLog(tokenJson, tokenRes.status),
+        });
+        throw new Error(`Token exchange failed: ${microsoftTokenErrorDetails(tokenJson, tokenRes.status)}`);
       }
       const { access_token, refresh_token, expires_in, scope } = tokenJson;
       if (!refresh_token) throw new Error("No refresh_token returned (ensure offline_access scope is granted)");
