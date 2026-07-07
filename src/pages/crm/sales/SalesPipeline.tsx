@@ -11,9 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check } from "lucide-react";
+import { Plus, Calendar, Percent, ClipboardCheck, Wrench, Trash2, FileText, Check, Pencil } from "lucide-react";
 import { Search, X } from "lucide-react";
 import { Attachments } from "@/components/crm/Attachments";
+import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
+import { format } from "date-fns";
 
 const STAGES = [
   { value: "new_lead", label: "Lead", color: "bg-blue-500" },
@@ -46,6 +48,7 @@ interface Deal {
   probability: number;
   stage: string;
   assigned_to: string | null;
+  client_id: string | null;
   notes: string | null;
   created_by: string;
   created_at: string;
@@ -112,6 +115,8 @@ export default function SalesPipeline() {
   const [filterStage, setFilterStage] = useState("__all__");
   const [filterCategory, setFilterCategory] = useState("__all__");
   const [filterAssignee, setFilterAssignee] = useState("__all__");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const fetchData = async () => {
     const [dealsRes, profilesRes, clientsRes, surveysRes, quotesRes] = await Promise.all([
@@ -132,6 +137,19 @@ export default function SalesPipeline() {
   useEffect(() => { fetchData(); }, []);
 
   const profileMap = Object.fromEntries(profiles.map(p => [p.user_id, p.full_name || "Unknown"]));
+  const clientMap = Object.fromEntries(clients.map(c => [c.id, c.name]));
+  const stageBadgeClass = (stage: string) => {
+    const map: Record<string, string> = {
+      new_lead: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
+      qualification: "bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30",
+      site_survey: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border-yellow-500/30",
+      proposal_sent: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/30",
+      negotiation: "bg-pink-500/15 text-pink-700 dark:text-pink-400 border-pink-500/30",
+      closed_won: "bg-green-500/15 text-green-700 dark:text-green-400 border-green-500/30",
+      closed_lost: "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30",
+    };
+    return map[stage] || "bg-muted text-muted-foreground border-border";
+  };
 
   const filteredDeals = deals.filter(d => {
     const q = search.trim().toLowerCase();
@@ -145,6 +163,9 @@ export default function SalesPipeline() {
   });
   const hasActiveFilters = !!search || filterStage !== "__all__" || filterCategory !== "__all__" || filterAssignee !== "__all__";
   const clearFilters = () => { setSearch(""); setFilterStage("__all__"); setFilterCategory("__all__"); setFilterAssignee("__all__"); };
+
+  useEffect(() => { setPage(1); }, [search, filterStage, filterCategory, filterAssignee]);
+  const paginatedDeals = usePaginatedSlice(filteredDeals, page, pageSize);
 
   const mrc = parseFloat(form.mrc) || 0;
   const nrc = parseFloat(form.nrc) || 0;
@@ -389,7 +410,6 @@ export default function SalesPipeline() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
-  const activeStages = STAGES.filter(s => !["closed_won", "closed_lost"].includes(s.value));
   const categoryLabel = (k: string | null) => ISP_CATEGORIES.find(c => c.value === k)?.label || "—";
 
   return (
@@ -461,86 +481,100 @@ export default function SalesPipeline() {
         </CardContent>
       </Card>
 
-      <div className="flex gap-4 overflow-x-auto pb-4">
-        {activeStages.map(stage => {
-          const stageDeals = filteredDeals.filter(d => d.stage === stage.value);
-          const stageValue = stageDeals.reduce((s, d) => s + Number(d.tcv || d.value), 0);
-          return (
-            <div key={stage.value} className="min-w-[280px] flex-shrink-0">
-              <div className="flex items-center gap-2 mb-3">
-                <div className={`w-3 h-3 rounded-full ${stage.color}`} />
-                <h3 className="text-sm font-semibold text-foreground">{stage.label}</h3>
-                <Badge variant="secondary" className="ml-auto">{stageDeals.length}</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mb-3">₵{stageValue.toLocaleString()}</p>
-              <div className="space-y-2">
-                {stageDeals.map(deal => (
-                  <Card key={deal.id} className="hover:border-primary/50 transition-colors">
-                    <CardContent className="p-3 space-y-2">
-                      <p className="font-medium text-sm text-foreground cursor-pointer" onClick={() => openEdit(deal)}>{deal.title}</p>
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-primary">₵{Number(deal.tcv || deal.value).toLocaleString()}</span>
-                        <span className="text-xs text-muted-foreground">{deal.probability}%</span>
-                      </div>
-                      <div className="flex items-center gap-1 flex-wrap">
-                        {deal.isp_category && <Badge variant="outline" className="text-xs">{categoryLabel(deal.isp_category)}</Badge>}
-                        {deal.mrc > 0 && <Badge variant="secondary" className="text-xs">MRC ₵{Number(deal.mrc).toLocaleString()}</Badge>}
-                      </div>
-                      {deal.assigned_to && <p className="text-xs text-muted-foreground">{profileMap[deal.assigned_to] || "Unknown"}</p>}
-                      {deal.expected_close_date && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3" />{deal.expected_close_date}
+      <Card>
+        <CardContent className="pt-4 pb-0">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-left text-muted-foreground">
+                <tr className="border-b border-border">
+                  <th className="py-3 pr-4 font-medium">Title</th>
+                  <th className="py-3 pr-4 font-medium">Client</th>
+                  <th className="py-3 pr-4 font-medium">Stage</th>
+                  <th className="py-3 pr-4 font-medium">Category</th>
+                  <th className="py-3 pr-4 font-medium text-right">TCV</th>
+                  <th className="py-3 pr-4 font-medium text-right">MRC</th>
+                  <th className="py-3 pr-4 font-medium text-right">Probability</th>
+                  <th className="py-3 pr-4 font-medium">Expected Close</th>
+                  <th className="py-3 pr-4 font-medium">Assigned</th>
+                  <th className="py-3 pr-4 font-medium text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedDeals.map(deal => (
+                  <tr key={deal.id} className="border-b border-border hover:bg-muted/50">
+                    <td className="py-3 pr-4">
+                      <button
+                        onClick={() => openEdit(deal)}
+                        className="text-left font-medium text-foreground hover:text-primary transition-colors"
+                      >
+                        {deal.title}
+                      </button>
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">{deal.client_id ? clientMap[deal.client_id] || "—" : "—"}</td>
+                    <td className="py-3 pr-4">
+                      <Badge variant="outline" className={`text-xs capitalize ${stageBadgeClass(deal.stage)}`}>
+                        {STAGES.find(s => s.value === deal.stage)?.label || deal.stage}
+                      </Badge>
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">{categoryLabel(deal.isp_category)}</td>
+                    <td className="py-3 pr-4 text-right font-medium text-foreground">₵{Number(deal.tcv || deal.value).toLocaleString()}</td>
+                    <td className="py-3 pr-4 text-right text-muted-foreground">{deal.mrc > 0 ? `₵${Number(deal.mrc).toLocaleString()}` : "—"}</td>
+                    <td className="py-3 pr-4 text-right text-muted-foreground">{deal.probability}%</td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {deal.expected_close_date ? (
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(deal.expected_close_date), "MMM d, yyyy")}
                         </div>
-                      )}
-                      {["qualification", "new_lead"].includes(deal.stage) && (
-                        <Button size="sm" variant="outline" className="w-full mt-2" onClick={() => requestSurvey(deal)}>
-                          <ClipboardCheck className="h-3 w-3 mr-1" />Request Site Survey
+                      ) : "—"}
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">{deal.assigned_to ? profileMap[deal.assigned_to] || "Unknown" : "—"}</td>
+                    <td className="py-3 pr-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => openEdit(deal)}>
+                          <Pencil className="h-3.5 w-3.5" />
                         </Button>
-                      )}
-                      {["proposal_sent", "negotiation"].includes(deal.stage) &&
-                        surveys.some(s => s.deal_id === deal.id && s.status === "completed") && (
-                          <Button size="sm" className="w-full mt-2" onClick={() => requestInstallation(deal)}>
-                            <Wrench className="h-3 w-3 mr-1" />Move to Installation
+                        {["qualification", "new_lead"].includes(deal.stage) && (
+                          <Button size="sm" variant="outline" onClick={() => requestSurvey(deal)}>
+                            <ClipboardCheck className="h-3.5 w-3.5" />
                           </Button>
                         )}
-                      {isAdmin && (
-                        <Button size="sm" variant="ghost" className="w-full mt-1 text-red-500 hover:text-red-600" onClick={() => handleDeleteDeal(deal)}>
-                          <Trash2 className="h-3 w-3 mr-1" />Delete
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
+                        {["proposal_sent", "negotiation"].includes(deal.stage) &&
+                          surveys.some(s => s.deal_id === deal.id && s.status === "completed") && (
+                            <Button size="sm" variant="outline" onClick={() => requestInstallation(deal)}>
+                              <Wrench className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        {isAdmin && (
+                          <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-600" onClick={() => handleDeleteDeal(deal)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <Card>
-          <CardHeader><CardTitle className="text-green-400 text-sm">Closed Won ({filteredDeals.filter(d => d.stage === "closed_won").length})</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {filteredDeals.filter(d => d.stage === "closed_won").map(d => (
-              <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
-                <span className="text-sm text-foreground">{d.title}</span>
-                <span className="text-sm font-semibold text-green-400">₵{Number(d.tcv || d.value).toLocaleString()}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle className="text-red-400 text-sm">Closed Lost ({filteredDeals.filter(d => d.stage === "closed_lost").length})</CardTitle></CardHeader>
-          <CardContent className="space-y-2">
-            {filteredDeals.filter(d => d.stage === "closed_lost").map(d => (
-              <div key={d.id} className="flex justify-between items-center cursor-pointer hover:bg-muted/50 p-2 rounded" onClick={() => openEdit(d)}>
-                <span className="text-sm text-foreground">{d.title}</span>
-                <span className="text-sm font-semibold text-red-400">₵{Number(d.tcv || d.value).toLocaleString()}</span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+                {paginatedDeals.length === 0 && (
+                  <tr>
+                    <td colSpan={10} className="py-8 text-center text-sm text-muted-foreground">
+                      No deals match your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+        {filteredDeals.length > 0 && (
+          <TablePagination
+            page={page}
+            pageSize={pageSize}
+            total={filteredDeals.length}
+            onPageChange={setPage}
+            onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
+          />
+        )}
+      </Card>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
