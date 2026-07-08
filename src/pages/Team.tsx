@@ -40,9 +40,9 @@ const team: Member[] = [
     bio: "Erasmus leads iKlick's service delivery with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
   },
   {
-    id: 6, name: "Aseda Sasu-Boamah", role: "Business Support Officer", image: null,
+    id: 6, name: "Aseda Sasu-Boamah", role: "Human Resources and Administrative Officer", image: null,
     email: "aseda@iklickgh.com", linkedin: "#",
-    bio: "Sabina champions the voice of every iKlick client. She leads support, satisfaction, and SLA programs making sure clients feel heard and that every issue is resolved quickly and completely.",
+    bio: "Aseda Sasu-Boamah is a dedicated Human Resources and Administrative Officer with over 2 years of experience in the field. She has in-depth knowledge of administrative processes and excels at managing successful employee relationships, supported by strong organizational and communication skills. Aseda holds a Master’s Degree in Human Resource Management from Accra Business School and is adept at maintaining organized employee databases and fostering workplace efficiency. She aspires to contribute to IKLICK’s growth by building a supportive and well-structured environment that empowers employees to thrive.",
   },
 ];
 
