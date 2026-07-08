@@ -22,7 +22,7 @@ const team: Member[] = [
   {
     id: 2, name: "Rita Sena Agbeko", role: "Head of Finance & Strategy", image: null,
     email: "rita@iklickgh.com", linkedin: "#",
-    bio: "Rita oversees iKlick's financial strategy and operations, ensuring sustainable growth and operational excellence. With a background in finance and strategy, she brings precision and foresight to every project the team takes on.",
+    bio: "Rita Sena Agbeko is the Head of Finance and Strategy with over 11 years of experience in the finance industry. She is a Chartered Accountant and an ACCA-certified professional, bringing strong expertise in financial management, corporate governance, and strategic planning. Rita aspires to leverage her skills to strengthen Iklick’s financial sustainability and drive innovative strategies that position the company for long-term growth and industry leadership.",
   },
   {
     id: 3, name: "Joseph Afotey", role: "Head of Technology", image: null,
