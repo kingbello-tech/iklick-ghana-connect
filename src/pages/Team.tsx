@@ -40,8 +40,8 @@ const team: Member[] = [
     bio: "Erasmus leads iKlick's service delivery with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
   },
   {
-    id: 6, name: "Sabina Danquah", role: "Client Experience Manager", image: null,
-    email: "sabina@iklickgh.com", linkedin: "#",
+    id: 6, name: "Aseda Sasu-Boamah", role: "Business Support Officer", image: null,
+    email: "aseda@iklickgh.com", linkedin: "#",
     bio: "Sabina champions the voice of every iKlick client. She leads support, satisfaction, and SLA programs making sure clients feel heard and that every issue is resolved quickly and completely.",
   },
 ];
