@@ -32,7 +32,7 @@ const team: Member[] = [
   {
     id: 4, name: "Eugene Bluku", role: "Sales Manager", image: null,
     email: "eugene@iklickgh.com", linkedin: "#",
-    bio: "Mr. Bluku is an experienced Corporate Account Manager with over 14 years of proven success in the telecommunications industry. He is highly skilled in analytical thinking, customer relationship management (CRM), corporate communications, and business-to-business (B2B) strategies, consistently driving customer satisfaction and business growth. He holds a Master of Science (MS) in Information Technology from Kwame Nkrumah University of Science and Technology, Kumasi, and has built a strong foundation in sales and corporate account management. Mr. Bluku aspires to continue strengthening client relationships and contributing to Iklick’s vision of innovation and sustainable growth.",
+    bio: "Eugene Bluku is an experienced Corporate Account Manager with over 13 years of proven success in the telecommunications industry. He is highly skilled in analytical thinking, customer relationship management (CRM), corporate communications, and business-to-business (B2B) strategies, consistently driving customer satisfaction and business growth. He is a graduate of University of Ghana and a member of Chartered Institute of Marketing UK and has built a strong foundation in sales and corporate account management. Mr. Bluku aspires to continue strengthening client relationships and contributing to IKLICK’s vision of innovation and sustainable growth.",
   },
   {
     id: 5, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: null,
