@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DateRange } from "react-day-picker";
 import {
   AlertTriangle,
   CheckCircle,
@@ -15,6 +18,7 @@ import {
   Timer,
   Users,
   Activity,
+  CalendarIcon,
 } from "lucide-react";
 import {
   BarChart,
@@ -36,6 +40,7 @@ import {
   differenceInMinutes,
   subDays,
   startOfDay,
+  endOfDay,
   eachDayOfInterval,
   isAfter,
   differenceInHours,
@@ -61,7 +66,7 @@ const STATUS_COLORS: Record<string, string> = {
   closed: "hsl(215, 20%, 45%)",
 };
 
-const RANGES: { label: string; days: number }[] = [
+const PRESETS: { label: string; days: number }[] = [
   { label: "7d", days: 7 },
   { label: "30d", days: 30 },
   { label: "90d", days: 90 },
@@ -74,12 +79,23 @@ function fmtMins(mins: number) {
   return `${(h / 24).toFixed(1)}d`;
 }
 
+function formatRangeLabel(from: Date, to: Date) {
+  if (format(from, "yyyy") === format(to, "yyyy")) {
+    return `${format(from, "MMM d")} – ${format(to, "MMM d")}`;
+  }
+  return `${format(from, "MMM d, yyyy")} – ${format(to, "MMM d, yyyy")}`;
+}
+
 export default function CRMGlobalDashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [slas, setSlas] = useState<SlaPolicy[]>([]);
   const [loading, setLoading] = useState(true);
-  const [rangeDays, setRangeDays] = useState(30);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: subDays(startOfDay(new Date()), 29),
+    to: endOfDay(new Date()),
+  });
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -116,11 +132,16 @@ export default function CRMGlobalDashboard() {
   }, [clients]);
 
   // Window filter
-  const windowStart = useMemo(() => startOfDay(subDays(new Date(), rangeDays - 1)), [rangeDays]);
+  const startDate = useMemo(() => startOfDay(dateRange?.from || subDays(new Date(), 29)), [dateRange]);
+  const endDate = useMemo(() => endOfDay(dateRange?.to || new Date()), [dateRange]);
   const inWindow = useMemo(
-    () => incidents.filter((i) => new Date(i.created_at) >= windowStart),
-    [incidents, windowStart]
+    () => incidents.filter((i) => {
+      const created = new Date(i.created_at);
+      return created >= startDate && created <= endDate;
+    }),
+    [incidents, startDate, endDate]
   );
+  const rangeLabel = useMemo(() => formatRangeLabel(startDate, endDate), [startDate, endDate]);
 
   // ===== TOP-LINE METRICS =====
   const activeAll = incidents.filter((i) => !["resolved", "closed"].includes(i.status));
@@ -191,14 +212,24 @@ export default function CRMGlobalDashboard() {
   }));
 
   // ===== DAILY VOLUME TREND =====
-  const days = eachDayOfInterval({ start: windowStart, end: startOfDay(now) });
+  const trendEnd = isAfter(endDate, now) ? startOfDay(now) : startOfDay(endDate);
+  const days = eachDayOfInterval({ start: startDate, end: trendEnd });
   const trendData = days.map((d) => {
     const key = format(d, "MMM d");
+    const dayStart = startOfDay(d);
+    const dayEnd = endOfDay(d);
     const created = incidents.filter(
-      (i) => startOfDay(new Date(i.created_at)).getTime() === d.getTime()
+      (i) => {
+        const t = new Date(i.created_at);
+        return t >= dayStart && t <= dayEnd;
+      }
     ).length;
     const resolved = incidents.filter(
-      (i) => i.resolved_at && startOfDay(new Date(i.resolved_at)).getTime() === d.getTime()
+      (i) => {
+        if (!i.resolved_at) return false;
+        const t = new Date(i.resolved_at);
+        return t >= dayStart && t <= dayEnd;
+      }
     ).length;
     return { day: key, Created: created, Resolved: resolved };
   });
@@ -248,9 +279,9 @@ export default function CRMGlobalDashboard() {
 
   const statCards = [
     { label: "Active Incidents", value: activeAll.length, sub: `${critical} critical · ${escalated} escalated`, icon: AlertTriangle, color: "text-orange-500" },
-    { label: `MTTR (${rangeDays}d)`, value: fmtMins(mttr), sub: `${finishedInWindow.length} resolved`, icon: Timer, color: "text-blue-500" },
+    { label: "MTTR (window)", value: fmtMins(mttr), sub: `${finishedInWindow.length} resolved`, icon: Timer, color: "text-blue-500" },
     {
-      label: `SLA Compliance (${rangeDays}d)`,
+      label: "SLA Compliance (window)",
       value: slaEligible > 0 ? `${slaCompliance}%` : "—",
       sub: `${slaMet} met · ${breaches} breached · ${pendingInWindow} still open (of ${inWindow.length})`,
       icon: ShieldCheck,
@@ -258,6 +289,13 @@ export default function CRMGlobalDashboard() {
     },
     { label: "Backlog at Risk", value: breached + atRisk, sub: `${breached} breached · ${atRisk} nearing`, icon: Zap, color: "text-destructive" },
   ];
+
+  const applyPreset = (days: number) => {
+    setDateRange({
+      from: startOfDay(subDays(new Date(), days - 1)),
+      to: endOfDay(new Date()),
+    });
+  };
 
   if (loading)
     return (
@@ -272,21 +310,61 @@ export default function CRMGlobalDashboard() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Command Center</h1>
           <p className="text-muted-foreground text-sm">
-            Real-time network operations · {inWindow.length} incidents in last {rangeDays} days
+            Real-time network operations · {inWindow.length} incidents in selected window
           </p>
         </div>
-        <div className="flex items-center gap-1 p-1 rounded-md border bg-card">
-          {RANGES.map((r) => (
+        <div className="flex items-center gap-2 p-1 rounded-md border bg-card flex-wrap">
+          {PRESETS.map((r) => (
             <Button
               key={r.days}
               size="sm"
-              variant={rangeDays === r.days ? "default" : "ghost"}
+              variant={
+                dateRange?.from &&
+                startOfDay(dateRange.from).getTime() === startOfDay(subDays(new Date(), r.days - 1)).getTime()
+                  ? "default"
+                  : "ghost"
+              }
               className="h-7 px-3 text-xs"
-              onClick={() => setRangeDays(r.days)}
+              onClick={() => applyPreset(r.days)}
             >
               {r.label}
             </Button>
           ))}
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                id="date"
+                variant="outline"
+                size="sm"
+                className="h-7 px-3 text-xs justify-start text-left font-normal border-dashed"
+              >
+                <CalendarIcon className="h-3.5 w-3.5 mr-1.5" />
+                {dateRange?.from ? (
+                  dateRange?.to ? (
+                    <span>{rangeLabel}</span>
+                  ) : (
+                    <span>{format(dateRange.from, "PPP")}</span>
+                  )
+                ) : (
+                  <span>Pick a date range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 pointer-events-auto" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={(range) => {
+                  setDateRange(range);
+                  if (range?.from && range?.to) setOpen(false);
+                }}
+                numberOfMonths={2}
+                className="p-3 pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
 
@@ -312,7 +390,7 @@ export default function CRMGlobalDashboard() {
       <Card>
         <CardHeader className="pb-2 flex-row items-center justify-between">
           <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4" /> SLA Compliance by Priority ({rangeDays}d)
+            <ShieldCheck className="h-4 w-4" /> SLA Compliance by Priority ({rangeLabel})
           </CardTitle>
           <span className="text-xs text-muted-foreground">Resolved within target / total resolved</span>
         </CardHeader>
@@ -348,7 +426,7 @@ export default function CRMGlobalDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <Activity className="h-4 w-4" /> Daily Volume — Created vs Resolved
+              <Activity className="h-4 w-4" /> Daily Volume — Created vs Resolved ({rangeLabel})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -431,7 +509,7 @@ export default function CRMGlobalDashboard() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">Top Issue Categories ({rangeDays}d)</CardTitle>
+            <CardTitle className="text-sm text-muted-foreground">Top Issue Categories ({rangeLabel})</CardTitle>
           </CardHeader>
           <CardContent>
             {categoryData.length === 0 ? (
@@ -463,7 +541,7 @@ export default function CRMGlobalDashboard() {
         <Card className="lg:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <Users className="h-4 w-4" /> Top Affected Clients ({rangeDays}d)
+              <Users className="h-4 w-4" /> Top Affected Clients ({rangeLabel})
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -507,7 +585,7 @@ export default function CRMGlobalDashboard() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-muted-foreground flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" /> Peak Hours ({rangeDays}d)
+              <TrendingUp className="h-4 w-4" /> Peak Hours ({rangeLabel})
             </CardTitle>
           </CardHeader>
           <CardContent>
