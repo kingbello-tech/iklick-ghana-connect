@@ -159,7 +159,7 @@ export default function CRMGlobalDashboard() {
   let slaMet = 0;
   for (const i of finishedInWindow) {
     const end = new Date((i.resolved_at || i.closed_at)!);
-    mins = differenceInMinutes(end, new Date(i.created_at));
+    const mins = differenceInMinutes(end, new Date(i.created_at));
     totalMTTR += mins;
     const target = slaByPriority[i.priority as string];
     if (!target) continue;
