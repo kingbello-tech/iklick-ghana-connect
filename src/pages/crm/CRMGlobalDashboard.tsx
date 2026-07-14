@@ -148,6 +148,7 @@ export default function CRMGlobalDashboard() {
   }
   const mttr = finishedInWindow.length > 0 ? totalMTTR / finishedInWindow.length : 0;
   const slaCompliance = slaEligible > 0 ? Math.round((slaMet / slaEligible) * 100) : 0;
+  const pendingInWindow = inWindow.length - finishedInWindow.length;
 
   // Open backlog age
   const now = new Date();
@@ -248,7 +249,13 @@ export default function CRMGlobalDashboard() {
   const statCards = [
     { label: "Active Incidents", value: activeAll.length, sub: `${critical} critical · ${escalated} escalated`, icon: AlertTriangle, color: "text-orange-500" },
     { label: `MTTR (${rangeDays}d)`, value: fmtMins(mttr), sub: `${finishedInWindow.length} resolved`, icon: Timer, color: "text-blue-500" },
-    { label: `SLA Compliance (${rangeDays}d)`, value: slaEligible > 0 ? `${slaCompliance}%` : "—", sub: `${slaMet}/${slaEligible} met · ${breaches} breach${breaches === 1 ? "" : "es"}`, icon: ShieldCheck, color: slaCompliance >= 90 ? "text-green-500" : slaCompliance >= 75 ? "text-yellow-500" : "text-destructive" },
+    {
+      label: `SLA Compliance (${rangeDays}d)`,
+      value: slaEligible > 0 ? `${slaCompliance}%` : "—",
+      sub: `${slaMet} met · ${breaches} breached · ${pendingInWindow} still open (of ${inWindow.length})`,
+      icon: ShieldCheck,
+      color: slaCompliance >= 90 ? "text-green-500" : slaCompliance >= 75 ? "text-yellow-500" : "text-destructive",
+    },
     { label: "Backlog at Risk", value: breached + atRisk, sub: `${breached} breached · ${atRisk} nearing`, icon: Zap, color: "text-destructive" },
   ];
 
