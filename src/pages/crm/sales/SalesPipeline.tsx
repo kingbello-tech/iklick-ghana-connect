@@ -431,7 +431,7 @@ export default function SalesPipeline() {
       <div className="grid grid-cols-3 gap-4">
         <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-primary">₵</span><div><p className="text-2xl font-bold text-foreground">₵{totalPipeline.toLocaleString()}</p><p className="text-xs text-muted-foreground">Pipeline TCV</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-green-400">₵</span><div><p className="text-2xl font-bold text-foreground">₵{wonValue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Won TCV</p></div></CardContent></Card>
-        <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{deals.length > 0 ? Math.round((deals.filter(d => d.stage === "closed_won").length / deals.length) * 100) : 0}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{(() => { const w = deals.filter(d => d.stage === "closed_won").length; const l = deals.filter(d => d.stage === "closed_lost").length; return w + l > 0 ? Math.round((w / (w + l)) * 100) : 0; })()}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
       </div>
 
       <Card>
