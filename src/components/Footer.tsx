@@ -43,7 +43,7 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4 text-sm uppercase tracking-wider text-foreground/70">Contact</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>Adiriganor Road, East Legon</li>
+              <li>Adjiringanor Road, East Legon</li>
               <li>P.O. Box OS 1554, Osu Accra</li>
               <li><a href="mailto:sales@iklickgh.com" className="hover:text-foreground transition-colors">sales@iklickgh.com</a></li>
               <li><a href="tel:+233242548764" className="hover:text-foreground transition-colors">+233-242-548-764</a></li>
