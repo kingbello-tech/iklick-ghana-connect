@@ -19,6 +19,7 @@ Deno.serve(async (req) => {
       phone,
       email,
       ghana_card_number,
+      bandwidth,
       service_type, // 'residential' | 'enterprise'
     } = body ?? {};
 
@@ -62,6 +63,7 @@ Deno.serve(async (req) => {
         address: address ? String(address).trim() : null,
         gps_address: gps_address ? String(gps_address).trim() : null,
         ghana_card_number: ghana_card_number ? String(ghana_card_number).trim() : null,
+        bandwidth: bandwidth ? String(bandwidth).trim() : null,
         lead_type,
         source: "website",
         status: "new",

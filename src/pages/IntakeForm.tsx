@@ -24,6 +24,7 @@ export default function IntakeForm() {
     phone: "",
     email: "",
     ghana_card_number: "",
+    bandwidth: "",
     service_type: "residential",
   });
 
@@ -161,6 +162,10 @@ export default function IntakeForm() {
               <div>
                 <Label htmlFor="ghana_card">Ghana card no.</Label>
                 <Input id="ghana_card" value={form.ghana_card_number} onChange={(e) => update("ghana_card_number", e.target.value)} maxLength={50} />
+              </div>
+              <div>
+                <Label htmlFor="bandwidth">Bandwidth required</Label>
+                <Input id="bandwidth" placeholder="e.g. 100 Mbps, 1 Gbps" value={form.bandwidth} onChange={(e) => update("bandwidth", e.target.value)} maxLength={50} />
               </div>
               <div>
                 <Label>Service type *</Label>
