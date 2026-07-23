@@ -18,7 +18,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Client = Database["public"]["Tables"]["clients"]["Row"];
 
-const emptyForm = { name: "", email: "", phone: "", location: "", service_type: "home" as Database["public"]["Enums"]["service_type"], notes: "" };
+const emptyForm = { name: "", email: "", phone: "", location: "", service_type: "home" as Database["public"]["Enums"]["service_type"], bandwidth: "", notes: "" };
 
 export default function ClientList() {
   const [clients, setClients] = useState<Client[]>([]);
@@ -55,7 +55,7 @@ export default function ClientList() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("clients").insert({ ...form, notes: form.notes || null });
+    const { error } = await supabase.from("clients").insert({ ...form, bandwidth: form.bandwidth.trim() || null, notes: form.notes || null } as any);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Client created" });
     setCreateOpen(false);
@@ -66,7 +66,7 @@ export default function ClientList() {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedClient) return;
-    const { error } = await supabase.from("clients").update({ ...form, notes: form.notes || null }).eq("id", selectedClient.id);
+    const { error } = await supabase.from("clients").update({ ...form, bandwidth: form.bandwidth.trim() || null, notes: form.notes || null } as any).eq("id", selectedClient.id);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     toast({ title: "Client updated" });
     setEditOpen(false);
@@ -93,6 +93,7 @@ export default function ClientList() {
       phone: client.phone || "",
       location: client.location || "",
       service_type: client.service_type,
+      bandwidth: (client as any).bandwidth || "",
       notes: client.notes || "",
     });
     setEditOpen(true);
@@ -118,6 +119,7 @@ export default function ClientList() {
         <Input placeholder="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
       </div>
       <Input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
+      <Input placeholder="Bandwidth (e.g. 100 Mbps, 1 Gbps)" value={form.bandwidth} onChange={(e) => setForm({ ...form, bandwidth: e.target.value })} />
       <Select value={form.service_type} onValueChange={(v) => setForm({ ...form, service_type: v as any })}>
         <SelectTrigger><SelectValue /></SelectTrigger>
         <SelectContent>

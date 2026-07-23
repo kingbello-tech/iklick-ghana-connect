@@ -1,0 +1,2 @@
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS bandwidth TEXT;
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS bandwidth TEXT;

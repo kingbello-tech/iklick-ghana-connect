@@ -309,6 +309,7 @@ export type Database = {
       }
       clients: {
         Row: {
+          bandwidth: string | null
           created_at: string
           email: string | null
           id: string
@@ -320,6 +321,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          bandwidth?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -331,6 +333,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          bandwidth?: string | null
           created_at?: string
           email?: string | null
           id?: string
@@ -1288,6 +1291,7 @@ export type Database = {
         Row: {
           address: string | null
           assigned_to: string | null
+          bandwidth: string | null
           company_name: string | null
           converted_deal_id: string | null
           created_at: string
@@ -1308,6 +1312,7 @@ export type Database = {
         Insert: {
           address?: string | null
           assigned_to?: string | null
+          bandwidth?: string | null
           company_name?: string | null
           converted_deal_id?: string | null
           created_at?: string
@@ -1328,6 +1333,7 @@ export type Database = {
         Update: {
           address?: string | null
           assigned_to?: string | null
+          bandwidth?: string | null
           company_name?: string | null
           converted_deal_id?: string | null
           created_at?: string

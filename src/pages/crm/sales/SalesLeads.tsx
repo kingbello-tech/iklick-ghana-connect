@@ -39,6 +39,7 @@ interface Lead {
   email: string | null;
   location: string | null;
   lead_type: string;
+  bandwidth: string | null;
   source: string;
   status: string;
   assigned_to: string | null;
@@ -61,6 +62,7 @@ const emptyForm = {
   email: "",
   location: "",
   lead_type: "home" as string,
+  bandwidth: "",
   source: "website" as string,
   status: "new" as string,
   assigned_to: "__unassigned__",
@@ -105,12 +107,13 @@ export default function SalesLeads() {
       email: form.email || null,
       location: form.location || null,
       lead_type: form.lead_type as any,
+      bandwidth: form.bandwidth.trim() || null,
       source: form.source as any,
       status: form.status as any,
       assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
       created_by: user.id,
-    });
+    } as any);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
@@ -131,11 +134,12 @@ export default function SalesLeads() {
       email: form.email || null,
       location: form.location || null,
       lead_type: form.lead_type as any,
+      bandwidth: form.bandwidth.trim() || null,
       source: form.source as any,
       status: form.status as any,
       assigned_to: form.assigned_to && form.assigned_to !== "__unassigned__" ? form.assigned_to : null,
       notes: form.notes || null,
-    }).eq("id", selected.id);
+    } as any).eq("id", selected.id);
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
@@ -154,6 +158,7 @@ export default function SalesLeads() {
       email: lead.email || "",
       location: lead.location || "",
       lead_type: lead.lead_type,
+      bandwidth: (lead as any).bandwidth || "",
       source: lead.source,
       status: lead.status,
       assigned_to: lead.assigned_to || "__unassigned__",
@@ -229,6 +234,7 @@ export default function SalesLeads() {
             <SelectContent>{LEAD_TYPES.map(t => <SelectItem key={t} value={t} className="capitalize">{t}</SelectItem>)}</SelectContent>
           </Select>
         </div>
+        <div><Label>Bandwidth</Label><Input placeholder="e.g. 100 Mbps, 1 Gbps" value={form.bandwidth} onChange={e => setForm({ ...form, bandwidth: e.target.value })} /></div>
         <div>
           <Label>Source</Label>
           <Select value={form.source} onValueChange={v => setForm({ ...form, source: v })}>

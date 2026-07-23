@@ -44,6 +44,7 @@ interface Deal {
   tcv: number;
   acv: number;
   isp_category: string | null;
+  bandwidth: string | null;
   expected_close_date: string | null;
   probability: number;
   stage: string;
@@ -88,6 +89,7 @@ const emptyForm = {
   nrc: "",
   contract_duration_months: "12",
   isp_category: "__none__",
+  bandwidth: "",
   expected_close_date: "",
   probability: "50",
   stage: "new_lead",
@@ -181,6 +183,7 @@ export default function SalesPipeline() {
     contract_duration_months: months,
     value: previewTcv, // keep `value` in sync as TCV for backwards compatibility
     isp_category: (form.isp_category && form.isp_category !== "__none__" ? form.isp_category : null) as any,
+    bandwidth: form.bandwidth.trim() || null,
     expected_close_date: form.expected_close_date || null,
     probability: parseInt(form.probability) || 50,
     stage: form.stage as any,
@@ -298,6 +301,7 @@ export default function SalesPipeline() {
       nrc: String(deal.nrc || 0),
       contract_duration_months: String(deal.contract_duration_months || 12),
       isp_category: deal.isp_category || "__none__",
+      bandwidth: (deal as any).bandwidth || "",
       expected_close_date: deal.expected_close_date || "",
       probability: String(deal.probability),
       stage: deal.stage,
@@ -348,8 +352,13 @@ export default function SalesPipeline() {
     else { toast({ title: "Quotation deleted" }); fetchData(); }
   };
 
-  const totalPipeline = deals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((s, d) => s + Number(d.tcv || d.value), 0);
-  const wonValue = deals.filter(d => d.stage === "closed_won").reduce((s, d) => s + Number(d.tcv || d.value), 0);
+  const totalPipeline = filteredDeals.filter(d => !["closed_won", "closed_lost"].includes(d.stage)).reduce((s, d) => s + Number(d.tcv || d.value), 0);
+  const wonValue = filteredDeals.filter(d => d.stage === "closed_won").reduce((s, d) => s + Number(d.tcv || d.value), 0);
+  const winRate = (() => {
+    const w = filteredDeals.filter(d => d.stage === "closed_won").length;
+    const l = filteredDeals.filter(d => d.stage === "closed_lost").length;
+    return w + l > 0 ? Math.round((w / (w + l)) * 100) : 0;
+  })();
 
   const renderDealForm = (onSubmit: (e: React.FormEvent) => void, submitLabel: string) => (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -387,6 +396,7 @@ export default function SalesPipeline() {
         <div><Label>NRC (₵) — One-off</Label><Input type="number" step="0.01" value={form.nrc} onChange={e => setForm({ ...form, nrc: e.target.value })} /></div>
         <div><Label>Contract Duration (months)</Label><Input type="number" min="1" value={form.contract_duration_months} onChange={e => setForm({ ...form, contract_duration_months: e.target.value })} /></div>
         <div><Label>Probability (%)</Label><Input type="number" min="0" max="100" value={form.probability} onChange={e => setForm({ ...form, probability: e.target.value })} /></div>
+        <div className="col-span-2"><Label>Bandwidth</Label><Input placeholder="e.g. 100 Mbps, 1 Gbps" value={form.bandwidth} onChange={e => setForm({ ...form, bandwidth: e.target.value })} /></div>
         <div className="col-span-2 grid grid-cols-2 gap-4 p-3 rounded-lg bg-muted/30 border border-border">
           <div><p className="text-xs text-muted-foreground">TCV (auto)</p><p className="text-lg font-bold text-primary">₵{previewTcv.toLocaleString()}</p></div>
           <div><p className="text-xs text-muted-foreground">ACV (auto)</p><p className="text-lg font-bold text-primary">₵{previewAcv.toLocaleString()}</p></div>
@@ -431,7 +441,7 @@ export default function SalesPipeline() {
       <div className="grid grid-cols-3 gap-4">
         <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-primary">₵</span><div><p className="text-2xl font-bold text-foreground">₵{totalPipeline.toLocaleString()}</p><p className="text-xs text-muted-foreground">Pipeline TCV</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><span className="text-2xl font-bold text-green-400">₵</span><div><p className="text-2xl font-bold text-foreground">₵{wonValue.toLocaleString()}</p><p className="text-xs text-muted-foreground">Won TCV</p></div></CardContent></Card>
-        <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{(() => { const w = deals.filter(d => d.stage === "closed_won").length; const l = deals.filter(d => d.stage === "closed_lost").length; return w + l > 0 ? Math.round((w / (w + l)) * 100) : 0; })()}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-3"><Percent className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{winRate}%</p><p className="text-xs text-muted-foreground">Win Rate</p></div></CardContent></Card>
       </div>
 
       <Card>
