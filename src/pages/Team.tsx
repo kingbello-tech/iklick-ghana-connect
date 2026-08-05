@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import brightAsset from "@/assets/bright.jpg.asset.json";
+import ritaAsset from "@/assets/rita.jfif.asset.json";
 interface Member {
   id: number;
   name: string;
@@ -21,7 +22,7 @@ const team: Member[] = [
     bio: "Bright is with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
   {
-    id: 2, name: "Rita Sena Agbeko", role: "Head of Finance & Strategy", image: null,
+    id: 2, name: "Rita Sena Agbeko", role: "Head of Finance & Strategy", image: ritaAsset.url,
     email: "rita@iklickgh.com", linkedin: "#",
     bio: "Rita Sena Agbeko is the Head of Finance and Strategy with over 11 years of experience in the finance industry. She is a Chartered Accountant and an ACCA-certified professional, bringing strong expertise in financial management, corporate governance, and strategic planning. Rita aspires to leverage her skills to strengthen Iklick’s financial sustainability and drive innovative strategies that position the company for long-term growth and industry leadership.",
   },
