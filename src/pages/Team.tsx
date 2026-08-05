@@ -33,7 +33,7 @@ const team: Member[] = [
   {
     id: 3, name: "Joseph Afotey", role: "Head of Technology", image: josephAsset.url,
     email: "joseph@iklickgh.com", linkedin: "#",
-    bio: "Joseph architects the fiber and wireless networks powering iKlick's clients. From core routing to last-mile design, he leads the engineering team in building resilient, scalable infrastructure that delivers consistent performance.",
+    bio: "Joseph Afotey is the Head of Technology at IKLICK, bringing over 20 years of experience in the telecommunications and ICT industry. He is an accomplished technology leader with extensive expertise in designing, deploying, and managing resilient communication networks across Ghana and the wider West African region.\n\n\n\n\nHe holds a Bachelor of Science (BSc) in Computer Science (Information Systems) and has successfully applied radio frequency, fibre optic transmission, and satellite technologies to develop robust backbone infrastructure and customer access networks. His experience spans network architecture, systems integration, infrastructure optimisation, and the delivery of high-availability connectivity solutions for enterprise and carrier environments.\n\n\n\n\nAs Head of Technology, Joseph leads IKLICK's technology strategy and operations, ensuring the delivery of secure, scalable, and reliable network services. He is passionate about leveraging innovation and emerging technologies to strengthen the company's infrastructure, enhance service quality, and support IKLICK's long-term growth and commitment to delivering world-class connectivity solutions.",
   },
   {
     id: 4, name: "Eugene Bluku", role: "Sales Manager", image: eugeneAsset.url,
