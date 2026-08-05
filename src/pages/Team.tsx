@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import brightAsset from "@/assets/bright.jpg.asset.json";
 import ritaAsset from "@/assets/rita.jfif.asset.json";
+import erasmusAsset from "@/assets/erasmus.jpg.asset.json";
 interface Member {
   id: number;
   name: string;
@@ -37,7 +38,7 @@ const team: Member[] = [
     bio: "Eugene Bluku is an experienced Corporate Account Manager with over 13 years of proven success in the telecommunications industry. He is highly skilled in analytical thinking, customer relationship management (CRM), corporate communications, and business-to-business (B2B) strategies, consistently driving customer satisfaction and business growth. He is a graduate of University of Ghana and a member of Chartered Institute of Marketing UK and has built a strong foundation in sales and corporate account management. Mr. Bluku aspires to continue strengthening client relationships and contributing to IKLICK’s vision of innovation and sustainable growth.",
   },
   {
-    id: 5, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: null,
+    id: 5, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: erasmusAsset.url,
     email: "erasmus@iklickgh.com", linkedin: "#",
     bio: "Erasmus leads iKlick's service delivery with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
   },
