@@ -41,9 +41,9 @@ const team: Member[] = [
     bio: "Eugene Bluku is an experienced Corporate Account Manager with over 13 years of proven success in the telecommunications industry. He is highly skilled in analytical thinking, customer relationship management (CRM), corporate communications, and business-to-business (B2B) strategies, consistently driving customer satisfaction and business growth. He is a graduate of University of Ghana and a member of Chartered Institute of Marketing UK and has built a strong foundation in sales and corporate account management. Mr. Bluku aspires to continue strengthening client relationships and contributing to IKLICK’s vision of innovation and sustainable growth.",
   },
   {
-    id: 5, name: "Erasmus Ocansey", role: "Service Delivery Manager", image: erasmusAsset.url,
+    id: 5, name: "Erasmus Ocansey", role: "Head of Service Delivery", image: erasmusAsset.url,
     email: "erasmus@iklickgh.com", linkedin: "#",
-    bio: "Erasmus leads iKlick's service delivery with discipline and transparency. He keeps the engine of the business running smoothly so the operations and engineering teams can focus on serving clients.",
+    bio: "Erasmus Ocansey is the Head of Service Delivery at IKLICK, bringing over 20 years of experience in the ICT industry, including more than a decade in C-suite and executive leadership roles. He holds a Master of Business Administration (MBA) from Accra Business School and a Bachelor of Business Administration (BBA) from Zenith University College.\n\n\n\n\nWith extensive expertise in service delivery, operations management, and customer experience, Erasmus is committed to ensuring the delivery of reliable, high-quality, and customer-centric solutions. His strategic leadership and operational excellence play a key role in driving service innovation, enhancing customer satisfaction, and improving long-term client retention, while supporting IKLICK's vision of becoming a leading provider of digital connectivity solutions.",
   },
   {
     id: 6, name: "Aseda Sasu-Boamah", role: "Business Support Officer", image: asedaAsset.url,
