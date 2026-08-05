@@ -7,6 +7,7 @@ import brightAsset from "@/assets/bright.jpg.asset.json";
 import ritaAsset from "@/assets/rita.jfif.asset.json";
 import erasmusAsset from "@/assets/erasmus.jpg.asset.json";
 import eugeneAsset from "@/assets/eugene.png.asset.json";
+import josephAsset from "@/assets/joseph.png.asset.json";
 interface Member {
   id: number;
   name: string;
@@ -29,7 +30,7 @@ const team: Member[] = [
     bio: "Rita Sena Agbeko is the Head of Finance and Strategy with over 11 years of experience in the finance industry. She is a Chartered Accountant and an ACCA-certified professional, bringing strong expertise in financial management, corporate governance, and strategic planning. Rita aspires to leverage her skills to strengthen Iklick’s financial sustainability and drive innovative strategies that position the company for long-term growth and industry leadership.",
   },
   {
-    id: 3, name: "Joseph Afotey", role: "Head of Technology", image: null,
+    id: 3, name: "Joseph Afotey", role: "Head of Technology", image: josephAsset.url,
     email: "joseph@iklickgh.com", linkedin: "#",
     bio: "Joseph architects the fiber and wireless networks powering iKlick's clients. From core routing to last-mile design, he leads the engineering team in building resilient, scalable infrastructure that delivers consistent performance.",
   },
