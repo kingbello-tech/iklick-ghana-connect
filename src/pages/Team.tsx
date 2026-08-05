@@ -3,6 +3,7 @@ import { Linkedin, Mail, ChevronLeft, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import brightAsset from "@/assets/bright.jpg.asset.json";
 interface Member {
   id: number;
   name: string;
@@ -15,7 +16,7 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "Bright Asiamah Tawiah", role: "General Manager", image: null,
+    id: 1, name: "Bright Asiamah Tawiah", role: "General Manager", image: brightAsset.url,
     email: "bright@iklickgh.com", linkedin: "#",
     bio: "Bright is with a vision to bridge Ghana's digital divide. With over 15 years in telecommunications and infrastructure, he leads the company's strategic direction and partnerships across the region. He is passionate about building reliable connectivity for communities, enterprises, and homes.",
   },
