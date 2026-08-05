@@ -3,12 +3,12 @@ import { Linkedin, Mail, ChevronLeft, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import brightAsset from "@/assets/bright.jpg.asset.json";
-import ritaAsset from "@/assets/rita.jfif.asset.json";
-import erasmusAsset from "@/assets/erasmus.jpg.asset.json";
-import eugeneAsset from "@/assets/eugene.png.asset.json";
-import josephAsset from "@/assets/joseph.png.asset.json";
-import asedaAsset from "@/assets/aseda.png.asset.json";
+import brightImg from "@/assets/team-photos/bright.jpg";
+import ritaImg from "@/assets/team-photos/rita.jpg";
+import erasmusImg from "@/assets/team-photos/erasmus.jpg";
+import eugeneImg from "@/assets/team-photos/eugene.png";
+import josephImg from "@/assets/team-photos/joseph.png";
+import asedaImg from "@/assets/team-photos/aseda.png";
 interface Member {
   id: number;
   name: string;
@@ -21,32 +21,32 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "Bright Asiamah Tawiah", role: "General Manager", image: brightAsset.url,
+    id: 1, name: "Bright Asiamah Tawiah", role: "General Manager", image: brightImg,
     email: "bright@iklickgh.com", linkedin: "#",
     bio: "Bright Asiamah Tawiah is the General Manager of IKLICK, bringing over 17 years of experience in sales, business development, and strategic leadership within the telecommunications and ICT industry. Throughout his career, he has held key leadership roles with leading multinational organizations, including GS Telecom, Gateway Communication, Vodacom, AirtelTigo, Internet Solutions (IS), and PAIX Data Centres.\n\nHe possesses extensive expertise in enterprise sales, business development, partner management, go-to-market strategy, connectivity solutions, value-added services (VAS), mobility, Internet of Things (IoT), contract management, and data centre solutions. His proven ability to develop high-performing teams, drive revenue growth, and build strategic partnerships has consistently delivered strong business outcomes.\n\nBright holds a Bachelor of Laws (LLB) from CU, a Master of Business Administration (MBA) in Marketing, and a Master of Arts (MA) in Economic Policy Management from the University of Ghana. He also earned a Master of Science (MSc) by Research from the University of Salford–RKC, reflecting his commitment to continuous learning and evidence-based leadership.\n\nAs General Manager, Bright is committed to positioning IKLICK as a leading provider of innovative, reliable, and customer-centric connectivity solutions. His vision is to drive sustainable growth, foster a culture of innovation and operational excellence, and strengthen IKLICK's competitiveness within Ghana and across the wider African digital economy.",
   },
   {
-    id: 2, name: "Rita Sena Agbeko", role: "Head of Finance & Strategy", image: ritaAsset.url,
+    id: 2, name: "Rita Sena Agbeko", role: "Head of Finance & Strategy", image: ritaImg,
     email: "rita@iklickgh.com", linkedin: "#",
     bio: "Rita Sena Agbeko is the Head of Finance and Strategy at IKLICK, bringing over 16 years of experience in finance, accounting, and strategic management. She is a Chartered Accountant (CA) and an ACCA-certified finance professional with a strong track record in financial leadership, corporate governance, and business strategy.\n\nHer diverse industry experience spans finance, advertising, manufacturing, and supply chain management, equipping her with a broad perspective on driving operational efficiency, financial performance, and sustainable business growth. She has successfully led financial planning, budgeting, compliance, risk management, and strategic initiatives that enhance organisational value and support informed decision-making.\n\nAs Head of Finance and Strategy, Rita is responsible for strengthening IKLICK's financial sustainability, optimising business performance, and supporting the company's long-term strategic objectives. She is committed to fostering sound financial governance, driving innovation, and delivering strategies that position IKLICK for sustained growth and industry leadership.",
   },
   {
-    id: 3, name: "Joseph Afotey", role: "Head of Technology", image: josephAsset.url,
+    id: 3, name: "Joseph Afotey", role: "Head of Technology", image: josephImg,
     email: "joseph@iklickgh.com", linkedin: "#",
     bio: "Joseph Afotey is the Head of Technology at IKLICK, bringing over 20 years of experience in the telecommunications and ICT industry. He is an accomplished technology leader with extensive expertise in designing, deploying, and managing resilient communication networks across Ghana and the wider West African region.\n\n\nHe holds a Bachelor of Science (BSc) in Computer Science (Information Systems) and has successfully applied radio frequency, fibre optic transmission, and satellite technologies to develop robust backbone infrastructure and customer access networks. His experience spans network architecture, systems integration, infrastructure optimisation, and the delivery of high-availability connectivity solutions for enterprise and carrier environments.\n\nAs Head of Technology, Joseph leads IKLICK's technology strategy and operations, ensuring the delivery of secure, scalable, and reliable network services. He is passionate about leveraging innovation and emerging technologies to strengthen the company's infrastructure, enhance service quality, and support IKLICK's long-term growth and commitment to delivering world-class connectivity solutions.",
   },
   {
-    id: 4, name: "Eugene Bluku", role: "Head of Sales", image: eugeneAsset.url,
+    id: 4, name: "Eugene Bluku", role: "Head of Sales", image: eugeneImg,
     email: "eugene@iklickgh.com", linkedin: "#",
     bio: "Eugene Bluku is the Head of Sales at IKLICK, bringing over 13 years of experience in enterprise sales, account management, and business development within the telecommunications industry. He has a proven track record of building strategic client relationships, driving revenue growth, and delivering customer-focused solutions that create long-term value.\n\nHis expertise includes corporate account management, business-to-business (B2B) sales, customer relationship management (CRM), corporate communications, strategic sales planning, and market development. With a strong analytical approach and a deep understanding of customer needs, Eugene has consistently delivered sustainable business growth while enhancing customer satisfaction and retention.\n\nEugene is a graduate of the University of Ghana and a member of the Chartered Institute of Marketing (UK). As Head of Sales, he leads IKLICK’s commercial strategy, focusing on expanding the company's market presence, strengthening client partnerships, and delivering innovative connectivity solutions that support sustainable growth and reinforce IKLICK’s position as a trusted telecommunications provider.",
   },
   {
-    id: 5, name: "Erasmus Ocansey", role: "Head of Service Delivery", image: erasmusAsset.url,
+    id: 5, name: "Erasmus Ocansey", role: "Head of Service Delivery", image: erasmusImg,
     email: "erasmus@iklickgh.com", linkedin: "#",
     bio: "Erasmus Ocansey is the Head of Service Delivery at IKLICK, bringing over 20 years of experience in the ICT industry, including more than a decade in C-suite and executive leadership roles. He holds a Master of Business Administration (MBA) from Accra Business School and a Bachelor of Business Administration (BBA) from Zenith University College.\n\nWith extensive expertise in service delivery, operations management, and customer experience, Erasmus is committed to ensuring the delivery of reliable, high-quality, and customer-centric solutions. His strategic leadership and operational excellence play a key role in driving service innovation, enhancing customer satisfaction, and improving long-term client retention, while supporting IKLICK's vision of becoming a leading provider of digital connectivity solutions.",
   },
   {
-    id: 6, name: "Aseda Sasu-Boamah", role: "Business Support Officer", image: asedaAsset.url,
+    id: 6, name: "Aseda Sasu-Boamah", role: "Business Support Officer", image: asedaImg,
     email: "aseda@iklickgh.com", linkedin: "#",
     bio: "Aseda Sasu-Boamah is the Business Support Officer at IKLICK, with expertise in human resources and administration. She holds a master’s degree in human resource management from Accra Business School and has over two years of experience supporting organizational operations and workforce management.\n\nShe is skilled in employee relations, administrative coordination, and HR information management, with a strong commitment to creating efficient processes and fostering a positive workplace culture. Aseda is passionate about building a well-structured and supportive work environment that empowers employees and contributes to IKLICK's operational excellence and long-term growth.",
   },
