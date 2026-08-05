@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import brightAsset from "@/assets/bright.jpg.asset.json";
+import ritaAsset from "@/assets/rita.jfif.asset.json";
 interface Member {
   id: number;
   name: string;
