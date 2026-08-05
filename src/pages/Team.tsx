@@ -8,6 +8,7 @@ import ritaAsset from "@/assets/rita.jfif.asset.json";
 import erasmusAsset from "@/assets/erasmus.jpg.asset.json";
 import eugeneAsset from "@/assets/eugene.png.asset.json";
 import josephAsset from "@/assets/joseph.png.asset.json";
+import asedaAsset from "@/assets/aseda.png.asset.json";
 interface Member {
   id: number;
   name: string;
