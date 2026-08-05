@@ -143,7 +143,7 @@ const Team = () => {
                   )}
                 </div>
 
-                <div className="max-w-2xl mx-auto space-y-4 text-muted-foreground leading-relaxed">
+                <div className="max-w-2xl mx-auto space-y-4 text-muted-foreground leading-relaxed whitespace-pre-line">
                   <p>{selected.bio}</p>
                 </div>
 
