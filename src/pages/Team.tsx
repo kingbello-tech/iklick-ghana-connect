@@ -48,7 +48,7 @@ const team: Member[] = [
   {
     id: 6, name: "Aseda Sasu-Boamah", role: "Business Support Officer", image: asedaAsset.url,
     email: "aseda@iklickgh.com", linkedin: "#",
-    bio: "Aseda Sasu-Boamah is the Business Support Officer at IKLICK, with expertise in human resources and administration. She holds a master’s degree in human resource management from Accra Business School and has over two years of experience supporting organizational operations and workforce management.\n\n\n\n\nShe is skilled in employee relations, administrative coordination, and HR information management, with a strong commitment to creating efficient processes and fostering a positive workplace culture. Aseda is passionate about building a well-structured and supportive work environment that empowers employees and contributes to IKLICK's operational excellence and long-term growth.",
+    bio: "Aseda Sasu-Boamah is the Business Support Officer at IKLICK, with expertise in human resources and administration. She holds a master’s degree in human resource management from Accra Business School and has over two years of experience supporting organizational operations and workforce management.\n\nShe is skilled in employee relations, administrative coordination, and HR information management, with a strong commitment to creating efficient processes and fostering a positive workplace culture. Aseda is passionate about building a well-structured and supportive work environment that empowers employees and contributes to IKLICK's operational excellence and long-term growth.",
   },
 ];
 
