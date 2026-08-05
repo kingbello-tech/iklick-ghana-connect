@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import brightAsset from "@/assets/bright.jpg.asset.json";
 import ritaAsset from "@/assets/rita.jfif.asset.json";
 import erasmusAsset from "@/assets/erasmus.jpg.asset.json";
+import eugeneAsset from "@/assets/eugene.png.asset.json";
 interface Member {
   id: number;
   name: string;
