@@ -3,12 +3,12 @@ import { Linkedin, Mail, ChevronLeft, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import brightAsset from "@/assets/bright.jpg.asset.json";
-import ritaAsset from "@/assets/rita.jfif.asset.json";
-import erasmusAsset from "@/assets/erasmus.jpg.asset.json";
-import eugeneAsset from "@/assets/eugene.png.asset.json";
-import josephAsset from "@/assets/joseph.png.asset.json";
-import asedaAsset from "@/assets/aseda.png.asset.json";
+import brightImg from "@/assets/team-photos/bright.jpg";
+import ritaImg from "@/assets/team-photos/rita.jpg";
+import erasmusImg from "@/assets/team-photos/erasmus.jpg";
+import eugeneImg from "@/assets/team-photos/eugene.png";
+import josephImg from "@/assets/team-photos/joseph.png";
+import asedaImg from "@/assets/team-photos/aseda.png";
 interface Member {
   id: number;
   name: string;
