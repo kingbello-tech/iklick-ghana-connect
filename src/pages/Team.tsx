@@ -77,34 +77,94 @@ const Team = () => {
       <section className="py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-            {/* Left: Team grid */}
+            {/* Left: Hierarchy */}
             <div className="lg:col-span-2 lg:sticky lg:top-24">
               <div className="rounded-2xl border border-border bg-card p-6 md:p-8">
                 <p className="text-xs text-muted-foreground mb-1 text-center">Home /</p>
                 <h2 className="text-2xl font-bold mb-1 text-center">MEET THE TEAM</h2>
-                <p className="text-sm text-muted-foreground mb-6 text-center">The people behind our success</p>
-                <div className="grid grid-cols-2 gap-5">
-                  {team.map((m) => (
-                    <button
-                      key={m.id}
-                      onClick={() => setSelected(m)}
-                      className={`group flex flex-col items-center text-center p-3 rounded-xl transition-all ${
-                        selected.id === m.id ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
-                      }`}
-                    >
-                      <div className={`w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden mb-3 ring-2 transition-all flex items-center justify-center bg-muted ${
-                        selected.id === m.id ? "ring-primary" : "ring-border group-hover:ring-primary/40"
-                      }`}>
-                        {m.image ? (
-                          <img src={m.image} alt={m.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-10 h-10 text-muted-foreground" />
-                        )}
-                      </div>
-                      <p className="font-semibold text-sm">{m.name}</p>
-                      <p className="text-xs text-muted-foreground">{m.role}</p>
-                    </button>
-                  ))}
+                <p className="text-sm text-muted-foreground mb-8 text-center">The people behind our success</p>
+
+                <div className="flex flex-col items-center gap-6">
+                  {/* General Manager */}
+                  {team.find((m) => m.role === "General Manager") && (
+                    <div className="w-full flex flex-col items-center">
+                      <button
+                        onClick={() => setSelected(team.find((m) => m.role === "General Manager")!)}
+                        className={`group flex flex-col items-center text-center p-4 rounded-2xl transition-all ${
+                          selected.role === "General Manager" ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className={`w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden mb-3 ring-2 transition-all flex items-center justify-center bg-muted ${
+                          selected.role === "General Manager" ? "ring-primary" : "ring-border group-hover:ring-primary/40"
+                        }`}>
+                          {team.find((m) => m.role === "General Manager")!.image ? (
+                            <img src={team.find((m) => m.role === "General Manager")!.image!} alt={team.find((m) => m.role === "General Manager")!.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-12 h-12 text-muted-foreground" />
+                          )}
+                        </div>
+                        <p className="font-semibold text-sm">{team.find((m) => m.role === "General Manager")!.name}</p>
+                        <p className="text-xs text-muted-foreground">{team.find((m) => m.role === "General Manager")!.role}</p>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Connector line down to heads */}
+                  <div className="w-px h-8 bg-gradient-to-b from-primary/40 to-primary/20" />
+
+                  {/* Department Heads */}
+                  <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {team
+                      .filter((m) => m.role.startsWith("Head of"))
+                      .map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => setSelected(m)}
+                          className={`group flex flex-col items-center text-center p-3 rounded-xl transition-all ${
+                            selected.id === m.id ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
+                          }`}
+                        >
+                          <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 ring-2 transition-all flex items-center justify-center bg-muted ${
+                            selected.id === m.id ? "ring-primary" : "ring-border group-hover:ring-primary/40"
+                          }`}>
+                            {m.image ? (
+                              <img src={m.image} alt={m.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                            ) : (
+                              <User className="w-8 h-8 text-muted-foreground" />
+                            )}
+                          </div>
+                          <p className="font-semibold text-xs md:text-sm">{m.name}</p>
+                          <p className="text-xs text-muted-foreground">{m.role}</p>
+                        </button>
+                      ))}
+                  </div>
+
+                  {/* Connector line down to support */}
+                  <div className="w-px h-8 bg-gradient-to-b from-primary/20 to-primary/10" />
+
+                  {/* Business Support */}
+                  {team.find((m) => m.role === "Business Support Officer") && (
+                    <div className="w-full flex flex-col items-center">
+                      <button
+                        onClick={() => setSelected(team.find((m) => m.role === "Business Support Officer")!)}
+                        className={`group flex flex-col items-center text-center p-3 rounded-xl transition-all ${
+                          selected.role === "Business Support Officer" ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
+                        }`}
+                      >
+                        <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden mb-2 ring-2 transition-all flex items-center justify-center bg-muted ${
+                          selected.role === "Business Support Officer" ? "ring-primary" : "ring-border group-hover:ring-primary/40"
+                        }`}>
+                          {team.find((m) => m.role === "Business Support Officer")!.image ? (
+                            <img src={team.find((m) => m.role === "Business Support Officer")!.image!} alt={team.find((m) => m.role === "Business Support Officer")!.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                          ) : (
+                            <User className="w-8 h-8 text-muted-foreground" />
+                          )}
+                        </div>
+                        <p className="font-semibold text-xs md:text-sm">{team.find((m) => m.role === "Business Support Officer")!.name}</p>
+                        <p className="text-xs text-muted-foreground">{team.find((m) => m.role === "Business Support Officer")!.role}</p>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
