@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Linkedin, Mail, ChevronLeft, User } from "lucide-react";
+import { Linkedin, Mail, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
