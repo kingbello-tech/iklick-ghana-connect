@@ -30,6 +30,9 @@ Deno.serve(async (req) => {
     if (!name || !phone) {
       return new Response(JSON.stringify({ error: "Name and phone are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
+    if (!identification_file || typeof identification_file.data !== "string" || !identification_file.data.trim()) {
+      return new Response(JSON.stringify({ error: "Identification document is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     if (name.length > 200 || (email && email.length > 255)) {
       return new Response(JSON.stringify({ error: "Input too long" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
