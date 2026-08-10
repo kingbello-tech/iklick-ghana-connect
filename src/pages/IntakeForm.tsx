@@ -7,7 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { CheckCircle2, Loader2, MapPin } from "lucide-react";
+import { CheckCircle2, Loader2, MapPin, Paperclip, Upload, X } from "lucide-react";
+
+const MAX_BYTES = 1024 * 1024; // 1 MB
+const ID_TYPES = [
+  { value: "ghana_card", label: "Ghana Card" },
+  { value: "drivers_license", label: "Driver's License" },
+  { value: "passport", label: "Passport" },
+];
 
 export default function IntakeForm() {
   const { token } = useParams<{ token: string }>();
@@ -17,13 +24,14 @@ export default function IntakeForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [idFile, setIdFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     name: "",
     address: "",
     gps_address: "",
     phone: "",
     email: "",
-    ghana_card_number: "",
+    id_type: "ghana_card",
     bandwidth: "",
     service_type: "residential",
   });
@@ -40,6 +48,25 @@ export default function IntakeForm() {
   }, [token]);
 
   const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  const onPickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > MAX_BYTES) {
+      toast({ title: "File too large", description: "Attachments must be 1 MB or smaller.", variant: "destructive" });
+      return;
+    }
+    setIdFile(file);
+  };
+
+  const fileToBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+      reader.onerror = () => reject(new Error("Could not read file"));
+      reader.readAsDataURL(file);
+    });
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
@@ -74,8 +101,17 @@ export default function IntakeForm() {
     }
     setSubmitting(true);
     try {
+      let identification_file: any = null;
+      if (idFile) {
+        identification_file = {
+          name: idFile.name,
+          type: idFile.type || "application/octet-stream",
+          size: idFile.size,
+          data: await fileToBase64(idFile),
+        };
+      }
       const { data, error } = await supabase.functions.invoke("submit-intake", {
-        body: { token, ...form },
+        body: { token, ...form, identification_file },
       });
       if (error || (data as any)?.error) throw new Error((data as any)?.error || error?.message || "Submission failed");
       setSubmitted(true);
@@ -159,9 +195,34 @@ export default function IntakeForm() {
                   <Input id="email" type="email" value={form.email} onChange={(e) => update("email", e.target.value)} required maxLength={255} />
                 </div>
               </div>
-              <div>
-                <Label htmlFor="ghana_card">Ghana card no.</Label>
-                <Input id="ghana_card" value={form.ghana_card_number} onChange={(e) => update("ghana_card_number", e.target.value)} maxLength={50} />
+              <div className="space-y-2">
+                <Label>Identification (Ghana Card, Driver's License, Passport)</Label>
+                <Select value={form.id_type} onValueChange={(v) => update("id_type", v)}>
+                  <SelectTrigger><SelectValue placeholder="Select ID type" /></SelectTrigger>
+                  <SelectContent>
+                    {ID_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                {idFile ? (
+                  <div className="flex items-center gap-2 p-2 rounded border border-border bg-muted/30">
+                    <Paperclip className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm truncate">{idFile.name}</p>
+                      <p className="text-[10px] text-muted-foreground">{(idFile.size / 1024).toFixed(1)} KB</p>
+                    </div>
+                    <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={() => setIdFile(null)}>
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <input id="id_file" type="file" className="hidden" accept="image/*,application/pdf" onChange={onPickFile} />
+                    <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById("id_file")?.click()}>
+                      <Upload className="h-3.5 w-3.5 mr-1.5" />Attach ID document
+                    </Button>
+                  </div>
+                )}
+                <p className="text-[10px] text-muted-foreground">Max 1 MB per file. Image or PDF.</p>
               </div>
               <div>
                 <Label htmlFor="bandwidth">Bandwidth required</Label>
