@@ -90,8 +90,8 @@ export default function IntakeForm() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.gps_address.trim()) {
-      toast({ title: "Missing info", description: "Name, contact number, email and GPS/coordinates are required.", variant: "destructive" });
+    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.gps_address.trim() || !idFile) {
+      toast({ title: "Missing info", description: "Name, contact number, email, GPS/coordinates and an ID document are required.", variant: "destructive" });
       return;
     }
     const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
@@ -196,7 +196,7 @@ export default function IntakeForm() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Identification (Ghana Card, Driver's License, Passport)</Label>
+                <Label>Identification (Ghana Card, Driver's License, Passport) *</Label>
                 <Select value={form.id_type} onValueChange={(v) => update("id_type", v)}>
                   <SelectTrigger><SelectValue placeholder="Select ID type" /></SelectTrigger>
                   <SelectContent>
@@ -216,13 +216,13 @@ export default function IntakeForm() {
                   </div>
                 ) : (
                   <div>
-                    <input id="id_file" type="file" className="hidden" accept="image/*,application/pdf" onChange={onPickFile} />
+                    <input id="id_file" type="file" className="hidden" accept="image/*,application/pdf" onChange={onPickFile} required />
                     <Button type="button" size="sm" variant="outline" onClick={() => document.getElementById("id_file")?.click()}>
-                      <Upload className="h-3.5 w-3.5 mr-1.5" />Attach ID document
+                      <Upload className="h-3.5 w-3.5 mr-1.5" />Attach ID document *
                     </Button>
                   </div>
                 )}
-                <p className="text-[10px] text-muted-foreground">Max 1 MB per file. Image or PDF.</p>
+                <p className="text-[10px] text-muted-foreground">Max 1 MB per file. Image or PDF. Required.</p>
               </div>
               <div>
                 <Label htmlFor="bandwidth">Bandwidth required</Label>
