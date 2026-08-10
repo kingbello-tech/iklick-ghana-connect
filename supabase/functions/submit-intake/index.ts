@@ -18,7 +18,8 @@ Deno.serve(async (req) => {
       gps_address,
       phone,
       email,
-      ghana_card_number,
+      id_type,
+      identification_file,
       bandwidth,
       service_type, // 'residential' | 'enterprise'
     } = body ?? {};
@@ -29,8 +30,11 @@ Deno.serve(async (req) => {
     if (!name || !phone) {
       return new Response(JSON.stringify({ error: "Name and phone are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
-    if (name.length > 200 || (email && email.length > 255) || (ghana_card_number && ghana_card_number.length > 50)) {
+    if (name.length > 200 || (email && email.length > 255)) {
       return new Response(JSON.stringify({ error: "Input too long" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (identification_file && (typeof identification_file.data !== "string" || identification_file.data.length > 1_500_000)) {
+      return new Response(JSON.stringify({ error: "Attachment too large" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const lead_type = service_type === "enterprise" ? "enterprise" : "home";
 
@@ -49,9 +53,16 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Invalid or inactive link" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    const ID_LABELS: Record<string, string> = {
+      ghana_card: "Ghana Card",
+      drivers_license: "Driver's License",
+      passport: "Passport",
+    };
+    const idLabel = ID_LABELS[String(id_type)] ?? null;
+
     const notesParts: string[] = [];
     if (gps_address) notesParts.push(`GPS: ${gps_address}`);
-    if (ghana_card_number) notesParts.push(`Ghana Card: ${ghana_card_number}`);
+    if (idLabel && identification_file) notesParts.push(`ID document: ${idLabel}`);
 
     const { data: lead, error: leadErr } = await admin
       .from("leads")
@@ -62,7 +73,7 @@ Deno.serve(async (req) => {
         location: address ? String(address).trim() : null,
         address: address ? String(address).trim() : null,
         gps_address: gps_address ? String(gps_address).trim() : null,
-        ghana_card_number: ghana_card_number ? String(ghana_card_number).trim() : null,
+        ghana_card_number: null,
         bandwidth: bandwidth ? String(bandwidth).trim() : null,
         lead_type,
         source: "website",
@@ -77,6 +88,37 @@ Deno.serve(async (req) => {
     if (leadErr) {
       console.error("Lead insert failed", leadErr);
       return new Response(JSON.stringify({ error: "Could not save submission" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Store the identification document as a lead attachment
+    if (identification_file?.data) {
+      try {
+        const bytes = Uint8Array.from(atob(identification_file.data), (c) => c.charCodeAt(0));
+        if (bytes.byteLength <= 1024 * 1024) {
+          const safeName = String(identification_file.name || "identification")
+            .replace(/[^a-zA-Z0-9._-]/g, "_")
+            .slice(0, 120);
+          const path = `lead/${lead.id}/${crypto.randomUUID()}-${safeName}`;
+          const contentType = String(identification_file.type || "application/octet-stream");
+          const { error: upErr } = await admin.storage.from("attachments").upload(path, bytes, { contentType, upsert: false });
+          if (upErr) {
+            console.error("ID upload failed", upErr);
+          } else {
+            const { error: attErr } = await admin.from("attachments").insert({
+              entity_type: "lead",
+              entity_id: lead.id,
+              file_name: `${idLabel ?? "Identification"} - ${safeName}`,
+              file_path: path,
+              mime_type: contentType,
+              size_bytes: bytes.byteLength,
+              uploaded_by: link.sales_rep_id,
+            });
+            if (attErr) console.error("Attachment insert failed", attErr);
+          }
+        }
+      } catch (e) {
+        console.error("ID attachment error", e);
+      }
     }
 
     // Notify the sales rep
