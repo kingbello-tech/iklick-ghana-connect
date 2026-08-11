@@ -46,6 +46,7 @@ const networkEngineerItems = [
 
 const adminItems = [
   { title: "User Management", url: "/crm/settings", icon: Settings },
+  { title: "Client Logins", url: "/crm/client-logins", icon: UserCog },
   { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
   { title: "Performance", url: "/crm/performance", icon: BarChart3 },
   { title: "Audit Logs", url: "/crm/audit-logs", icon: FileText },
