@@ -30,7 +30,7 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Admin access required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const { email, password, full_name, role, department } = await req.json();
+    const { email, password, full_name, role, department, client_id } = await req.json();
 
     if (!email || !password || !full_name) {
       return new Response(JSON.stringify({ error: "Email, password, and full name are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -48,8 +48,19 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Assign role if provided
-    if (role && newUser.user) {
+    // Client portal login: link to a client company, no staff role
+    if (client_id && newUser.user) {
+      const { error: linkError } = await adminClient
+        .from("client_users")
+        .insert({ user_id: newUser.user.id, client_id, created_by: caller.id });
+      if (linkError) {
+        await adminClient.auth.admin.deleteUser(newUser.user.id);
+        return new Response(JSON.stringify({ error: linkError.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // Assign role if provided (staff only)
+    if (!client_id && role && newUser.user) {
       await adminClient.from("user_roles").insert({ user_id: newUser.user.id, role });
     }
 
