@@ -82,10 +82,10 @@ export default function ClientIncidents() {
       title: form.title.trim(),
       description: form.description.trim() || null,
       location: form.location.trim() || null,
-      priority: form.priority as any,
-      status: "open" as any,
+      priority: form.priority,
+      status: "open",
       source: "client_portal",
-    });
+    } as any);
     setSaving(false);
     if (error) {
       toast({ title: "Could not log incident", description: error.message, variant: "destructive" });
