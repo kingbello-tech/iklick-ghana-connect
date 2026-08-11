@@ -32,8 +32,12 @@ Deno.serve(async (req) => {
 
     const { email, password, full_name, role, department, client_id } = await req.json();
 
-    if (!email || !password || !full_name) {
-      return new Response(JSON.stringify({ error: "Email, password, and full name are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!email || !password) {
+      return new Response(JSON.stringify({ error: "Email and password are required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    // Staff accounts still require a name; client portal logins may omit it
+    if (!client_id && !full_name) {
+      return new Response(JSON.stringify({ error: "Full name is required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Create the user
@@ -41,7 +45,7 @@ Deno.serve(async (req) => {
       email,
       password,
       email_confirm: true,
-      user_metadata: { full_name },
+      user_metadata: { full_name: full_name || email.split("@")[0] },
     });
 
     if (createError) {
@@ -54,6 +58,7 @@ Deno.serve(async (req) => {
         .from("client_users")
         .insert({ user_id: newUser.user.id, client_id, created_by: caller.id });
       if (linkError) {
+        console.error("client_users insert failed:", linkError);
         await adminClient.auth.admin.deleteUser(newUser.user.id);
         return new Response(JSON.stringify({ error: linkError.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
