@@ -307,6 +307,41 @@ export type Database = {
         }
         Relationships: []
       }
+      client_users: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_users_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           bandwidth: string | null
@@ -2804,6 +2839,7 @@ export type Database = {
         Returns: boolean
       }
       cancel_meeting_booking: { Args: { _token: string }; Returns: boolean }
+      client_id_for_user: { Args: { _user_id: string }; Returns: string }
       compute_client_churn_score: {
         Args: { _client_id: string }
         Returns: number
@@ -2888,6 +2924,7 @@ export type Database = {
           status: string
         }[]
       }
+      has_any_role: { Args: { _user_id: string }; Returns: boolean }
       has_finance_access: { Args: { _user_id: string }; Returns: boolean }
       has_hr_access: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
@@ -2904,6 +2941,7 @@ export type Database = {
       }
       has_technology_access: { Args: { _user_id: string }; Returns: boolean }
       invoice_approval_threshold: { Args: never; Returns: number }
+      is_client_user: { Args: { _user_id: string }; Returns: boolean }
       is_explicit_project_member: {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean

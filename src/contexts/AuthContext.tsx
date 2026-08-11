@@ -9,6 +9,8 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   role: AppRole | null;
+  clientId: string | null;
+  isClient: boolean;
   profile: Database["public"]["Tables"]["profiles"]["Row"] | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
@@ -32,16 +34,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
   const [profile, setProfile] = useState<Database["public"]["Tables"]["profiles"]["Row"] | null>(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUserData = async (userId: string) => {
-    const [roleRes, profileRes] = await Promise.all([
+    const [roleRes, profileRes, clientRes] = await Promise.all([
       supabase.from("user_roles").select("role").eq("user_id", userId).maybeSingle(),
       supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle(),
+      supabase.from("client_users").select("client_id").eq("user_id", userId).maybeSingle(),
     ]);
     if (roleRes.data) setRole(roleRes.data.role);
     if (profileRes.data) setProfile(profileRes.data);
+    setClientId((clientRes.data as any)?.client_id ?? null);
   };
 
   useEffect(() => {
@@ -53,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setRole(null);
         setProfile(null);
+        setClientId(null);
       }
       setLoading(false);
     });
@@ -87,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setRole(null);
     setProfile(null);
+    setClientId(null);
   };
 
   const hasRole = (r: AppRole) => role === r;
@@ -114,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasServiceDeliveryAccess = role === "admin" || role === "service_delivery";
 
   return (
-    <AuthContext.Provider value={{ session, user, role, profile, loading, signIn, signUp, signOut, hasRole, canManageIncidents, canCreateIncidents, isAdmin, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, isSalesManagerOrAdmin, hasHRAccess, hasServiceDeliveryAccess }}>
+    <AuthContext.Provider value={{ session, user, role, clientId, isClient: !!clientId && !role, profile, loading, signIn, signUp, signOut, hasRole, canManageIncidents, canCreateIncidents, isAdmin, hasSalesAccess, hasTechnologyAccess, hasFinanceAccess, isSalesManagerOrAdmin, hasHRAccess, hasServiceDeliveryAccess }}>
       {children}
     </AuthContext.Provider>
   );
