@@ -11,13 +11,16 @@ interface Props {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: Props) {
-  const { user, role, loading } = useAuth();
+  const { user, role, loading, isClient } = useAuth();
 
   if (loading) {
     return <LogoLoader />;
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // Client portal users must never reach CRM screens
+  if (isClient) return <Navigate to="/portal/performance" replace />;
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
     return <Navigate to="/crm/dashboard" replace />;
