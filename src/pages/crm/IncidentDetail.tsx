@@ -15,6 +15,8 @@ import { IncidentClosureDialog } from "@/components/crm/IncidentClosureDialog";
 import { SLATimerBadge } from "@/components/crm/dashboard/SLATimerBadge";
 import { IncidentApprovals } from "@/components/crm/incident/IncidentApprovals";
 import { IncidentTasks } from "@/components/crm/incident/IncidentTasks";
+import { IncidentPartnerSync } from "@/components/crm/incident/IncidentPartnerSync";
+
 import { IncidentTimeEntries } from "@/components/crm/incident/IncidentTimeEntries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
@@ -144,6 +146,13 @@ export default function IncidentDetail() {
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
 
     await trackChange("status", incident.status, newStatus);
+
+    // Mirror the lifecycle change onto any linked partner ISP ticket
+    supabase.functions.invoke("partner-ticket-sync", {
+      body: { incident_id: incident.id, action: newStatus === "closed" ? "close" : "auto" },
+    }).catch((err) => console.error("Partner sync failed:", err));
+
+
 
     // Flag-to-Technology: notify tech team when escalated
     if (newStatus === "escalated" && incident.status !== "escalated") {
@@ -437,9 +446,11 @@ export default function IncidentDetail() {
               <TabsTrigger value="conversation">Conversation</TabsTrigger>
               <TabsTrigger value="approvals">Approvals</TabsTrigger>
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="partner">Partner ISP</TabsTrigger>
               <TabsTrigger value="time">Time</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="conversation" className="space-y-4 mt-0">
               {/* Description */}
@@ -521,6 +532,11 @@ export default function IncidentDetail() {
             <TabsContent value="tasks" className="mt-0">
               <IncidentTasks incidentId={incident.id} />
             </TabsContent>
+
+            <TabsContent value="partner" className="mt-0">
+              <IncidentPartnerSync incidentId={incident.id} />
+            </TabsContent>
+
 
             <TabsContent value="time" className="mt-0">
               <IncidentTimeEntries incidentId={incident.id} />

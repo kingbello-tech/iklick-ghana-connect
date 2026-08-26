@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat, Video } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat, Video, Plug } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -48,6 +48,8 @@ const adminItems = [
   { title: "User Management", url: "/crm/settings", icon: Settings },
   { title: "Client Logins", url: "/crm/client-logins", icon: UserCog },
   { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
+  { title: "Partner ISP Sync", url: "/crm/partner-systems", icon: Plug },
+
   { title: "Performance", url: "/crm/performance", icon: BarChart3 },
   { title: "Audit Logs", url: "/crm/audit-logs", icon: FileText },
 ];

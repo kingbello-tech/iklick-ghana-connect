@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.outlook-oauth]
 verify_jwt = false
+
+[functions.partner-webhook]
+verify_jwt = false

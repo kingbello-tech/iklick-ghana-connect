@@ -22,6 +22,8 @@ import ClientList from "./pages/crm/ClientList";
 import ClientDetail from "./pages/crm/ClientDetail";
 import UserManagement from "./pages/crm/UserManagement";
 import SLAPolicies from "./pages/crm/SLAPolicies";
+import PartnerSystems from "./pages/crm/PartnerSystems";
+
 import AuditLogs from "./pages/crm/AuditLogs";
 import ClientSatisfaction from "./pages/crm/ClientSatisfaction";
 import SLAReports from "./pages/crm/SLAReports";
@@ -112,6 +114,8 @@ const App = () => (
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
                 <Route path="client-logins" element={<ProtectedRoute allowedRoles={["admin"]}><ClientLogins /></ProtectedRoute>} />
                 <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin"]}><SLAPolicies /></ProtectedRoute>} />
+                <Route path="partner-systems" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><PartnerSystems /></ProtectedRoute>} />
+
                 <Route path="performance" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><PerformanceReports /></ProtectedRoute>} />
                 <Route path="performance/staff/:userId" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><StaffReport /></ProtectedRoute>} />
                 <Route path="performance/client/:clientId" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><ClientReport /></ProtectedRoute>} />
