@@ -439,9 +439,11 @@ export default function IncidentDetail() {
               <TabsTrigger value="conversation">Conversation</TabsTrigger>
               <TabsTrigger value="approvals">Approvals</TabsTrigger>
               <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="partner">Partner ISP</TabsTrigger>
               <TabsTrigger value="time">Time</TabsTrigger>
               <TabsTrigger value="history">History</TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="conversation" className="space-y-4 mt-0">
               {/* Description */}
