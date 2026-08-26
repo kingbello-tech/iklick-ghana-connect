@@ -194,6 +194,12 @@ export function IncidentCreateDialog({ open, onOpenChange, clients, profiles = [
         await (supabase as any).from("incident_clients").insert(linkRows);
       }
 
+      // Auto-escalate to any partner ISP system linked to this client
+      supabase.functions.invoke("partner-ticket-sync", {
+        body: { incident_id: inserted.id, action: "auto" },
+      }).catch((err) => console.error("Partner sync failed:", err));
+
+
       // Fetch assigned user's email from profiles
       let assignedEmail: string | null = null;
       if (form.assigned_to) {
