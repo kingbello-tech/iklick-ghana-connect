@@ -147,6 +147,13 @@ export default function IncidentDetail() {
 
     await trackChange("status", incident.status, newStatus);
 
+    // Mirror the lifecycle change onto any linked partner ISP ticket
+    supabase.functions.invoke("partner-ticket-sync", {
+      body: { incident_id: incident.id, action: newStatus === "closed" ? "close" : "auto" },
+    }).catch((err) => console.error("Partner sync failed:", err));
+
+
+
     // Flag-to-Technology: notify tech team when escalated
     if (newStatus === "escalated" && incident.status !== "escalated") {
       try {
