@@ -526,6 +526,11 @@ export default function IncidentDetail() {
               <IncidentTasks incidentId={incident.id} />
             </TabsContent>
 
+            <TabsContent value="partner" className="mt-0">
+              <IncidentPartnerSync incidentId={incident.id} />
+            </TabsContent>
+
+
             <TabsContent value="time" className="mt-0">
               <IncidentTimeEntries incidentId={incident.id} />
             </TabsContent>
