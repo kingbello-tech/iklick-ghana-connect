@@ -22,6 +22,8 @@ import ClientList from "./pages/crm/ClientList";
 import ClientDetail from "./pages/crm/ClientDetail";
 import UserManagement from "./pages/crm/UserManagement";
 import SLAPolicies from "./pages/crm/SLAPolicies";
+import PartnerSystems from "./pages/crm/PartnerSystems";
+
 import AuditLogs from "./pages/crm/AuditLogs";
 import ClientSatisfaction from "./pages/crm/ClientSatisfaction";
 import SLAReports from "./pages/crm/SLAReports";
