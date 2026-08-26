@@ -1658,6 +1658,259 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_client_accounts: {
+        Row: {
+          auto_escalate: boolean
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          partner_account_ref: string | null
+          partner_system_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_escalate?: boolean
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          partner_account_ref?: string | null
+          partner_system_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_escalate?: boolean
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          partner_account_ref?: string | null
+          partner_system_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_client_accounts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_client_accounts_partner_system_id_fkey"
+            columns: ["partner_system_id"]
+            isOneToOne: false
+            referencedRelation: "partner_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_sync_log: {
+        Row: {
+          action: string
+          created_at: string
+          direction: string
+          http_status: number | null
+          id: string
+          incident_id: string | null
+          message: string | null
+          partner_system_id: string | null
+          partner_ticket_id: string | null
+          payload: Json | null
+          status: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          direction: string
+          http_status?: number | null
+          id?: string
+          incident_id?: string | null
+          message?: string | null
+          partner_system_id?: string | null
+          partner_ticket_id?: string | null
+          payload?: Json | null
+          status: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          direction?: string
+          http_status?: number | null
+          id?: string
+          incident_id?: string | null
+          message?: string | null
+          partner_system_id?: string | null
+          partner_ticket_id?: string | null
+          payload?: Json | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_sync_log_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_sync_log_partner_system_id_fkey"
+            columns: ["partner_system_id"]
+            isOneToOne: false
+            referencedRelation: "partner_systems"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_sync_log_partner_ticket_id_fkey"
+            columns: ["partner_ticket_id"]
+            isOneToOne: false
+            referencedRelation: "partner_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_systems: {
+        Row: {
+          active: boolean
+          api_key_secret_name: string
+          auth_header_name: string
+          auth_header_prefix: string
+          auto_escalate: boolean
+          base_url: string
+          close_path: string | null
+          comment_path: string
+          create_path: string
+          created_at: string
+          created_by: string | null
+          field_map: Json
+          id: string
+          inbound_status_map: Json
+          name: string
+          notes: string | null
+          priority_map: Json
+          status_map: Json
+          update_method: string
+          update_path: string
+          updated_at: string
+          webhook_token: string
+        }
+        Insert: {
+          active?: boolean
+          api_key_secret_name?: string
+          auth_header_name?: string
+          auth_header_prefix?: string
+          auto_escalate?: boolean
+          base_url: string
+          close_path?: string | null
+          comment_path?: string
+          create_path?: string
+          created_at?: string
+          created_by?: string | null
+          field_map?: Json
+          id?: string
+          inbound_status_map?: Json
+          name: string
+          notes?: string | null
+          priority_map?: Json
+          status_map?: Json
+          update_method?: string
+          update_path?: string
+          updated_at?: string
+          webhook_token?: string
+        }
+        Update: {
+          active?: boolean
+          api_key_secret_name?: string
+          auth_header_name?: string
+          auth_header_prefix?: string
+          auto_escalate?: boolean
+          base_url?: string
+          close_path?: string | null
+          comment_path?: string
+          create_path?: string
+          created_at?: string
+          created_by?: string | null
+          field_map?: Json
+          id?: string
+          inbound_status_map?: Json
+          name?: string
+          notes?: string | null
+          priority_map?: Json
+          status_map?: Json
+          update_method?: string
+          update_path?: string
+          updated_at?: string
+          webhook_token?: string
+        }
+        Relationships: []
+      }
+      partner_tickets: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          external_status: string | null
+          external_ticket_id: string | null
+          external_ticket_number: string | null
+          external_url: string | null
+          id: string
+          incident_id: string
+          last_error: string | null
+          last_pushed_at: string | null
+          last_synced_at: string | null
+          partner_system_id: string
+          sync_state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          external_status?: string | null
+          external_ticket_id?: string | null
+          external_ticket_number?: string | null
+          external_url?: string | null
+          id?: string
+          incident_id: string
+          last_error?: string | null
+          last_pushed_at?: string | null
+          last_synced_at?: string | null
+          partner_system_id: string
+          sync_state?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          external_status?: string | null
+          external_ticket_id?: string | null
+          external_ticket_number?: string | null
+          external_url?: string | null
+          id?: string
+          incident_id?: string
+          last_error?: string | null
+          last_pushed_at?: string | null
+          last_synced_at?: string | null
+          partner_system_id?: string
+          sync_state?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_tickets_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "incidents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_tickets_partner_system_id_fkey"
+            columns: ["partner_system_id"]
+            isOneToOne: false
+            referencedRelation: "partner_systems"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pay_items: {
         Row: {
           active: boolean
@@ -2994,6 +3247,13 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      partner_systems_for_incident: {
+        Args: { _incident_id: string }
+        Returns: {
+          partner_account_ref: string
+          partner_system_id: string
+        }[]
       }
       recurring_issue_patterns: {
         Args: { _min_count?: number; _window_days?: number }
