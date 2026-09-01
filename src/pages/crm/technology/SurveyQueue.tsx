@@ -11,10 +11,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ClipboardCheck, MapPin } from "lucide-react";
+import { ClipboardCheck, MapPin, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import { Attachments } from "@/components/crm/Attachments";
+import { WorkSLABadge } from "@/components/crm/dashboard/WorkSLABadge";
 
 interface Survey {
   id: string;
@@ -28,6 +29,9 @@ interface Survey {
   engineer_notes: string | null;
   requested_at: string | null;
   completed_at: string | null;
+  created_at: string;
+  due_at: string | null;
+  sla_breach_notified: boolean;
 }
 
 interface Deal {
@@ -232,6 +236,14 @@ export default function SurveyQueue() {
   const paginated = usePaginatedSlice(myQueue, page, pageSize);
   const pending = myQueue.filter(s => s.status === "scheduled");
   const completed = myQueue.filter(s => s.status === "completed");
+  const now = new Date();
+  const breached = myQueue.filter(s => s.due_at && new Date(s.due_at) < now && s.status !== "completed" && s.status !== "cancelled");
+  const atRisk = myQueue.filter(s => {
+    if (!s.due_at || s.status === "completed" || s.status === "cancelled") return false;
+    const due = new Date(s.due_at), start = new Date(s.requested_at || s.created_at);
+    const total = due.getTime() - start.getTime();
+    return due > now && due.getTime() - now.getTime() < total * 0.25;
+  });
 
   return (
     <div className="space-y-6">
@@ -240,10 +252,12 @@ export default function SurveyQueue() {
         <p className="text-muted-foreground text-sm">Surveys requested by Sales for technical assessment</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-foreground">{pending.length}</p><p className="text-xs text-muted-foreground">Pending</p></CardContent></Card>
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-green-400">{completed.length}</p><p className="text-xs text-muted-foreground">Completed</p></CardContent></Card>
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-foreground">{myQueue.length}</p><p className="text-xs text-muted-foreground">Total</p></CardContent></Card>
+        <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-orange-400">{atRisk.length}</p><p className="text-xs text-muted-foreground">SLA At Risk</p></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /><div><p className="text-2xl font-bold text-destructive">{breached.length}</p><p className="text-xs text-muted-foreground">SLA Breached</p></div></CardContent></Card>
       </div>
 
       <Card>
@@ -264,6 +278,7 @@ export default function SurveyQueue() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
+                  <WorkSLABadge createdAt={s.requested_at || s.created_at} dueAt={s.due_at} status={s.status} completedAt={s.completed_at} />
                   <Badge variant="outline" className={STATUS_COLORS[s.status]}>{s.status}</Badge>
                   <Badge variant="secondary" className="text-xs">{s.feasibility}</Badge>
                 </div>
