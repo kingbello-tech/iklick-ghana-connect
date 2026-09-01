@@ -111,6 +111,61 @@ export default function TechnologyDashboard() {
         <Card><CardContent className="pt-4 flex items-center gap-3"><CheckCircle2 className="h-8 w-8 text-green-400" /><div><p className="text-2xl font-bold text-foreground">{instDone}</p><p className="text-xs text-muted-foreground">Installs Done</p></div></CardContent></Card>
       </div>
 
+      {isManager && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm"><Gauge className="h-4 w-4" />Field Work SLA Monitoring</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-3 rounded-lg border border-border">
+                <p className="text-2xl font-bold text-orange-400">{atRiskCount}</p>
+                <p className="text-xs text-muted-foreground">At Risk (&lt;25% time left)</p>
+              </div>
+              <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/5">
+                <p className="text-2xl font-bold text-destructive">{breachedWork.length}</p>
+                <p className="text-xs text-muted-foreground">SLA Breached (open)</p>
+              </div>
+              <div className="p-3 rounded-lg border border-border">
+                <p className="text-2xl font-bold text-foreground">{lateDone}</p>
+                <p className="text-xs text-muted-foreground">Completed Late</p>
+              </div>
+            </div>
+
+            {breachedWork.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-destructive flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Overdue work needing attention</p>
+                {breachedWork.slice(0, 8).map((w: any) => (
+                  <Link
+                    key={w.id}
+                    to={w.work_order_number !== undefined || installations.some(i => i.id === w.id) ? "/crm/technology/installations" : "/crm/technology/surveys"}
+                    className="flex items-center justify-between p-2 rounded-lg border border-destructive/30 hover:border-destructive/60"
+                  >
+                    <p className="text-sm text-foreground truncate">{dealMap[w.deal_id] || "Unknown deal"}</p>
+                    <WorkSLABadge createdAt={w.requested_at || w.created_at} dueAt={w.due_at} status={w.status} completedAt={w.completed_at} />
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-end gap-3 pt-2 border-t border-border flex-wrap">
+              <div>
+                <Label className="text-xs">Survey SLA (hours)</Label>
+                <Input type="number" min={1} className="w-28" value={slaTargets.site_survey} onChange={e => setSlaTargets({ ...slaTargets, site_survey: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">Installation SLA (hours)</Label>
+                <Input type="number" min={1} className="w-28" value={slaTargets.installation} onChange={e => setSlaTargets({ ...slaTargets, installation: e.target.value })} />
+              </div>
+              <Button size="sm" onClick={saveSlaTargets} disabled={savingSla}>
+                <Save className="h-3.5 w-3.5 mr-1" />{savingSla ? "Saving…" : "Save Targets"}
+              </Button>
+              <p className="text-[11px] text-muted-foreground">Breached work notifies the Technology Manager via the SLA monitor.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {isEngineer && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
