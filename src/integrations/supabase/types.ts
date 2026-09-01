@@ -1128,9 +1128,11 @@ export type Database = {
           completed_at: string | null
           created_at: string
           deal_id: string
+          due_at: string | null
           id: string
           notes: string | null
           scheduled_date: string | null
+          sla_breach_notified: boolean
           status: Database["public"]["Enums"]["installation_status"]
           updated_at: string
           work_order_number: string | null
@@ -1141,9 +1143,11 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           deal_id: string
+          due_at?: string | null
           id?: string
           notes?: string | null
           scheduled_date?: string | null
+          sla_breach_notified?: boolean
           status?: Database["public"]["Enums"]["installation_status"]
           updated_at?: string
           work_order_number?: string | null
@@ -1154,9 +1158,11 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           deal_id?: string
+          due_at?: string | null
           id?: string
           notes?: string | null
           scheduled_date?: string | null
+          sla_breach_notified?: boolean
           status?: Database["public"]["Enums"]["installation_status"]
           updated_at?: string
           work_order_number?: string | null
@@ -2849,6 +2855,7 @@ export type Database = {
           cost_estimate: number | null
           created_at: string
           deal_id: string
+          due_at: string | null
           engineer_notes: string | null
           feasibility: Database["public"]["Enums"]["survey_feasibility"]
           id: string
@@ -2857,6 +2864,7 @@ export type Database = {
           requested_at: string | null
           requested_by: string | null
           scheduled_date: string | null
+          sla_breach_notified: boolean
           status: Database["public"]["Enums"]["survey_status"]
           updated_at: string
         }
@@ -2867,6 +2875,7 @@ export type Database = {
           cost_estimate?: number | null
           created_at?: string
           deal_id: string
+          due_at?: string | null
           engineer_notes?: string | null
           feasibility?: Database["public"]["Enums"]["survey_feasibility"]
           id?: string
@@ -2875,6 +2884,7 @@ export type Database = {
           requested_at?: string | null
           requested_by?: string | null
           scheduled_date?: string | null
+          sla_breach_notified?: boolean
           status?: Database["public"]["Enums"]["survey_status"]
           updated_at?: string
         }
@@ -2885,6 +2895,7 @@ export type Database = {
           cost_estimate?: number | null
           created_at?: string
           deal_id?: string
+          due_at?: string | null
           engineer_notes?: string | null
           feasibility?: Database["public"]["Enums"]["survey_feasibility"]
           id?: string
@@ -2893,6 +2904,7 @@ export type Database = {
           requested_at?: string | null
           requested_by?: string | null
           scheduled_date?: string | null
+          sla_breach_notified?: boolean
           status?: Database["public"]["Enums"]["survey_status"]
           updated_at?: string
         }
@@ -3013,6 +3025,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tech_sla_policies: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          target_hours: number
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          target_hours?: number
+          task_type: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          target_hours?: number
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
