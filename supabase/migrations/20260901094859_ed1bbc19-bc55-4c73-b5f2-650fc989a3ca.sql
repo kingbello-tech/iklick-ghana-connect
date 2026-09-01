@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.set_tech_work_due_at() FROM anon, authenticated;

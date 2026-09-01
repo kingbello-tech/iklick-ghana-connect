@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardCheck, Wrench, CheckCircle2, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ClipboardCheck, Wrench, CheckCircle2, Clock, AlertTriangle, Gauge, Save } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { WorkSLABadge } from "@/components/crm/dashboard/WorkSLABadge";
 
 interface Deal { id: string; title: string; }
 
@@ -20,26 +24,49 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default function TechnologyDashboard() {
   const { user, role } = useAuth();
+  const { toast } = useToast();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [installations, setInstallations] = useState<any[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [slaTargets, setSlaTargets] = useState<{ site_survey: string; installation: string }>({ site_survey: "72", installation: "120" });
+  const [savingSla, setSavingSla] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isEngineer = role === "technology_engineer";
+  const isManager = role === "admin" || role === "technology_manager";
 
   useEffect(() => {
     (async () => {
-      const [s, i, d] = await Promise.all([
-        supabase.from("site_surveys").select("id, status, deal_id, assigned_to, scheduled_date, feasibility"),
-        supabase.from("installations").select("id, status, deal_id, assigned_to, scheduled_date"),
+      const [s, i, d, sla] = await Promise.all([
+        supabase.from("site_surveys").select("id, status, deal_id, assigned_to, scheduled_date, feasibility, requested_at, created_at, due_at, completed_at"),
+        supabase.from("installations").select("id, status, deal_id, assigned_to, scheduled_date, created_at, due_at, completed_at, work_order_number"),
         supabase.from("deals").select("id, title"),
+        supabase.from("tech_sla_policies").select("task_type, target_hours"),
       ]);
       if (s.data) setSurveys(s.data);
       if (i.data) setInstallations(i.data);
       if (d.data) setDeals(d.data);
+      if (sla.data) {
+        const map: any = { site_survey: "72", installation: "120" };
+        sla.data.forEach((p: any) => { map[p.task_type] = String(p.target_hours); });
+        setSlaTargets(map);
+      }
       setLoading(false);
     })();
   }, []);
+
+  const saveSlaTargets = async () => {
+    setSavingSla(true);
+    const rows = [
+      { task_type: "site_survey", target_hours: parseInt(slaTargets.site_survey) || 72 },
+      { task_type: "installation", target_hours: parseInt(slaTargets.installation) || 120 },
+    ];
+    const { error } = await supabase.from("tech_sla_policies").upsert(rows as any, { onConflict: "task_type" });
+    setSavingSla(false);
+    toast(error
+      ? { title: "Error saving SLA targets", description: error.message, variant: "destructive" }
+      : { title: "SLA targets updated", description: "New deadlines apply to newly created work." });
+  };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
@@ -50,6 +77,18 @@ export default function TechnologyDashboard() {
   const instPending = installations.filter(i => i.status === "pending").length;
   const instInProgress = installations.filter(i => i.status === "in_progress").length;
   const instDone = installations.filter(i => i.status === "completed").length;
+
+  const now = new Date();
+  const isOpen = (x: any) => x.status !== "completed" && x.status !== "cancelled";
+  const isBreached = (x: any) => x.due_at && new Date(x.due_at) < now && isOpen(x);
+  const isAtRisk = (x: any) => {
+    if (!x.due_at || !isOpen(x)) return false;
+    const due = new Date(x.due_at), start = new Date(x.requested_at || x.created_at);
+    return due > now && due.getTime() - now.getTime() < (due.getTime() - start.getTime()) * 0.25;
+  };
+  const breachedWork = [...surveys, ...installations].filter(isBreached);
+  const atRiskCount = [...surveys, ...installations].filter(isAtRisk).length;
+  const lateDone = [...surveys, ...installations].filter(x => x.status === "completed" && x.completed_at && x.due_at && new Date(x.completed_at) > new Date(x.due_at)).length;
 
   const mySurveys = isEngineer
     ? surveys.filter(s => s.assigned_to === user?.id && s.status !== "completed" && s.status !== "cancelled")
@@ -71,6 +110,61 @@ export default function TechnologyDashboard() {
         <Card><CardContent className="pt-4 flex items-center gap-3"><Wrench className="h-8 w-8 text-yellow-400" /><div><p className="text-2xl font-bold text-foreground">{instPending + instInProgress}</p><p className="text-xs text-muted-foreground">Active Installs</p></div></CardContent></Card>
         <Card><CardContent className="pt-4 flex items-center gap-3"><CheckCircle2 className="h-8 w-8 text-green-400" /><div><p className="text-2xl font-bold text-foreground">{instDone}</p><p className="text-xs text-muted-foreground">Installs Done</p></div></CardContent></Card>
       </div>
+
+      {isManager && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-sm"><Gauge className="h-4 w-4" />Field Work SLA Monitoring</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-3 rounded-lg border border-border">
+                <p className="text-2xl font-bold text-orange-400">{atRiskCount}</p>
+                <p className="text-xs text-muted-foreground">At Risk (&lt;25% time left)</p>
+              </div>
+              <div className="p-3 rounded-lg border border-destructive/40 bg-destructive/5">
+                <p className="text-2xl font-bold text-destructive">{breachedWork.length}</p>
+                <p className="text-xs text-muted-foreground">SLA Breached (open)</p>
+              </div>
+              <div className="p-3 rounded-lg border border-border">
+                <p className="text-2xl font-bold text-foreground">{lateDone}</p>
+                <p className="text-xs text-muted-foreground">Completed Late</p>
+              </div>
+            </div>
+
+            {breachedWork.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-destructive flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Overdue work needing attention</p>
+                {breachedWork.slice(0, 8).map((w: any) => (
+                  <Link
+                    key={w.id}
+                    to={w.work_order_number !== undefined || installations.some(i => i.id === w.id) ? "/crm/technology/installations" : "/crm/technology/surveys"}
+                    className="flex items-center justify-between p-2 rounded-lg border border-destructive/30 hover:border-destructive/60"
+                  >
+                    <p className="text-sm text-foreground truncate">{dealMap[w.deal_id] || "Unknown deal"}</p>
+                    <WorkSLABadge createdAt={w.requested_at || w.created_at} dueAt={w.due_at} status={w.status} completedAt={w.completed_at} />
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-end gap-3 pt-2 border-t border-border flex-wrap">
+              <div>
+                <Label className="text-xs">Survey SLA (hours)</Label>
+                <Input type="number" min={1} className="w-28" value={slaTargets.site_survey} onChange={e => setSlaTargets({ ...slaTargets, site_survey: e.target.value })} />
+              </div>
+              <div>
+                <Label className="text-xs">Installation SLA (hours)</Label>
+                <Input type="number" min={1} className="w-28" value={slaTargets.installation} onChange={e => setSlaTargets({ ...slaTargets, installation: e.target.value })} />
+              </div>
+              <Button size="sm" onClick={saveSlaTargets} disabled={savingSla}>
+                <Save className="h-3.5 w-3.5 mr-1" />{savingSla ? "Saving…" : "Save Targets"}
+              </Button>
+              <p className="text-[11px] text-muted-foreground">Breached work notifies the Technology Manager via the SLA monitor.</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {isEngineer && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

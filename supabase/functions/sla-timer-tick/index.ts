@@ -60,8 +60,58 @@ Deno.serve(async (req) => {
       breachCount++;
     }
 
+    // 3) Technology field work SLA: overdue site surveys
+    const { data: overdueSurveys } = await supabase
+      .from("site_surveys")
+      .select("id, due_at, assigned_to, status, deals(title)")
+      .lt("due_at", now)
+      .eq("sla_breach_notified", false)
+      .not("status", "in", "(completed,cancelled)")
+      .limit(200);
+
+    let surveyBreaches = 0;
+    for (const s of overdueSurveys || []) {
+      const dealTitle = (s as any).deals?.title ?? "Site survey";
+      await supabase.rpc("notify_role", {
+        _role: "technology_manager",
+        _type: "tech_sla_breached",
+        _title: `Survey SLA breached: ${dealTitle}`,
+        _body: `Site survey for "${dealTitle}" is past its SLA deadline.`,
+        _link: `/crm/technology/surveys`,
+        _metadata: { survey_id: s.id },
+      });
+      await supabase.from("site_surveys").update({ sla_breach_notified: true }).eq("id", s.id);
+      surveyBreaches++;
+    }
+
+    // 4) Technology field work SLA: overdue installations
+    const { data: overdueInstalls } = await supabase
+      .from("installations")
+      .select("id, work_order_number, due_at, assigned_to, status, deals(title)")
+      .lt("due_at", now)
+      .eq("sla_breach_notified", false)
+      .not("status", "in", "(completed,cancelled)")
+      .limit(200);
+
+    let installBreaches = 0;
+    for (const inst of overdueInstalls || []) {
+      const dealTitle = (inst as any).deals?.title ?? "Installation";
+      const label = inst.work_order_number ? `${inst.work_order_number} · ${dealTitle}` : dealTitle;
+      await supabase.rpc("notify_role", {
+        _role: "technology_manager",
+        _type: "tech_sla_breached",
+        _title: `Installation SLA breached: ${label}`,
+        _body: `Installation for "${dealTitle}" is past its SLA deadline.`,
+        _link: `/crm/technology/installations`,
+        _metadata: { installation_id: inst.id },
+      });
+      await supabase.from("installations").update({ sla_breach_notified: true }).eq("id", inst.id);
+      installBreaches++;
+    }
+
+
     return new Response(
-      JSON.stringify({ ok: true, escalated, breached: breachCount }),
+      JSON.stringify({ ok: true, escalated, breached: breachCount, surveyBreaches, installBreaches }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {

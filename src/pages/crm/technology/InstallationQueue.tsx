@@ -11,9 +11,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { MapPin, Wrench } from "lucide-react";
+import { MapPin, Wrench, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
+import { WorkSLABadge } from "@/components/crm/dashboard/WorkSLABadge";
 
 interface Installation {
   id: string;
@@ -25,6 +26,8 @@ interface Installation {
   notes: string | null;
   created_at: string;
   work_order_number: string | null;
+  due_at: string | null;
+  sla_breach_notified: boolean;
 }
 
 interface Deal { id: string; title: string; isp_category: string | null; client_id: string | null; lead_id: string | null; assigned_to: string | null; created_by: string | null; mrc: number | null; nrc: number | null; service_type: string | null; bandwidth: string | null; notes: string | null; }
@@ -168,6 +171,14 @@ export default function InstallationQueue() {
   const pending = myQueue.filter(i => i.status === "pending").length;
   const inProgress = myQueue.filter(i => i.status === "in_progress").length;
   const done = myQueue.filter(i => i.status === "completed").length;
+  const now = new Date();
+  const breached = myQueue.filter(i => i.due_at && new Date(i.due_at) < now && i.status !== "completed" && i.status !== "cancelled").length;
+  const atRisk = myQueue.filter(i => {
+    if (!i.due_at || i.status === "completed" || i.status === "cancelled") return false;
+    const due = new Date(i.due_at), start = new Date(i.created_at);
+    const total = due.getTime() - start.getTime();
+    return due > now && due.getTime() - now.getTime() < total * 0.25;
+  }).length;
 
   return (
     <div className="space-y-6">
@@ -176,10 +187,12 @@ export default function InstallationQueue() {
         <p className="text-muted-foreground text-sm">Auto-created when deals close won. Assign and track installation progress.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-yellow-400">{pending}</p><p className="text-xs text-muted-foreground">Pending</p></CardContent></Card>
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-blue-400">{inProgress}</p><p className="text-xs text-muted-foreground">In Progress</p></CardContent></Card>
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-green-400">{done}</p><p className="text-xs text-muted-foreground">Completed</p></CardContent></Card>
+        <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-orange-400">{atRisk}</p><p className="text-xs text-muted-foreground">SLA At Risk</p></CardContent></Card>
+        <Card><CardContent className="pt-4 flex items-center gap-2"><AlertTriangle className="h-5 w-5 text-destructive" /><div><p className="text-2xl font-bold text-destructive">{breached}</p><p className="text-xs text-muted-foreground">SLA Breached</p></div></CardContent></Card>
       </div>
 
       <Card>
@@ -202,7 +215,10 @@ export default function InstallationQueue() {
                     </p>
                   </div>
                 </div>
-                <Badge variant="outline" className={STATUS_COLORS[i.status]}>{i.status.replace("_", " ")}</Badge>
+                <div className="flex items-center gap-2">
+                  <WorkSLABadge createdAt={i.created_at} dueAt={i.due_at} status={i.status} completedAt={i.completed_at} />
+                  <Badge variant="outline" className={STATUS_COLORS[i.status]}>{i.status.replace("_", " ")}</Badge>
+                </div>
               </div>
             );
           })}
