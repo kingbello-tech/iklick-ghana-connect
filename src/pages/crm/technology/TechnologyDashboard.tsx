@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ClipboardCheck, Wrench, CheckCircle2, Clock } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ClipboardCheck, Wrench, CheckCircle2, Clock, AlertTriangle, Gauge, Save } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { WorkSLABadge } from "@/components/crm/dashboard/WorkSLABadge";
 
 interface Deal { id: string; title: string; }
 
@@ -20,26 +24,49 @@ const STATUS_BADGE: Record<string, string> = {
 
 export default function TechnologyDashboard() {
   const { user, role } = useAuth();
+  const { toast } = useToast();
   const [surveys, setSurveys] = useState<any[]>([]);
   const [installations, setInstallations] = useState<any[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
+  const [slaTargets, setSlaTargets] = useState<{ site_survey: string; installation: string }>({ site_survey: "72", installation: "120" });
+  const [savingSla, setSavingSla] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const isEngineer = role === "technology_engineer";
+  const isManager = role === "admin" || role === "technology_manager";
 
   useEffect(() => {
     (async () => {
-      const [s, i, d] = await Promise.all([
-        supabase.from("site_surveys").select("id, status, deal_id, assigned_to, scheduled_date, feasibility"),
-        supabase.from("installations").select("id, status, deal_id, assigned_to, scheduled_date"),
+      const [s, i, d, sla] = await Promise.all([
+        supabase.from("site_surveys").select("id, status, deal_id, assigned_to, scheduled_date, feasibility, requested_at, created_at, due_at, completed_at"),
+        supabase.from("installations").select("id, status, deal_id, assigned_to, scheduled_date, created_at, due_at, completed_at, work_order_number"),
         supabase.from("deals").select("id, title"),
+        supabase.from("tech_sla_policies").select("task_type, target_hours"),
       ]);
       if (s.data) setSurveys(s.data);
       if (i.data) setInstallations(i.data);
       if (d.data) setDeals(d.data);
+      if (sla.data) {
+        const map: any = { site_survey: "72", installation: "120" };
+        sla.data.forEach((p: any) => { map[p.task_type] = String(p.target_hours); });
+        setSlaTargets(map);
+      }
       setLoading(false);
     })();
   }, []);
+
+  const saveSlaTargets = async () => {
+    setSavingSla(true);
+    const rows = [
+      { task_type: "site_survey", target_hours: parseInt(slaTargets.site_survey) || 72 },
+      { task_type: "installation", target_hours: parseInt(slaTargets.installation) || 120 },
+    ];
+    const { error } = await supabase.from("tech_sla_policies").upsert(rows as any, { onConflict: "task_type" });
+    setSavingSla(false);
+    toast(error
+      ? { title: "Error saving SLA targets", description: error.message, variant: "destructive" }
+      : { title: "SLA targets updated", description: "New deadlines apply to newly created work." });
+  };
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
