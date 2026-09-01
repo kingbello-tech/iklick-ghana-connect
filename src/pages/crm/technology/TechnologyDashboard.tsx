@@ -78,6 +78,18 @@ export default function TechnologyDashboard() {
   const instInProgress = installations.filter(i => i.status === "in_progress").length;
   const instDone = installations.filter(i => i.status === "completed").length;
 
+  const now = new Date();
+  const isOpen = (x: any) => x.status !== "completed" && x.status !== "cancelled";
+  const isBreached = (x: any) => x.due_at && new Date(x.due_at) < now && isOpen(x);
+  const isAtRisk = (x: any) => {
+    if (!x.due_at || !isOpen(x)) return false;
+    const due = new Date(x.due_at), start = new Date(x.requested_at || x.created_at);
+    return due > now && due.getTime() - now.getTime() < (due.getTime() - start.getTime()) * 0.25;
+  };
+  const breachedWork = [...surveys, ...installations].filter(isBreached);
+  const atRiskCount = [...surveys, ...installations].filter(isAtRisk).length;
+  const lateDone = [...surveys, ...installations].filter(x => x.status === "completed" && x.completed_at && x.due_at && new Date(x.completed_at) > new Date(x.due_at)).length;
+
   const mySurveys = isEngineer
     ? surveys.filter(s => s.assigned_to === user?.id && s.status !== "completed" && s.status !== "cancelled")
     : [];
