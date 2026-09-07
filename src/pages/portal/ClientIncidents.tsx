@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Download } from "lucide-react";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 
 type Incident = {
@@ -72,6 +72,26 @@ export default function ClientIncidents() {
   }, [incidents, search, statusFilter]);
 
   const paginated = usePaginatedSlice(filtered, page, pageSize);
+
+  const exportCsv = () => {
+    const headers = ["Number", "Title", "Priority", "Status", "Location", "Logged", "Resolved", "Target Resolution"];
+    const rows = filtered.map((i) => [
+      i.incident_number, i.title, i.priority, i.status.replace(/_/g, " "), i.location || "",
+      new Date(i.created_at).toLocaleString(),
+      i.resolved_at ? new Date(i.resolved_at).toLocaleString() : "",
+      i.due_at ? new Date(i.due_at).toLocaleString() : "",
+    ]);
+    const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
+    const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `incidents_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast({ title: "Export complete", description: `${rows.length} incident${rows.length !== 1 ? "s" : ""} exported.` });
+  };
 
   const submit = async () => {
     if (!clientId || !user) return;
@@ -147,6 +167,9 @@ export default function ClientIncidents() {
             <SelectItem value="closed">Closed</SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
+          <Download className="h-4 w-4 mr-2" />Export report
+        </Button>
       </div>
 
       <Card>
