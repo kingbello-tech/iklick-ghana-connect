@@ -1,0 +1,3 @@
+CREATE POLICY "Service delivery can view deals" ON public.deals FOR SELECT TO authenticated USING (public.has_service_delivery_access(auth.uid()));
+CREATE POLICY "Service delivery can view surveys" ON public.site_surveys FOR SELECT TO authenticated USING (public.has_service_delivery_access(auth.uid()));
+CREATE POLICY "Service delivery can view installations" ON public.installations FOR SELECT TO authenticated USING (public.has_service_delivery_access(auth.uid()));
