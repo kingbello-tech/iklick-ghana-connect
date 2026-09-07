@@ -74,15 +74,23 @@ export default function ClientIncidents() {
   const paginated = usePaginatedSlice(filtered, page, pageSize);
 
   const exportCsv = () => {
-    const headers = ["Number", "Title", "Priority", "Status", "Location", "Logged", "Resolved", "Target Resolution"];
+    const resolutionHrs = (i: Incident) =>
+      i.resolved_at ? ((new Date(i.resolved_at).getTime() - new Date(i.created_at).getTime()) / 3600000).toFixed(2) : "";
+    const resolved = filtered.filter((i) => i.resolved_at);
+    const mttr = resolved.length
+      ? resolved.reduce((sum, i) => sum + (new Date(i.resolved_at!).getTime() - new Date(i.created_at).getTime()) / 3600000, 0) / resolved.length
+      : null;
+    const headers = ["Number", "Title", "Priority", "Status", "Location", "Logged", "Resolved", "Target Resolution", "Resolution (hrs)"];
     const rows = filtered.map((i) => [
       i.incident_number, i.title, i.priority, i.status.replace(/_/g, " "), i.location || "",
       new Date(i.created_at).toLocaleString(),
       i.resolved_at ? new Date(i.resolved_at).toLocaleString() : "",
       i.due_at ? new Date(i.due_at).toLocaleString() : "",
+      resolutionHrs(i),
     ]);
     const escape = (v: string) => (/[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v);
-    const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n");
+    const summary = ["", ["MTTR (hrs) - " + resolved.length + " resolved incident" + (resolved.length !== 1 ? "s" : ""), mttr == null ? "n/a" : mttr.toFixed(2)].map(escape).join(",")].join("\n");
+    const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\n") + "\n" + summary;
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
