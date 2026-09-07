@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClientContacts } from "@/components/crm/ClientContacts";
-import { ArrowLeft, Plus, MapPin, Building2, AlertTriangle, TrendingUp, Trash2, Pencil, CheckCircle2, Clock } from "lucide-react";
+import { ArrowLeft, Plus, MapPin, Building2, AlertTriangle, TrendingUp, Trash2, Pencil, CheckCircle2, Clock, Download } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { format } from "date-fns";
 
@@ -161,7 +161,7 @@ export default function ClientDetail() {
         <TabsContent value="onboarding"><OnboardingTab sites={sites} onboarding={onboarding} tasks={tasks} canEdit={canManageIncidents} userId={user?.id || ""} onChange={fetchAll} /></TabsContent>
         <TabsContent value="performance"><PerformanceTab incidents={incidents} sites={sites} /></TabsContent>
         <TabsContent value="churn"><ChurnTab clientId={client.id} churn={churn} log={churnLog} canEdit={canManageIncidents} userId={user?.id || ""} onChange={fetchAll} /></TabsContent>
-        <TabsContent value="incidents"><IncidentsTab incidents={incidents} sites={sites} /></TabsContent>
+        <TabsContent value="incidents"><IncidentsTab incidents={incidents} sites={sites} clientName={client.name} /></TabsContent>
         <TabsContent value="contacts">{client && <ClientContacts clientId={client.id} canEdit={canManageIncidents} />}</TabsContent>
       </Tabs>
     </div>
@@ -653,11 +653,41 @@ function PerformanceTab({ incidents, sites }: { incidents: Incident[]; sites: Si
 }
 
 // =================== INCIDENTS TAB ===================
-function IncidentsTab({ incidents, sites }: { incidents: Incident[]; sites: Site[] }) {
+function IncidentsTab({ incidents, sites, clientName }: { incidents: Incident[]; sites: Site[]; clientName: string }) {
   const siteName = (id: string | null) => id ? (sites.find((s) => s.id === id)?.name || "—") : "—";
+
+  const exportCsv = () => {
+    const esc = (v: string | null | undefined) => `"${(v ?? "").replace(/"/g, '""')}"`;
+    const rows = [
+      ["Incident #", "Title", "Site", "Priority", "Status", "Created", "Resolved", "Due"].join(","),
+      ...incidents.map((i) => [
+        i.incident_number,
+        esc(i.title),
+        esc(siteName(i.site_id)),
+        i.priority,
+        i.status,
+        format(new Date(i.created_at), "yyyy-MM-dd HH:mm"),
+        i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
+        i.due_at ? format(new Date(i.due_at), "yyyy-MM-dd HH:mm") : "",
+      ].join(",")),
+    ].join("\n");
+    const blob = new Blob([rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${clientName.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-incidents-${format(new Date(), "yyyy-MM-dd")}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (incidents.length === 0) return <Card><CardContent className="p-12 text-center text-muted-foreground text-sm">No incidents.</CardContent></Card>;
   return (
-    <Card><CardContent className="p-0 overflow-x-auto">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-base">Incidents ({incidents.length})</CardTitle>
+        <Button variant="outline" size="sm" onClick={exportCsv}><Download className="h-4 w-4 mr-2" />Export report</Button>
+      </CardHeader>
+      <CardContent className="p-0 overflow-x-auto">
       <table className="w-full text-sm">
         <thead><tr className="border-b border-border text-xs text-muted-foreground">
           <th className="text-left p-3">#</th><th className="text-left p-3">Title</th>
