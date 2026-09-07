@@ -658,8 +658,14 @@ function IncidentsTab({ incidents, sites, clientName }: { incidents: Incident[];
 
   const exportCsv = () => {
     const esc = (v: string | null | undefined) => `"${(v ?? "").replace(/"/g, '""')}"`;
+    const resolutionHrs = (i: Incident) =>
+      i.resolved_at ? ((new Date(i.resolved_at).getTime() - new Date(i.created_at).getTime()) / 3600000).toFixed(2) : "";
+    const resolved = incidents.filter((i) => i.resolved_at);
+    const mttr = resolved.length
+      ? resolved.reduce((sum, i) => sum + (new Date(i.resolved_at!).getTime() - new Date(i.created_at).getTime()) / 3600000, 0) / resolved.length
+      : null;
     const rows = [
-      ["Incident #", "Title", "Site", "Priority", "Status", "Created", "Resolved", "Due"].join(","),
+      ["Incident #", "Title", "Site", "Priority", "Status", "Created", "Resolved", "Due", "Resolution (hrs)"].join(","),
       ...incidents.map((i) => [
         i.incident_number,
         esc(i.title),
@@ -669,7 +675,10 @@ function IncidentsTab({ incidents, sites, clientName }: { incidents: Incident[];
         format(new Date(i.created_at), "yyyy-MM-dd HH:mm"),
         i.resolved_at ? format(new Date(i.resolved_at), "yyyy-MM-dd HH:mm") : "",
         i.due_at ? format(new Date(i.due_at), "yyyy-MM-dd HH:mm") : "",
+        resolutionHrs(i),
       ].join(",")),
+      "",
+      [`MTTR (hrs) - ${resolved.length} resolved incident${resolved.length !== 1 ? "s" : ""}`, mttr == null ? "n/a" : mttr.toFixed(2)].join(","),
     ].join("\n");
     const blob = new Blob([rows], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
