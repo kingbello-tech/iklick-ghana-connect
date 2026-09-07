@@ -158,6 +158,7 @@ export default function ClientIncidents() {
         </div>
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
           <SelectTrigger className="w-44"><SelectValue /></SelectTrigger>
+          <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="open">Open</SelectItem>
             <SelectItem value="in_progress">In progress</SelectItem>
@@ -166,6 +167,9 @@ export default function ClientIncidents() {
             <SelectItem value="closed">Closed</SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
+          <Download className="h-4 w-4 mr-2" />Export report
+        </Button>
       </div>
 
       <Card>
