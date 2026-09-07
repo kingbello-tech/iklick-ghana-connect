@@ -161,7 +161,7 @@ export default function ClientDetail() {
         <TabsContent value="onboarding"><OnboardingTab sites={sites} onboarding={onboarding} tasks={tasks} canEdit={canManageIncidents} userId={user?.id || ""} onChange={fetchAll} /></TabsContent>
         <TabsContent value="performance"><PerformanceTab incidents={incidents} sites={sites} /></TabsContent>
         <TabsContent value="churn"><ChurnTab clientId={client.id} churn={churn} log={churnLog} canEdit={canManageIncidents} userId={user?.id || ""} onChange={fetchAll} /></TabsContent>
-        <TabsContent value="incidents"><IncidentsTab incidents={incidents} sites={sites} /></TabsContent>
+        <TabsContent value="incidents"><IncidentsTab incidents={incidents} sites={sites} clientName={client.name} /></TabsContent>
         <TabsContent value="contacts">{client && <ClientContacts clientId={client.id} canEdit={canManageIncidents} />}</TabsContent>
       </Tabs>
     </div>
