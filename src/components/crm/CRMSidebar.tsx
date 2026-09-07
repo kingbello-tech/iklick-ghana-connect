@@ -1,4 +1,4 @@
-import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat, Video, Plug } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, Users, Settings, LogOut, ChevronLeft, Clock, FileText, Heart, BarChart3, Target, TrendingUp, ClipboardCheck, Wrench, Wifi, Receipt, Wallet, BookOpen, UserCog, Coins, CalendarClock, FileSpreadsheet, ScrollText, Link2, FolderKanban, Repeat, Video, Plug, GitBranch } from "lucide-react";
 
 const CediSign = ({ className }: { className?: string }) => (
   <span className={`inline-flex items-center justify-center font-bold ${className ?? ""}`} aria-hidden="true">₵</span>
@@ -91,6 +91,7 @@ const hrAdminItems = [
 
 const serviceDeliveryItems = [
   { title: "SD Dashboard", url: "/crm/service-delivery/dashboard", icon: FolderKanban },
+  { title: "Delivery Pipeline", url: "/crm/service-delivery/pipeline", icon: GitBranch },
   { title: "Projects", url: "/crm/projects", icon: FolderKanban },
 ];
 

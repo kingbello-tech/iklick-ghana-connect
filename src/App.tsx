@@ -54,6 +54,7 @@ import MyPayslipsStub from "./pages/crm/MyPayslipsStub";
 import ProjectList from "./pages/crm/projects/ProjectList";
 import ProjectDetail from "./pages/crm/projects/ProjectDetail";
 import ServiceDeliveryDashboard from "./pages/crm/projects/ServiceDeliveryDashboard";
+import DeliveryPipeline from "./pages/crm/projects/DeliveryPipeline";
 import MeetingLinks from "./pages/crm/MeetingLinks";
 import OutlookCallback from "./pages/crm/OutlookCallback";
 import BookMeeting from "./pages/BookMeeting";
@@ -109,6 +110,7 @@ const App = () => (
                 <Route path="projects" element={<ProjectList />} />
                 <Route path="projects/:id" element={<ProjectDetail />} />
                 <Route path="service-delivery/dashboard" element={<ProtectedRoute allowedRoles={SERVICE_DELIVERY_ROLES}><ServiceDeliveryDashboard /></ProtectedRoute>} />
+                <Route path="service-delivery/pipeline" element={<ProtectedRoute allowedRoles={SERVICE_DELIVERY_ROLES}><DeliveryPipeline /></ProtectedRoute>} />
                 <Route path="satisfaction" element={<ProtectedRoute allowedRoles={["admin", "client_experience"]}><ClientSatisfaction /></ProtectedRoute>} />
                 <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience", "network_manager"]}><SLAReports /></ProtectedRoute>} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
