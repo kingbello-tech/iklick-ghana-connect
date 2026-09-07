@@ -91,6 +91,7 @@ const hrAdminItems = [
 
 const serviceDeliveryItems = [
   { title: "SD Dashboard", url: "/crm/service-delivery/dashboard", icon: FolderKanban },
+  { title: "Delivery Pipeline", url: "/crm/service-delivery/pipeline", icon: GitBranch },
   { title: "Projects", url: "/crm/projects", icon: FolderKanban },
 ];
 
