@@ -157,13 +157,8 @@ export default function SurveyQueue() {
       return;
     }
 
-    // When survey is completed, advance the deal to Proposal/Costing for the sales rep.
-    if (justCompleted) {
-      await supabase
-        .from("deals")
-        .update({ stage: "proposal_sent" as any })
-        .eq("id", selected.deal_id);
-    }
+    // Deal stage advances to Proposal/Costing automatically via database trigger.
+
 
     const deal = dealMap[selected.deal_id];
     const dealTitle = deal?.title;
