@@ -154,7 +154,7 @@ export default function ClientLogins() {
                       <td className="p-3 text-muted-foreground">{r.full_name || "—"}</td>
                       <td className="p-3 text-muted-foreground">{r.email || "—"}</td>
                       <td className="p-3 text-right space-x-1">
-                        <Button size="sm" variant="ghost" onClick={() => resetPassword(r.email)}>
+                        <Button size="sm" variant="ghost" onClick={() => resetPassword(r.user_id, r.email)}>
                           <KeyRound className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(r.user_id)}>

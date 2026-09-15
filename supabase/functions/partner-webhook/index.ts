@@ -112,13 +112,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    let noteError: string | null = null;
     if (incident && comment) {
-      await admin.from("incident_notes").insert({
+      const { error: insErr } = await admin.from("incident_notes").insert({
         incident_id: incident.id,
         user_id: incident.created_by,
         content: `[${system.name}${author ? ` · ${author}` : ""}] ${String(comment).slice(0, 5000)}`,
-        note_type: "internal",
+        note_type: "note",
       });
+      if (insErr) noteError = insErr.message;
     }
 
     if (incident) {
