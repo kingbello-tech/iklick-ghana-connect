@@ -133,7 +133,21 @@ Deno.serve(async (req) => {
 
       let effective: Action = action;
       if (action === "auto") effective = existing?.external_ticket_id ? "update" : "create";
-      if (effective !== "create" && !existing?.external_ticket_id) effective = "create";
+      if (effective !== "create" && !existing?.external_ticket_id) {
+        const msg = "No partner ticket exists yet — escalate (create) first.";
+        await admin.from("partner_sync_log").insert({
+          partner_ticket_id: existing?.id ?? null,
+          partner_system_id: system.id,
+          incident_id: incidentId,
+          direction: "outbound",
+          action: effective,
+          status: "error",
+          message: msg,
+        });
+        results.push({ partner_system_id: system.id, partner_name: system.name, action: effective, ok: false, error: msg });
+        continue;
+      }
+      if (effective === "create" && existing?.external_ticket_id) effective = "update";
 
       const fieldMap = (system.field_map ?? {}) as Record<string, string>;
       const statusMap = (system.status_map ?? {}) as Record<string, string>;
