@@ -64,11 +64,10 @@ export default function ClientLogins() {
     load();
   };
 
-  const resetPassword = async (email: string | null) => {
-    if (!email) return;
-    const password = prompt(`New password for ${email} (min 8 characters)`);
+  const resetPassword = async (userId: string, email: string | null) => {
+    const password = prompt(`New password for ${email || "this portal account"} (min 8 characters)`);
     if (!password || password.length < 8) return;
-    const { data, error } = await supabase.functions.invoke("reset-user-password", { body: { email, password } });
+    const { data, error } = await supabase.functions.invoke("reset-user-password", { body: { user_id: userId, password } });
     if (error || (data as any)?.error) {
       toast({ title: "Reset failed", description: (data as any)?.error ?? error?.message, variant: "destructive" });
       return;
