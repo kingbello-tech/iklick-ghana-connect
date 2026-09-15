@@ -140,12 +140,20 @@ Deno.serve(async (req) => {
       incident_id: ticket.incident_id,
       direction: "inbound",
       action: comment ? "comment" : "update",
-      status: "success",
-      message: mappedStatus ? `Status → ${mappedStatus}` : externalStatus,
+      status: noteError ? "error" : "success",
+      message: noteError
+        ? `Comment not saved: ${noteError}`
+        : (mappedStatus ? `Status → ${mappedStatus}` : externalStatus),
       payload: body as any,
     });
 
-    return json({ ok: true, matched: true, incident_id: ticket.incident_id, status: mappedStatus });
+    return json({
+      ok: !noteError,
+      matched: true,
+      incident_id: ticket.incident_id,
+      status: mappedStatus,
+      ...(noteError ? { note_error: noteError } : {}),
+    });
   } catch (err) {
     return json({ error: (err as Error).message }, 500);
   }
