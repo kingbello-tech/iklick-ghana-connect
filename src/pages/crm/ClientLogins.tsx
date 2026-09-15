@@ -64,11 +64,10 @@ export default function ClientLogins() {
     load();
   };
 
-  const resetPassword = async (email: string | null) => {
-    if (!email) return;
-    const password = prompt(`New password for ${email} (min 8 characters)`);
+  const resetPassword = async (userId: string, email: string | null) => {
+    const password = prompt(`New password for ${email || "this portal account"} (min 8 characters)`);
     if (!password || password.length < 8) return;
-    const { data, error } = await supabase.functions.invoke("reset-user-password", { body: { email, password } });
+    const { data, error } = await supabase.functions.invoke("reset-user-password", { body: { user_id: userId, password } });
     if (error || (data as any)?.error) {
       toast({ title: "Reset failed", description: (data as any)?.error ?? error?.message, variant: "destructive" });
       return;
@@ -155,7 +154,7 @@ export default function ClientLogins() {
                       <td className="p-3 text-muted-foreground">{r.full_name || "—"}</td>
                       <td className="p-3 text-muted-foreground">{r.email || "—"}</td>
                       <td className="p-3 text-right space-x-1">
-                        <Button size="sm" variant="ghost" onClick={() => resetPassword(r.email)}>
+                        <Button size="sm" variant="ghost" onClick={() => resetPassword(r.user_id, r.email)}>
                           <KeyRound className="h-4 w-4" />
                         </Button>
                         <Button size="sm" variant="ghost" className="text-destructive" onClick={() => remove(r.user_id)}>

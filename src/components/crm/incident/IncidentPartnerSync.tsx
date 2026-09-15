@@ -107,18 +107,32 @@ export function IncidentPartnerSync({ incidentId }: { incidentId: string }) {
             </p>
             {t.last_error && <p className="text-xs text-destructive break-words">{t.last_error}</p>}
             <div className="flex gap-2 flex-wrap">
-              <Button size="sm" variant="outline" disabled={busy !== null}
-                onClick={() => run("update", t.partner_system_id)}>
-                <Upload className="h-3.5 w-3.5 mr-1" /> Push update
-              </Button>
-              <Button size="sm" variant="outline" disabled={busy !== null || !note.trim()}
-                onClick={() => run("comment", t.partner_system_id)}>
-                <Send className="h-3.5 w-3.5 mr-1" /> Send note
-              </Button>
-              <Button size="sm" variant="outline" disabled={busy !== null}
-                onClick={() => run("close", t.partner_system_id)}>
-                Close on partner
-              </Button>
+              {!t.external_ticket_id ? (
+                <>
+                  <p className="text-xs text-muted-foreground w-full">
+                    No ticket was opened on the partner system yet — retry the escalation before sending updates.
+                  </p>
+                  <Button size="sm" variant="outline" disabled={busy !== null}
+                    onClick={() => run("create", t.partner_system_id)}>
+                    Retry escalation
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button size="sm" variant="outline" disabled={busy !== null}
+                    onClick={() => run("update", t.partner_system_id)}>
+                    <Upload className="h-3.5 w-3.5 mr-1" /> Push update
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={busy !== null || !note.trim()}
+                    onClick={() => run("comment", t.partner_system_id)}>
+                    <Send className="h-3.5 w-3.5 mr-1" /> Send note
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={busy !== null}
+                    onClick={() => run("close", t.partner_system_id)}>
+                    Close on partner
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         ))}

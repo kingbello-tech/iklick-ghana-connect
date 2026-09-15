@@ -112,13 +112,15 @@ Deno.serve(async (req) => {
       });
     }
 
+    let noteError: string | null = null;
     if (incident && comment) {
-      await admin.from("incident_notes").insert({
+      const { error: insErr } = await admin.from("incident_notes").insert({
         incident_id: incident.id,
         user_id: incident.created_by,
         content: `[${system.name}${author ? ` · ${author}` : ""}] ${String(comment).slice(0, 5000)}`,
-        note_type: "internal",
+        note_type: "note",
       });
+      if (insErr) noteError = insErr.message;
     }
 
     if (incident) {
@@ -138,12 +140,20 @@ Deno.serve(async (req) => {
       incident_id: ticket.incident_id,
       direction: "inbound",
       action: comment ? "comment" : "update",
-      status: "success",
-      message: mappedStatus ? `Status → ${mappedStatus}` : externalStatus,
+      status: noteError ? "error" : "success",
+      message: noteError
+        ? `Comment not saved: ${noteError}`
+        : (mappedStatus ? `Status → ${mappedStatus}` : externalStatus),
       payload: body as any,
     });
 
-    return json({ ok: true, matched: true, incident_id: ticket.incident_id, status: mappedStatus });
+    return json({
+      ok: !noteError,
+      matched: true,
+      incident_id: ticket.incident_id,
+      status: mappedStatus,
+      ...(noteError ? { note_error: noteError } : {}),
+    });
   } catch (err) {
     return json({ error: (err as Error).message }, 500);
   }
