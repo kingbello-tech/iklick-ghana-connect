@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ import { MapPin, Wrench, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import { WorkSLABadge } from "@/components/crm/dashboard/WorkSLABadge";
+import { QueueScope, TechnologyQueueToolbar } from "@/components/crm/technology/TechnologyQueueToolbar";
 
 interface Installation {
   id: string;
@@ -57,6 +58,12 @@ export default function InstallationQueue() {
   const [form, setForm] = useState({ assigned_to: "__unassigned__", scheduled_date: "", status: "pending", notes: "" });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+  const [scope, setScope] = useState<QueueScope>("mine");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("active");
+  const [slaFilter, setSlaFilter] = useState("all");
+  const [scheduleFilter, setScheduleFilter] = useState("all");
+  const [assigneeFilter, setAssigneeFilter] = useState("all");
 
   const isManager = role === "admin" || role === "technology_manager";
 
@@ -166,26 +173,64 @@ export default function InstallationQueue() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
-  const myQueue = role === "technology_engineer" ? installations.filter(i => i.assigned_to === user?.id) : installations;
-  const paginated = usePaginatedSlice(myQueue, page, pageSize);
-  const pending = myQueue.filter(i => i.status === "pending").length;
-  const inProgress = myQueue.filter(i => i.status === "in_progress").length;
-  const done = myQueue.filter(i => i.status === "completed").length;
   const now = new Date();
-  const breached = myQueue.filter(i => i.due_at && new Date(i.due_at) < now && i.status !== "completed" && i.status !== "cancelled").length;
-  const atRisk = myQueue.filter(i => {
-    if (!i.due_at || i.status === "completed" || i.status === "cancelled") return false;
+  const getSlaState = (i: Installation) => {
+    if (!i.due_at || i.status === "completed" || i.status === "cancelled") return "on_track";
     const due = new Date(i.due_at), start = new Date(i.created_at);
-    const total = due.getTime() - start.getTime();
-    return due > now && due.getTime() - now.getTime() < total * 0.25;
-  }).length;
+    if (due < now) return "breached";
+    return due.getTime() - now.getTime() < (due.getTime() - start.getTime()) * 0.25 ? "at_risk" : "on_track";
+  };
+  const filteredQueue = useMemo(() => installations
+    .filter((i) => scope === "mine" ? i.assigned_to === user?.id : scope === "unassigned" ? !i.assigned_to : true)
+    .filter((i) => statusFilter === "all" || (statusFilter === "active" ? !["completed", "cancelled"].includes(i.status) : i.status === statusFilter))
+    .filter((i) => slaFilter === "all" || getSlaState(i) === slaFilter)
+    .filter((i) => {
+      const today = new Date().toISOString().slice(0, 10);
+      if (scheduleFilter === "today") return i.scheduled_date === today;
+      if (scheduleFilter === "overdue") return Boolean(i.scheduled_date && i.scheduled_date < today && !["completed", "cancelled"].includes(i.status));
+      if (scheduleFilter === "unscheduled") return !i.scheduled_date;
+      return true;
+    })
+    .filter((i) => assigneeFilter === "all" || i.assigned_to === assigneeFilter)
+    .filter((i) => {
+      if (!search.trim()) return true;
+      const deal = dealMap[i.deal_id];
+      const lead = deal?.lead_id ? leadMap[deal.lead_id] : null;
+      const client = deal?.client_id ? clientMap[deal.client_id] : null;
+      const haystack = [i.work_order_number, deal?.title, lead?.name, lead?.company_name, client?.name, i.assigned_to ? profileMap[i.assigned_to] : "unassigned"].join(" ").toLowerCase();
+      return haystack.includes(search.trim().toLowerCase());
+    })
+    .sort((a, b) => {
+      const rank = { breached: 0, at_risk: 1, on_track: 2 };
+      const stateDifference = rank[getSlaState(a)] - rank[getSlaState(b)];
+      if (stateDifference) return stateDifference;
+      return new Date(a.due_at || a.scheduled_date || a.created_at).getTime() - new Date(b.due_at || b.scheduled_date || b.created_at).getTime();
+    }), [assigneeFilter, clientMap, dealMap, installations, leadMap, profileMap, scheduleFilter, scope, search, slaFilter, statusFilter, user?.id]);
+  useEffect(() => { setPage(1); }, [scope, search, statusFilter, slaFilter, scheduleFilter, assigneeFilter]);
+  const paginated = usePaginatedSlice(filteredQueue, page, pageSize);
+  const pending = filteredQueue.filter(i => i.status === "pending").length;
+  const inProgress = filteredQueue.filter(i => i.status === "in_progress").length;
+  const done = filteredQueue.filter(i => i.status === "completed").length;
+  const breached = filteredQueue.filter(i => getSlaState(i) === "breached").length;
+  const atRisk = filteredQueue.filter(i => getSlaState(i) === "at_risk").length;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Installation Queue</h1>
-        <p className="text-muted-foreground text-sm">Auto-created when deals close won. Assign and track installation progress.</p>
+        <h1 className="text-2xl font-bold text-foreground">Installation Tasks</h1>
+        <p className="text-muted-foreground text-sm">Your assigned installations are shown first</p>
       </div>
+
+      <TechnologyQueueToolbar
+        scope={scope} onScopeChange={setScope} isManager={isManager}
+        search={search} onSearchChange={setSearch}
+        status={statusFilter} onStatusChange={setStatusFilter}
+        statusOptions={[{ value: "active", label: "Active" }, { value: "all", label: "All statuses" }, { value: "pending", label: "Pending" }, { value: "in_progress", label: "In progress" }, { value: "completed", label: "Completed" }, { value: "cancelled", label: "Cancelled" }]}
+        sla={slaFilter} onSlaChange={setSlaFilter}
+        schedule={scheduleFilter} onScheduleChange={setScheduleFilter}
+        assignee={assigneeFilter} onAssigneeChange={setAssigneeFilter}
+        assignees={techProfiles}
+      />
 
       <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
         <Card><CardContent className="pt-4"><p className="text-2xl font-bold text-yellow-400">{pending}</p><p className="text-xs text-muted-foreground">Pending</p></CardContent></Card>
@@ -196,22 +241,22 @@ export default function InstallationQueue() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-sm">All Installations</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">Installation tasks ({filteredQueue.length})</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {myQueue.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No installations</p>}
+          {filteredQueue.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No installations match this view</p>}
           {paginated.map(i => {
             const deal = dealMap[i.deal_id];
             return (
               <div key={i.id} className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary/50 cursor-pointer" onClick={() => openEdit(i)}>
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <Wrench className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm font-medium text-foreground">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {i.work_order_number && <span className="font-mono text-xs text-primary mr-2">{i.work_order_number}</span>}
                       {deal?.title || "Unknown deal"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {i.assigned_to ? `Engineer: ${profileMap[i.assigned_to]}` : "Unassigned"} · Created {format(new Date(i.created_at), "MMM d")}
+                      {i.assigned_to ? profileMap[i.assigned_to] : "Unassigned"} · {i.scheduled_date ? `Scheduled ${format(new Date(i.scheduled_date), "MMM d")}` : "Not scheduled"} · Due {i.due_at ? format(new Date(i.due_at), "MMM d") : "not set"}
                     </p>
                   </div>
                 </div>
@@ -222,11 +267,11 @@ export default function InstallationQueue() {
               </div>
             );
           })}
-          {myQueue.length > 0 && (
+          {filteredQueue.length > 0 && (
             <TablePagination
               page={page}
               pageSize={pageSize}
-              total={myQueue.length}
+              total={filteredQueue.length}
               onPageChange={setPage}
               onPageSizeChange={(s) => { setPageSize(s); setPage(1); }}
             />
