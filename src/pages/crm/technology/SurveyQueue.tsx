@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { TablePagination, usePaginatedSlice } from "@/components/crm/TablePagination";
 import { Attachments } from "@/components/crm/Attachments";
 import { WorkSLABadge } from "@/components/crm/dashboard/WorkSLABadge";
-import { QueueScope, TechnologyQueueToolbar } from "@/components/crm/technology/TechnologyQueueToolbar";
+import { TechnologyQueueToolbar, useQueueScope } from "@/components/crm/technology/TechnologyQueueToolbar";
 
 interface Survey {
   id: string;
@@ -95,7 +95,6 @@ export default function SurveyQueue() {
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [scope, setScope] = useState<QueueScope>("mine");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("active");
   const [slaFilter, setSlaFilter] = useState("all");
@@ -103,6 +102,7 @@ export default function SurveyQueue() {
   const [assigneeFilter, setAssigneeFilter] = useState("all");
 
   const isManager = role === "admin" || role === "technology_manager";
+  const [scope, setScope] = useQueueScope(isManager);
 
   const fetchData = async () => {
     const [sRes, dRes, lRes, cRes, pRes] = await Promise.all([
@@ -303,7 +303,11 @@ export default function SurveyQueue() {
       <Card>
         <CardHeader><CardTitle className="text-sm">Survey tasks ({filteredQueue.length})</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {filteredQueue.length === 0 && <p className="text-sm text-muted-foreground text-center py-8">No surveys match this view</p>}
+          {filteredQueue.length === 0 && (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              {surveys.length > 0 ? "No surveys match this view — try another scope or clear the filters" : "No surveys recorded yet"}
+            </p>
+          )}
           {paginated.map(s => {
             const deal = dealMap[s.deal_id];
             return (
