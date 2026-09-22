@@ -34,9 +34,12 @@ const cxItems = [
   { title: "SLA Reports", url: "/crm/sla-reports", icon: Clock },
 ];
 
-// Items visible to Technology Engineers (no surveys/installs queue)
+// Personal Technology workspace for engineers
 const techEngineerItems = [
+  { title: "Tech Dashboard", url: "/crm/technology/dashboard", icon: Wifi },
   { title: "Incidents", url: "/crm/incidents", icon: AlertTriangle },
+  { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
+  { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
 ];
 
 // Items visible to Network Engineers (incidents only from Technology dept)
