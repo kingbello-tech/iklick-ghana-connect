@@ -232,8 +232,6 @@ export default function SurveyQueue() {
     fetchData();
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-
   const now = new Date();
   const getSlaState = (s: Survey) => {
     if (!s.due_at || s.status === "completed" || s.status === "cancelled") return "on_track";
@@ -273,6 +271,8 @@ export default function SurveyQueue() {
   const completed = filteredQueue.filter(s => s.status === "completed");
   const breached = filteredQueue.filter(s => getSlaState(s) === "breached");
   const atRisk = filteredQueue.filter(s => getSlaState(s) === "at_risk");
+
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   return (
     <div className="space-y-6">

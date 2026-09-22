@@ -171,8 +171,6 @@ export default function InstallationQueue() {
     fetchData();
   };
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-
   const now = new Date();
   const getSlaState = (i: Installation) => {
     if (!i.due_at || i.status === "completed" || i.status === "cancelled") return "on_track";
@@ -213,6 +211,8 @@ export default function InstallationQueue() {
   const done = filteredQueue.filter(i => i.status === "completed").length;
   const breached = filteredQueue.filter(i => getSlaState(i) === "breached").length;
   const atRisk = filteredQueue.filter(i => getSlaState(i) === "at_risk").length;
+
+  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   return (
     <div className="space-y-6">
