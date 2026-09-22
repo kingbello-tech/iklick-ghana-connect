@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import { Search, UserRound, UserX, UsersRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export type QueueScope = "mine" | "unassigned" | "team";
 
 interface Option { value: string; label: string }
+
+/**
+ * Managers/admins start on the full team view (they rarely have work assigned to
+ * themselves); engineers start on their own tasks. Once the user picks a scope
+ * manually, their choice sticks.
+ */
+export function useQueueScope(isManager: boolean) {
+  const [scope, setScopeState] = useState<QueueScope>("mine");
+  const [touched, setTouched] = useState(false);
+
+  useEffect(() => {
+    if (!touched && isManager) setScopeState("team");
+  }, [isManager, touched]);
+
+  const setScope = useCallback((next: QueueScope) => {
+    setTouched(true);
+    setScopeState(next);
+  }, []);
+
+  return [scope, setScope] as const;
+}
 
 export function TechnologyQueueToolbar({
   scope,
