@@ -47,6 +47,11 @@ export default function TechnologyDashboard() {
   const { toast } = useToast();
   const isManager = role === "admin" || role === "technology_manager";
   const [scope, setScope] = useState<Scope>("mine");
+  const [scopeTouched, setScopeTouched] = useState(false);
+  useEffect(() => {
+    if (!scopeTouched && isManager) setScope("team");
+  }, [isManager, scopeTouched]);
+  const changeScope = (next: Scope) => { setScopeTouched(true); setScope(next); };
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [installations, setInstallations] = useState<Installation[]>([]);
@@ -175,8 +180,8 @@ export default function TechnologyDashboard() {
         </div>
         {isManager && (
           <div className="flex gap-2">
-            <Button size="sm" variant={scope === "mine" ? "default" : "outline"} onClick={() => setScope("mine")}><UserRound className="mr-2 h-4 w-4" />My Work</Button>
-            <Button size="sm" variant={scope === "team" ? "default" : "outline"} onClick={() => setScope("team")}><UsersRound className="mr-2 h-4 w-4" />Team Overview</Button>
+            <Button size="sm" variant={scope === "mine" ? "default" : "outline"} onClick={() => changeScope("mine")}><UserRound className="mr-2 h-4 w-4" />My Work</Button>
+            <Button size="sm" variant={scope === "team" ? "default" : "outline"} onClick={() => changeScope("team")}><UsersRound className="mr-2 h-4 w-4" />Team Overview</Button>
           </div>
         )}
       </div>
