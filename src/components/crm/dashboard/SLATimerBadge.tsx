@@ -6,16 +6,28 @@ export function SLATimerBadge({
   targetMinutes,
   resolved,
   resolvedAt,
+  pausedMinutes = 0,
+  pausedAt,
 }: {
   createdAt: string;
   targetMinutes?: number | null;
   resolved?: boolean;
   resolvedAt?: string | null;
+  pausedMinutes?: number | null;
+  pausedAt?: string | null;
 }) {
-  // Elapsed = time between created and (resolved_at OR now)
-  const end = resolved && resolvedAt ? new Date(resolvedAt) : new Date();
-  const elapsed = Math.max(0, differenceInMinutes(end, new Date(createdAt)));
+  // Elapsed = time between created and (resolved_at OR pause start OR now), minus paused time
+  const end = resolved && resolvedAt ? new Date(resolvedAt) : pausedAt ? new Date(pausedAt) : new Date();
+  const elapsed = Math.max(0, differenceInMinutes(end, new Date(createdAt)) - (pausedMinutes ?? 0));
   const hrs = (elapsed / 60).toFixed(1);
+
+  if (pausedAt && !resolved) {
+    return (
+      <Badge className="text-[10px] bg-muted text-muted-foreground border-border">
+        {hrs}h · paused
+      </Badge>
+    );
+  }
 
   // No SLA policy → just show elapsed
   if (!targetMinutes) {

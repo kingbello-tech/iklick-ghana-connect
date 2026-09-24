@@ -16,6 +16,7 @@ import { SLATimerBadge } from "@/components/crm/dashboard/SLATimerBadge";
 import { IncidentApprovals } from "@/components/crm/incident/IncidentApprovals";
 import { IncidentTasks } from "@/components/crm/incident/IncidentTasks";
 import { IncidentPartnerSync } from "@/components/crm/incident/IncidentPartnerSync";
+import { IncidentPauseControl } from "@/components/crm/incident/IncidentPauseControl";
 
 import { IncidentTimeEntries } from "@/components/crm/incident/IncidentTimeEntries";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,6 +59,7 @@ export default function IncidentDetail() {
   const { id } = useParams<{ id: string }>();
   const { user, role, canManageIncidents, isAdmin } = useAuth();
   const canCloseIncident = role === "admin" || role === "client_experience" || role === "network_manager";
+  const canPauseSla = role === "admin" || role === "technology_manager" || role === "network_manager";
   const navigate = useNavigate();
   const { toast } = useToast();
   const [incident, setIncident] = useState<Incident | null>(null);
@@ -354,8 +356,17 @@ export default function IncidentDetail() {
               targetMinutes={slaMinutes}
               resolvedAt={incident.resolved_at ?? incident.closed_at ?? null}
               resolved={incident.status === "resolved" || incident.status === "closed"}
+              pausedMinutes={(incident as any).total_paused_minutes ?? 0}
+              pausedAt={(incident as any).paused_at ?? null}
             />
           </div>
+          {(incident as any).paused_at && (
+            <div className="mt-2 text-xs rounded-md border border-border bg-muted px-3 py-2 text-muted-foreground">
+              <strong className="text-foreground">SLA paused</strong> since {format(new Date((incident as any).paused_at), "PPp")}
+              {(incident as any).paused_by && profiles[(incident as any).paused_by] ? ` by ${profiles[(incident as any).paused_by].full_name}` : ""}
+              {" — "}{(incident as any).pause_reason}
+            </div>
+          )}
           {editing ? (
             <Input
               value={editForm.title || ""}
@@ -400,6 +411,9 @@ export default function IncidentDetail() {
             <Button size="sm" onClick={() => { setClosureMode("close"); setClosureOpen(true); }}>
               Close Ticket
             </Button>
+          )}
+          {canPauseSla && !editing && incident.status !== "resolved" && incident.status !== "closed" && (
+            <IncidentPauseControl incidentId={incident.id} paused={!!(incident as any).paused_at} onChange={fetchAll} />
           )}
           {isAdmin && !editing && (
             <AlertDialog>
