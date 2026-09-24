@@ -27,6 +27,7 @@ Deno.serve(async (req) => {
       .from("incidents")
       .select("id, incident_number, title, priority, status, due_at, assigned_to")
       .lt("due_at", now)
+      .is("paused_at", null)
       .not("status", "in", "(resolved,closed)")
       .limit(200);
 
