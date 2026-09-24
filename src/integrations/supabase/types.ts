@@ -1018,6 +1018,9 @@ export type Database = {
           incident_number: string
           issue_category: string | null
           location: string | null
+          pause_reason: string | null
+          paused_at: string | null
+          paused_by: string | null
           priority: Database["public"]["Enums"]["incident_priority"]
           reopened_count: number
           resolved_at: string | null
@@ -1029,6 +1032,7 @@ export type Database = {
           template_id: string | null
           termination_pop: string | null
           title: string
+          total_paused_minutes: number
           updated_at: string
           urgency: string | null
         }
@@ -1047,6 +1051,9 @@ export type Database = {
           incident_number: string
           issue_category?: string | null
           location?: string | null
+          pause_reason?: string | null
+          paused_at?: string | null
+          paused_by?: string | null
           priority?: Database["public"]["Enums"]["incident_priority"]
           reopened_count?: number
           resolved_at?: string | null
@@ -1058,6 +1065,7 @@ export type Database = {
           template_id?: string | null
           termination_pop?: string | null
           title: string
+          total_paused_minutes?: number
           updated_at?: string
           urgency?: string | null
         }
@@ -1076,6 +1084,9 @@ export type Database = {
           incident_number?: string
           issue_category?: string | null
           location?: string | null
+          pause_reason?: string | null
+          paused_at?: string | null
+          paused_by?: string | null
           priority?: Database["public"]["Enums"]["incident_priority"]
           reopened_count?: number
           resolved_at?: string | null
@@ -1087,6 +1098,7 @@ export type Database = {
           template_id?: string | null
           termination_pop?: string | null
           title?: string
+          total_paused_minutes?: number
           updated_at?: string
           urgency?: string | null
         }
@@ -3130,6 +3142,7 @@ export type Database = {
         Args: { _project_id: string; _user_id: string }
         Returns: boolean
       }
+      can_pause_incident: { Args: { _user_id: string }; Returns: boolean }
       cancel_meeting_booking: { Args: { _token: string }; Returns: boolean }
       client_id_for_user: { Args: { _user_id: string }; Returns: string }
       compute_client_churn_score: {
@@ -3294,6 +3307,10 @@ export type Database = {
           partner_system_id: string
         }[]
       }
+      pause_incident: {
+        Args: { _incident_id: string; _reason: string }
+        Returns: undefined
+      }
       recurring_issue_patterns: {
         Args: { _min_count?: number; _window_days?: number }
         Returns: {
@@ -3335,6 +3352,9 @@ export type Database = {
           incident_number: string
           issue_category: string | null
           location: string | null
+          pause_reason: string | null
+          paused_at: string | null
+          paused_by: string | null
           priority: Database["public"]["Enums"]["incident_priority"]
           reopened_count: number
           resolved_at: string | null
@@ -3346,6 +3366,7 @@ export type Database = {
           template_id: string | null
           termination_pop: string | null
           title: string
+          total_paused_minutes: number
           updated_at: string
           urgency: string | null
         }[]
@@ -3374,6 +3395,7 @@ export type Database = {
           start_at: string
         }[]
       }
+      resume_incident: { Args: { _incident_id: string }; Returns: undefined }
       submit_survey_response: {
         Args: { _feedback: string; _rating: number; _token: string }
         Returns: undefined
