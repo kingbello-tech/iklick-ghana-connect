@@ -367,8 +367,6 @@ export default function IncidentDetail() {
               {" — "}{(incident as any).pause_reason}
             </div>
           )}
-          <div className="hidden">
-          </div>
           {editing ? (
             <Input
               value={editForm.title || ""}
