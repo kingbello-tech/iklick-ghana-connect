@@ -178,9 +178,10 @@ export default function InstallationQueue() {
     if (due < now) return "breached";
     return due.getTime() - now.getTime() < (due.getTime() - start.getTime()) * 0.25 ? "at_risk" : "on_track";
   };
-  const filteredQueue = useMemo(() => installations
+  // Status-agnostic list (scope + SLA + schedule + assignee + search) used for the
+  // summary cards so "Completed" counts stay visible under the default Active filter.
+  const scopeQueue = useMemo(() => installations
     .filter((i) => scope === "mine" ? i.assigned_to === user?.id : scope === "unassigned" ? !i.assigned_to : true)
-    .filter((i) => statusFilter === "all" || (statusFilter === "active" ? !["completed", "cancelled"].includes(i.status) : i.status === statusFilter))
     .filter((i) => slaFilter === "all" || getSlaState(i) === slaFilter)
     .filter((i) => {
       const today = new Date().toISOString().slice(0, 10);
@@ -197,20 +198,22 @@ export default function InstallationQueue() {
       const client = deal?.client_id ? clientMap[deal.client_id] : null;
       const haystack = [i.work_order_number, deal?.title, lead?.name, lead?.company_name, client?.name, i.assigned_to ? profileMap[i.assigned_to] : "unassigned"].join(" ").toLowerCase();
       return haystack.includes(search.trim().toLowerCase());
-    })
+    }), [assigneeFilter, clientMap, dealMap, installations, leadMap, profileMap, scheduleFilter, scope, search, slaFilter, user?.id]);
+  const filteredQueue = useMemo(() => scopeQueue
+    .filter((i) => statusFilter === "all" || (statusFilter === "active" ? !["completed", "cancelled"].includes(i.status) : i.status === statusFilter))
     .sort((a, b) => {
       const rank = { breached: 0, at_risk: 1, on_track: 2 };
       const stateDifference = rank[getSlaState(a)] - rank[getSlaState(b)];
       if (stateDifference) return stateDifference;
       return new Date(a.due_at || a.scheduled_date || a.created_at).getTime() - new Date(b.due_at || b.scheduled_date || b.created_at).getTime();
-    }), [assigneeFilter, clientMap, dealMap, installations, leadMap, profileMap, scheduleFilter, scope, search, slaFilter, statusFilter, user?.id]);
+    }), [scopeQueue, statusFilter]);
   useEffect(() => { setPage(1); }, [scope, search, statusFilter, slaFilter, scheduleFilter, assigneeFilter]);
   const paginated = usePaginatedSlice(filteredQueue, page, pageSize);
-  const pending = filteredQueue.filter(i => i.status === "pending").length;
-  const inProgress = filteredQueue.filter(i => i.status === "in_progress").length;
-  const done = filteredQueue.filter(i => i.status === "completed").length;
-  const breached = filteredQueue.filter(i => getSlaState(i) === "breached").length;
-  const atRisk = filteredQueue.filter(i => getSlaState(i) === "at_risk").length;
+  const pending = scopeQueue.filter(i => i.status === "pending").length;
+  const inProgress = scopeQueue.filter(i => i.status === "in_progress").length;
+  const done = scopeQueue.filter(i => i.status === "completed").length;
+  const breached = scopeQueue.filter(i => getSlaState(i) === "breached").length;
+  const atRisk = scopeQueue.filter(i => getSlaState(i) === "at_risk").length;
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
