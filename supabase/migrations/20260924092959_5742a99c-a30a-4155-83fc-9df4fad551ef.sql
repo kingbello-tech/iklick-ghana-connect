@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.can_pause_incident(uuid) FROM PUBLIC, anon;
