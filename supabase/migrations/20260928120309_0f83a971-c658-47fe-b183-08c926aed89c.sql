@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.sync_downstream_on_deal_stage() FROM PUBLIC, anon, authenticated;
