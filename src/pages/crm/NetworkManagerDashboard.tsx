@@ -51,7 +51,10 @@ export default function NetworkManagerDashboard() {
   const escalated = incidents.filter((i) => i.status === "escalated");
   const breached = active.filter((i) => {
     const t = slaByPriority[i.priority as string];
-    return t ? differenceInMinutes(new Date(), new Date(i.created_at)) > t : false;
+    if (!t) return false;
+    const end = i.paused_at ? new Date(i.paused_at) : new Date();
+    const elapsed = differenceInMinutes(end, new Date(i.created_at)) - (i.total_paused_minutes ?? 0);
+    return elapsed > t;
   });
 
   const loadByEngineer = useMemo(() => {
