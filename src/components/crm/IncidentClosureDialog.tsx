@@ -35,13 +35,13 @@ export function IncidentClosureDialog({ open, onOpenChange, incidentId, incident
     }
     setSubmitting(true);
 
-    const { error: closureError } = await (supabase as any).from("incident_closures").insert({
+    const { error: closureError } = await (supabase as any).from("incident_closures").upsert({
       incident_id: incidentId,
       root_cause: rootCause.trim(),
       resolution: resolution.trim(),
       recommendation: recommendation.trim(),
       closed_by: user.id,
-    });
+    }, { onConflict: "incident_id" });
     if (closureError) {
       setSubmitting(false);
       toast({ title: "Error", description: closureError.message, variant: "destructive" });
