@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
+import { Linkedin } from "lucide-react";
 import iklickLogo from "@/assets/iklick_logo_full.png";
 import SectionLink from "@/components/SectionLink";
+import WhatsAppIcon from "@/components/icons/WhatsAppIcon";
+import { LINKEDIN_URL, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 
 const Footer = () => {
   return (
@@ -15,6 +18,26 @@ const Footer = () => {
             <p className="text-sm text-muted-foreground leading-relaxed">
               Forward-thinking ISP delivering reliable, high-speed connectivity across Ghana.
             </p>
+            <div className="flex items-center gap-3 mt-5">
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="iKlick Communications on LinkedIn"
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-muted text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Chat with iKlick support on WhatsApp"
+                className="w-9 h-9 rounded-full flex items-center justify-center bg-muted text-muted-foreground hover:bg-whatsapp hover:text-whatsapp-foreground transition-colors"
+              >
+                <WhatsAppIcon className="w-4 h-4" />
+              </a>
+            </div>
           </div>
 
           {/* Services */}
@@ -46,7 +69,8 @@ const Footer = () => {
               <li>Adjiringanor Road, East Legon</li>
               <li>P.O. Box OS 1554, Osu Accra</li>
               <li><a href="mailto:sales@iklickgh.com" className="hover:text-foreground transition-colors">sales@iklickgh.com</a></li>
-              <li><a href="tel:+233242548764" className="hover:text-foreground transition-colors">+233-242-548-764</a></li>
+              <li><a href="tel:+233242548764" className="hover:text-foreground transition-colors">{WHATSAPP_DISPLAY}</a></li>
+              <li><a href={WHATSAPP_URL} target="_blank" rel="noreferrer" className="hover:text-foreground transition-colors inline-flex items-center gap-1.5"><WhatsAppIcon className="w-3.5 h-3.5" /> WhatsApp support</a></li>
             </ul>
           </div>
         </div>

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/crm/ProtectedRoute";
 import { CRMLayout } from "@/components/crm/CRMLayout";
+import WhatsAppFloatingButton from "@/components/WhatsAppFloatingButton";
 import Home from "./pages/Home";
 import SurveyPage from "./pages/SurveyPage";
 import Projects from "./pages/Projects";
@@ -82,6 +83,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <WhatsAppFloatingButton />
             <Routes>
               {/* Public website */}
               <Route path="/" element={<Home />} />
