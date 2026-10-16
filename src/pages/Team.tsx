@@ -115,7 +115,7 @@ const Team = () => {
                   {/* Department Heads */}
                   <div className="w-full grid grid-cols-2 md:grid-cols-4 gap-4">
                     {team
-                      .filter((m) => m.role.startsWith("Head of"))
+                      .filter((m) => m.role !== "CHIEF EXECUTIVE OFFICER" && m.role !== "Business Support Officer")
                       .map((m) => (
                         <button
                           key={m.id}
