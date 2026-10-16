@@ -126,3 +126,16 @@ All colors MUST be HSL.
     transform: scale(1.08);
   }
 }
+
+/* WhatsApp brand token — footer social links and the sticky support button */
+@layer base {
+  :root {
+    --whatsapp: 145 71% 42%;
+    --whatsapp-foreground: 0 0% 100%;
+  }
+
+  .dark {
+    --whatsapp: 145 65% 48%;
+    --whatsapp-foreground: 0 0% 100%;
+  }
+}
