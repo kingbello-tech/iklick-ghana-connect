@@ -7,7 +7,7 @@ import { LINKEDIN_URL, WHATSAPP_DISPLAY, WHATSAPP_URL } from "@/lib/contact";
 
 const Footer = () => {
   return (
-    <footer className="py-16 border-t border-border bg-card/20">
+    <footer className="pt-16 pb-28 border-t border-border bg-card/20">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           {/* Company */}
