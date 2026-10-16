@@ -21,7 +21,7 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "Bright Asiamah Tawiah", role: "General Manager", image: brightImg,
+    id: 1, name: "Bright Asiamah Tawiah", role: "CHIEF EXECUTIVE OFFICER", image: brightImg,
     email: "bright@iklickgh.com", linkedin: "#",
     bio: "Bright Asiamah Tawiah is the General Manager of IKLICK, bringing over 17 years of experience in sales, business development, and strategic leadership within the telecommunications and ICT industry. Throughout his career, he has held key leadership roles with leading multinational organizations, including GS Telecom, Gateway Communication, Vodacom, AirtelTigo, Internet Solutions (IS), and PAIX Data Centres.\n\nHe possesses extensive expertise in enterprise sales, business development, partner management, go-to-market strategy, connectivity solutions, value-added services (VAS), mobility, Internet of Things (IoT), contract management, and data centre solutions. His proven ability to develop high-performing teams, drive revenue growth, and build strategic partnerships has consistently delivered strong business outcomes.\n\nBright holds a Bachelor of Laws (LLB), a Master of Business Administration (MBA) in Marketing, and a Master of Arts (MA) in Economic Policy Management from the University of Ghana. He also earned a Master of Science (MSc) of Research from the University of Salford, reflecting his commitment to continuous learning and evidence-based leadership.\n\nAs General Manager, Bright is committed to positioning IKLICK as a leading provider of innovative, reliable, and customer-centric connectivity solutions. His vision is to drive sustainable growth, foster a culture of innovation and operational excellence, and strengthen IKLICK's competitiveness within Ghana and across the wider African digital economy.",
   },
@@ -85,26 +85,26 @@ const Team = () => {
                 <p className="text-sm text-muted-foreground mb-8 text-center">The people behind our success</p>
 
                 <div className="flex flex-col items-center gap-6">
-                  {/* General Manager */}
-                  {team.find((m) => m.role === "General Manager") && (
+                  {/* Chief Executive Officer */}
+                  {team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER") && (
                     <div className="w-full flex flex-col items-center">
                       <button
-                        onClick={() => setSelected(team.find((m) => m.role === "General Manager")!)}
+                        onClick={() => setSelected(team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER")!)}
                         className={`group flex flex-col items-center text-center p-4 rounded-2xl transition-all ${
-                          selected.role === "General Manager" ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
+                          selected.role === "CHIEF EXECUTIVE OFFICER" ? "bg-primary/10 ring-1 ring-primary/30" : "hover:bg-muted/50"
                         }`}
                       >
                         <div className={`w-24 h-24 md:w-28 md:h-28 rounded-full overflow-hidden mb-3 ring-2 transition-all flex items-center justify-center bg-muted ${
-                          selected.role === "General Manager" ? "ring-primary" : "ring-border group-hover:ring-primary/40"
+                          selected.role === "CHIEF EXECUTIVE OFFICER" ? "ring-primary" : "ring-border group-hover:ring-primary/40"
                         }`}>
-                          {team.find((m) => m.role === "General Manager")!.image ? (
-                            <img src={team.find((m) => m.role === "General Manager")!.image!} alt={team.find((m) => m.role === "General Manager")!.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
+                            {team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER")!.image ? (
+                            <img src={team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER")!.image!} alt={team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER")!.name} loading="lazy" width={512} height={512} className="w-full h-full object-cover" />
                           ) : (
                             <User className="w-12 h-12 text-muted-foreground" />
                           )}
                         </div>
-                        <p className="font-semibold text-sm">{team.find((m) => m.role === "General Manager")!.name}</p>
-                        <p className="text-xs text-muted-foreground">{team.find((m) => m.role === "General Manager")!.role}</p>
+                        <p className="font-semibold text-sm">{team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER")!.name}</p>
+                        <p className="text-xs text-muted-foreground">{team.find((m) => m.role === "CHIEF EXECUTIVE OFFICER")!.role}</p>
                       </button>
                     </div>
                   )}
