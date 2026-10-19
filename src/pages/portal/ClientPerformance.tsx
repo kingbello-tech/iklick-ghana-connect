@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { clientIncidentOrFilter } from "@/lib/clientIncidents";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { KPIStrip } from "@/components/crm/dashboard/KPIStrip";
@@ -50,7 +51,7 @@ export default function ClientPerformance() {
         .gte("created_at", since)
         .order("created_at", { ascending: false }),
       supabase.from("clients").select("name").eq("id", clientId).maybeSingle(),
-    ]).then(([inc, cli]) => {
+    ])).then(([inc, cli]) => {
       setIncidents((inc.data as Incident[]) ?? []);
       setClientName(cli.data?.name ?? "");
       setLoading(false);

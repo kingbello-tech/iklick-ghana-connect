@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { clientIncidentOrFilter } from "@/lib/clientIncidents";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -50,10 +51,11 @@ export default function ClientIncidents() {
   const load = async () => {
     if (!clientId) return;
     setLoading(true);
+    const incFilter = await clientIncidentOrFilter(clientId);
     const { data, error } = await supabase
       .from("incidents")
       .select("id,incident_number,title,description,status,priority,location,created_at,resolved_at,due_at")
-      .eq("client_id", clientId)
+      .or(incFilter)
       .order("created_at", { ascending: false });
     if (error) toast({ title: "Could not load incidents", description: error.message, variant: "destructive" });
     setIncidents((data as Incident[]) ?? []);
