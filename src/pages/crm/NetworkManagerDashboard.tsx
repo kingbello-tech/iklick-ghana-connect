@@ -105,7 +105,7 @@ export default function NetworkManagerDashboard() {
             { cell: (r) => <span className="font-mono text-xs text-muted-foreground">{r.incident_number}</span>, header: "#" },
             { cell: (r) => <span className="text-sm truncate">{r.title}</span>, header: "Title" },
             { cell: (r) => <Badge variant="outline" className="capitalize text-[10px]">{r.priority}</Badge>, header: "Pri", className: "text-right" },
-            { cell: (r) => <SLATimerBadge createdAt={r.created_at} targetMinutes={slaByPriority[r.priority]} />, header: "SLA", className: "text-right" },
+            { cell: (r) => <SLATimerBadge createdAt={r.created_at} targetMinutes={slaByPriority[r.priority]} pausedAt={r.paused_at} pausedMinutes={r.total_paused_minutes} />, header: "SLA", className: "text-right" },
           ]}
         />
         <QueueTable
@@ -117,7 +117,7 @@ export default function NetworkManagerDashboard() {
             { cell: (r) => <span className="font-mono text-xs text-muted-foreground">{r.incident_number}</span>, header: "#" },
             { cell: (r) => <span className="text-sm truncate">{r.title}</span>, header: "Title" },
             { cell: (r) => <span className="text-xs text-muted-foreground truncate">{r.assigned_to ? profileByUser.get(r.assigned_to)?.full_name ?? "—" : "Unassigned"}</span>, header: "Owner" },
-            { cell: (r) => <SLATimerBadge createdAt={r.created_at} targetMinutes={slaByPriority[r.priority]} />, header: "SLA", className: "text-right" },
+            { cell: (r) => <SLATimerBadge createdAt={r.created_at} targetMinutes={slaByPriority[r.priority]} pausedAt={r.paused_at} pausedMinutes={r.total_paused_minutes} />, header: "SLA", className: "text-right" },
           ]}
         />
       </div>
