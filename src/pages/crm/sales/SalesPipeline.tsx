@@ -202,9 +202,19 @@ export default function SalesPipeline() {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    const payload = buildPayload();
+    const payload: any = buildPayload();
     const enteringSurveyStage = payload.stage === "site_survey" && selected.stage !== "site_survey";
     const enteringClosedWon = payload.stage === "closed_won" && selected.stage !== "closed_won";
+    // Only send stage if the user actually changed it, so a stale form
+    // can't overwrite a stage moved by another department (e.g. survey completion).
+    if (payload.stage === selected.stage) delete payload.stage;
+    else {
+      const { data: fresh } = await supabase.from("deals").select("stage").eq("id", selected.id).maybeSingle();
+      if (fresh && fresh.stage !== selected.stage) {
+        toast({ title: "Deal changed elsewhere", description: `This deal is now "${String(fresh.stage).replace(/_/g, " ")}". Refreshing — please review and try again.`, variant: "destructive" });
+        setEditOpen(false); fetchData(); return;
+      }
+    }
     const { error } = await supabase.from("deals").update(payload).eq("id", selected.id);
     if (error) toast({ title: "Error", description: error.message, variant: "destructive" });
     else {
