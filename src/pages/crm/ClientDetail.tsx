@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { clientIncidentOrFilter } from "@/lib/clientIncidents";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,10 +63,11 @@ export default function ClientDetail() {
 
   const fetchAll = async () => {
     if (!id) return;
+    const incFilter = await clientIncidentOrFilter(id);
     const [clientRes, sitesRes, incRes, csatRes, churnRes, logRes] = await Promise.all([
       sb.from("clients").select("*").eq("id", id).single(),
       sb.from("client_sites").select("*").eq("client_id", id).order("created_at", { ascending: false }),
-      sb.from("incidents").select("id,incident_number,title,status,priority,created_at,resolved_at,due_at,site_id").eq("client_id", id).order("created_at", { ascending: false }).limit(500),
+      sb.from("incidents").select("id,incident_number,title,status,priority,created_at,resolved_at,due_at,site_id").or(incFilter).order("created_at", { ascending: false }).limit(500),
       sb.from("client_satisfaction").select("rating,created_at").eq("client_id", id).order("created_at", { ascending: false }),
       sb.from("client_churn").select("*").eq("client_id", id).maybeSingle(),
       sb.from("client_churn_log").select("*").eq("client_id", id).order("performed_at", { ascending: false }).limit(50),

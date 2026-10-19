@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { clientIncidentOrFilter } from "@/lib/clientIncidents";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,8 +37,9 @@ export default function ClientReport() {
 
   useEffect(() => {
     const fetch = async () => {
+      const incFilter = await clientIncidentOrFilter(clientId!);
       const [incRes, clientRes, satRes] = await Promise.all([
-        supabase.from("incidents").select("*").eq("client_id", clientId!).order("created_at", { ascending: false }),
+        supabase.from("incidents").select("*").or(incFilter).order("created_at", { ascending: false }),
         supabase.from("clients").select("*").eq("id", clientId!).single(),
         supabase.from("client_satisfaction").select("rating").eq("client_id", clientId!),
       ]);
