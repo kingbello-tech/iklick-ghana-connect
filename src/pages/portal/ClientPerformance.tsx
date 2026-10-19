@@ -42,11 +42,11 @@ export default function ClientPerformance() {
     if (!clientId) return;
     const since = new Date(Date.now() - days * 86400000).toISOString();
     setLoading(true);
-    Promise.all([
+    clientIncidentOrFilter(clientId).then((f) => Promise.all([
       supabase
         .from("incidents")
         .select("id,priority,status,created_at,resolved_at,due_at,first_response_at")
-        .eq("client_id", clientId)
+        .or(f)
         .gte("created_at", since)
         .order("created_at", { ascending: false }),
       supabase.from("clients").select("name").eq("id", clientId).maybeSingle(),
