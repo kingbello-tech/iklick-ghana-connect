@@ -117,7 +117,7 @@ const App = () => (
                 <Route path="sla-reports" element={<ProtectedRoute allowedRoles={["admin", "client_experience", "network_manager"]}><SLAReports /></ProtectedRoute>} />
                 <Route path="settings" element={<ProtectedRoute allowedRoles={["admin"]}><UserManagement /></ProtectedRoute>} />
                 <Route path="client-logins" element={<ProtectedRoute allowedRoles={["admin"]}><ClientLogins /></ProtectedRoute>} />
-                <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin"]}><SLAPolicies /></ProtectedRoute>} />
+                <Route path="sla-policies" element={<ProtectedRoute allowedRoles={["admin", "technology_manager", "network_manager"]}><SLAPolicies /></ProtectedRoute>} />
                 <Route path="partner-systems" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><PartnerSystems /></ProtectedRoute>} />
 
                 <Route path="performance" element={<ProtectedRoute allowedRoles={["admin", "network_manager"]}><PerformanceReports /></ProtectedRoute>} />

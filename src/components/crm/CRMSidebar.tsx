@@ -72,6 +72,7 @@ const technologyItems = [
   { title: "Recurring Issues", url: "/crm/recurring-issues", icon: Repeat },
   { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
   { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
+  { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
 ];
 
 const financeItems = [
