@@ -545,7 +545,7 @@ export default function IncidentDetail() {
                               recommendation: closureEdit.recommendation.trim(),
                             }).eq("incident_id", incident.id);
                             if (!error) {
-                              await supabase.from("incident_history").insert({ incident_id: incident.id, changed_by: user!.id, field_changed: "closure_report", old_value: "edited", new_value: "Closure report updated" } as any);
+                              await supabase.from("incident_history").insert({ incident_id: incident.id, user_id: user!.id, field_changed: "closure_report", old_value: "edited", new_value: "Closure report updated" } as any);
                             }
                             setSavingClosure(false);
                             if (error) { toast({ title: "Could not save", description: error.message, variant: "destructive" }); return; }
