@@ -50,7 +50,6 @@ const networkEngineerItems = [
 const adminItems = [
   { title: "User Management", url: "/crm/settings", icon: Settings },
   { title: "Client Logins", url: "/crm/client-logins", icon: UserCog },
-  { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
   { title: "Partner ISP Sync", url: "/crm/partner-systems", icon: Plug },
 
   { title: "Performance", url: "/crm/performance", icon: BarChart3 },
@@ -72,6 +71,7 @@ const technologyItems = [
   { title: "Recurring Issues", url: "/crm/recurring-issues", icon: Repeat },
   { title: "Site Surveys", url: "/crm/technology/surveys", icon: ClipboardCheck },
   { title: "Installations", url: "/crm/technology/installations", icon: Wrench },
+  { title: "SLA Policies", url: "/crm/sla-policies", icon: Clock },
 ];
 
 const financeItems = [

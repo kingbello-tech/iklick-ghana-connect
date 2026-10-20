@@ -45,7 +45,7 @@ const workState = (item: WorkItem) => {
 export default function TechnologyDashboard() {
   const { user, role } = useAuth();
   const { toast } = useToast();
-  const isManager = role === "admin" || role === "technology_manager";
+  const isManager = role === "admin" || role === "technology_manager" || role === "network_manager";
   const [scope, setScope] = useState<Scope>("mine");
   const [scopeTouched, setScopeTouched] = useState(false);
   useEffect(() => {
