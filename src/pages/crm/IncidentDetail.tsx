@@ -78,6 +78,8 @@ export default function IncidentDetail() {
   const [closureOpen, setClosureOpen] = useState(false);
   const [closureMode, setClosureMode] = useState<"resolve" | "close">("resolve");
   const [closure, setClosure] = useState<{ root_cause: string; resolution: string; recommendation: string; closed_by: string; created_at: string } | null>(null);
+  const [closureEdit, setClosureEdit] = useState<{ root_cause: string; resolution: string; recommendation: string } | null>(null);
+  const [savingClosure, setSavingClosure] = useState(false);
   const [slaMinutes, setSlaMinutes] = useState<number | null>(null);
 
   const fetchAll = async () => {
@@ -517,20 +519,59 @@ export default function IncidentDetail() {
 
               {closure && (
                 <Card>
-                  <CardHeader className="pb-2"><CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle></CardHeader>
+                  <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                    <CardTitle className="text-sm text-muted-foreground">Closure Report</CardTitle>
+                    {canManageIncidents && !closureEdit && (
+                      <Button size="sm" variant="ghost" onClick={() => setClosureEdit({ root_cause: closure.root_cause || "", resolution: closure.resolution || "", recommendation: closure.recommendation || "" })}>
+                        <Pencil className="h-3.5 w-3.5 mr-1" />Edit
+                      </Button>
+                    )}
+                  </CardHeader>
                   <CardContent className="space-y-3 text-sm">
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
-                      <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Resolution</p>
-                      <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
-                      <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
-                    </div>
+                    {closureEdit ? (
+                      <>
+                        {(["root_cause", "resolution", "recommendation"] as const).map((field) => (
+                          <div key={field}>
+                            <p className="text-xs text-muted-foreground mb-1">{field === "root_cause" ? "Root Cause" : field === "resolution" ? "Resolution (RFO)" : "Recommendation"}</p>
+                            <Textarea rows={3} value={closureEdit[field]} onChange={(e) => setClosureEdit({ ...closureEdit, [field]: e.target.value })} />
+                          </div>
+                        ))}
+                        <div className="flex gap-2">
+                          <Button size="sm" disabled={savingClosure || !closureEdit.root_cause.trim() || !closureEdit.resolution.trim() || !closureEdit.recommendation.trim()} onClick={async () => {
+                            setSavingClosure(true);
+                            const { error } = await (supabase as any).from("incident_closures").update({
+                              root_cause: closureEdit.root_cause.trim(),
+                              resolution: closureEdit.resolution.trim(),
+                              recommendation: closureEdit.recommendation.trim(),
+                            }).eq("incident_id", incident.id);
+                            if (!error) {
+                              await supabase.from("incident_history").insert({ incident_id: incident.id, changed_by: user!.id, field_changed: "closure_report", old_value: "edited", new_value: "Closure report updated" } as any);
+                            }
+                            setSavingClosure(false);
+                            if (error) { toast({ title: "Could not save", description: error.message, variant: "destructive" }); return; }
+                            toast({ title: "Closure report updated" });
+                            setClosureEdit(null);
+                            fetchAll();
+                          }}><Check className="h-3.5 w-3.5 mr-1" />{savingClosure ? "Saving…" : "Save"}</Button>
+                          <Button size="sm" variant="outline" onClick={() => setClosureEdit(null)}><X className="h-3.5 w-3.5 mr-1" />Cancel</Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Root Cause</p>
+                          <p className="text-foreground whitespace-pre-wrap">{closure.root_cause}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Resolution (RFO)</p>
+                          <p className="text-foreground whitespace-pre-wrap">{closure.resolution}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Recommendation</p>
+                          <p className="text-foreground whitespace-pre-wrap">{closure.recommendation}</p>
+                        </div>
+                      </>
+                    )}
                     <p className="text-[11px] text-muted-foreground pt-2 border-t border-border">
                       Closed by {profiles[closure.closed_by]?.full_name || "—"} on {format(new Date(closure.created_at), "MMM d, yyyy HH:mm")}
                     </p>
