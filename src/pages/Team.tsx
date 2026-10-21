@@ -7,7 +7,7 @@ import brightImg from "@/assets/team-photos/bright.jpg";
 import ritaImg from "@/assets/team-photos/rita.jpg";
 import erasmusImg from "@/assets/team-photos/erasmus.jpg";
 import eugeneImg from "@/assets/team-photos/eugene.png";
-import josephImg from "@/assets/team-photos/joseph.png";
+import josephImg from "@/assets/team-photos/joseph.jpg";
 import asedaImg from "@/assets/team-photos/aseda.png";
 interface Member {
   id: number;
