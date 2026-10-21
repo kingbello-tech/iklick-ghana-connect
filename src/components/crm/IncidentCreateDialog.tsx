@@ -61,7 +61,7 @@ function ClientCombobox({ clients, value, onChange }: { clients: Client[]; value
   );
 }
 
-function AdditionalClientsPicker({ clients, selectedIds, primaryId, onChange }: { clients: Client[]; selectedIds: string[]; primaryId: string; onChange: (ids: string[]) => void }) {
+export function AdditionalClientsPicker({ clients, selectedIds, primaryId, onChange }: { clients: Client[]; selectedIds: string[]; primaryId: string; onChange: (ids: string[]) => void }) {
   const [open, setOpen] = useState(false);
   const available = clients.filter((c) => c.id !== primaryId);
   const selectedClients = clients.filter((c) => selectedIds.includes(c.id));
