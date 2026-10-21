@@ -3,7 +3,7 @@ import { Linkedin, Mail, User } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import brightImg from "@/assets/team-photos/bright.jpg.asset.json";
+import brightImg from "@/assets/team-photos/bright.jpg";
 import ritaImg from "@/assets/team-photos/rita.jpg";
 import erasmusImg from "@/assets/team-photos/erasmus.jpg";
 import eugeneImg from "@/assets/team-photos/eugene.png";
@@ -21,7 +21,7 @@ interface Member {
 
 const team: Member[] = [
   {
-    id: 1, name: "Bright Asiamah Tawiah", role: "CHIEF EXECUTIVE OFFICER", image: brightImg.url,
+    id: 1, name: "Bright Asiamah Tawiah", role: "CHIEF EXECUTIVE OFFICER", image: brightImg,
     email: "bright@iklickgh.com", linkedin: "#",
     bio: "Bright Asiamah Tawiah is the C.E.O of Iklick, bringing over 17 years of experience in sales, business development, and strategic leadership within the telecommunications and ICT industry. Throughout his career, he has held key leadership roles with leading multinational organizations, including GS Telecom, Gateway Communication, Vodacom, AirtelTigo, Internet Solutions (IS), and PAIX Data Centres.\n\nHe possesses extensive expertise in enterprise sales, business development, partner management, go-to-market strategy, connectivity solutions, value-added services (VAS), mobility, Internet of Things (IoT), contract management, and data centre solutions. His proven ability to develop high-performing teams, drive revenue growth, and build strategic partnerships has consistently delivered strong business outcomes.\n\nBright holds a Bachelor of Laws (LLB), a Master of Business Administration (MBA) in Marketing, and a Master of Arts (MA) in Economic Policy Management from the University of Ghana. He also earned a Master of Science (MSc) of Research from the University of Salford, reflecting his commitment to continuous learning and evidence-based leadership.\n\nAs the C.E.O, Bright is committed to positioning IKLICK as a leading provider of innovative, reliable, and customer-centric connectivity solutions. His vision is to drive sustainable growth, foster a culture of innovation and operational excellence, and strengthen IKLICK's competitiveness within Ghana and across the wider African digital economy.",
   },
