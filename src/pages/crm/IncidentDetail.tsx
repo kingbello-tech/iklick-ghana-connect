@@ -19,6 +19,7 @@ import { IncidentPartnerSync } from "@/components/crm/incident/IncidentPartnerSy
 import { IncidentPauseControl } from "@/components/crm/incident/IncidentPauseControl";
 
 import { IncidentTimeEntries } from "@/components/crm/incident/IncidentTimeEntries";
+import { AdditionalClientsPicker } from "@/components/crm/IncidentCreateDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -70,6 +71,7 @@ export default function IncidentDetail() {
   const [sites, setSites] = useState<Site[]>([]);
   const [clientName, setClientName] = useState<string>("");
   const [affectedClientIds, setAffectedClientIds] = useState<string[]>([]);
+  const [editAffectedIds, setEditAffectedIds] = useState<string[]>([]);
   const [newNote, setNewNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -229,6 +231,7 @@ export default function IncidentDetail() {
       site_id: (incident as any).site_id ?? null,
       assigned_to: incident.assigned_to,
     });
+    setEditAffectedIds(affectedClientIds.filter((x) => x !== incident.client_id));
     setEditing(true);
   };
 
@@ -247,7 +250,29 @@ export default function IncidentDetail() {
     if ((editForm as any).site_id !== (incident as any).site_id) changes.push({ field: "site_id", old: (incident as any).site_id ?? null, new: (editForm as any).site_id || null });
     if (editForm.assigned_to !== incident.assigned_to) changes.push({ field: "assigned_to", old: incident.assigned_to, new: editForm.assigned_to || null });
 
-    if (changes.length === 0) { setEditing(false); return; }
+    // Affected clients diff (primary always linked)
+    const primary = editForm.client_id || null;
+    const desired = Array.from(new Set([...(primary ? [primary] : []), ...editAffectedIds.filter((x) => x !== primary)]));
+    const currentSet = Array.from(new Set([...(incident.client_id ? [incident.client_id] : []), ...affectedClientIds]));
+    const toAdd = desired.filter((x) => !affectedClientIds.includes(x));
+    const toRemove = affectedClientIds.filter((x) => !desired.includes(x));
+    const affectedChanged = desired.slice().sort().join(",") !== currentSet.slice().sort().join(",");
+
+    if (changes.length === 0 && toAdd.length === 0 && toRemove.length === 0) { setEditing(false); return; }
+
+    if (toAdd.length) {
+      const { error: addErr } = await (supabase as any).from("incident_clients").insert(toAdd.map((cid) => ({ incident_id: incident.id, client_id: cid })));
+      if (addErr) { toast({ title: "Error", description: addErr.message, variant: "destructive" }); return; }
+    }
+    if (toRemove.length) {
+      const { error: rmErr } = await (supabase as any).from("incident_clients").delete().eq("incident_id", incident.id).in("client_id", toRemove);
+      if (rmErr) { toast({ title: "Error", description: rmErr.message, variant: "destructive" }); return; }
+    }
+    if (affectedChanged) {
+      const name = (ids: string[]) => ids.map((i) => clients.find((c) => c.id === i)?.name || i).join(", ") || null;
+      await trackChange("affected_clients", name(currentSet), name(desired));
+    }
+    if (changes.length === 0) { toast({ title: "Affected clients updated" }); setEditing(false); fetchAll(); return; }
 
     const { error } = await supabase.from("incidents").update({
       title: editForm.title,
@@ -655,6 +680,17 @@ export default function IncidentDetail() {
                       </SelectContent>
                     </Select>
                   </div>
+                  {editForm.client_id && (
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Affected Clients</label>
+                      <AdditionalClientsPicker
+                        clients={clients as any}
+                        selectedIds={editAffectedIds.filter((x) => x !== editForm.client_id)}
+                        primaryId={editForm.client_id}
+                        onChange={setEditAffectedIds}
+                      />
+                    </div>
+                  )}
                   {editForm.client_id && (
                     <div>
                       <label className="text-xs text-muted-foreground mb-1 block">Site</label>
