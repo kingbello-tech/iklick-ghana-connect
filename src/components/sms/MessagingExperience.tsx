@@ -45,7 +45,7 @@ export default function MessagingExperience() {
       <div className="sms-reveal grid gap-10 lg:grid-cols-2 items-center">
         <div>
           <h3 className="text-2xl md:text-3xl font-bold">From notifications to replies</h3>
-          <p className="text-muted-foreground mt-4 max-w-lg">A reminder tells your customer what’s happening. A conversation gives them a way to respond.</p>
+          <p className="text-muted-foreground mt-4 max-w-lg">A promotion sparks interest. A two-way conversation answers shopping questions and helps customers move to checkout.</p>
           <Tabs value={mode} onValueChange={setMode} className="mt-6">
             <TabsList className="h-auto flex-wrap justify-start">
               <TabsTrigger value="one-way" className="gap-2"><MessageSquare className="w-4 h-4" />One-way SMS</TabsTrigger>
@@ -60,10 +60,10 @@ export default function MessagingExperience() {
             <Button size="icon" variant="ghost" aria-label="Replay conversation" title="Replay conversation" onClick={() => setReplay(v => v + 1)}><RotateCcw className="w-4 h-4" /></Button>
           </div>
           <div key={`${mode}-${replay}`} role="region" aria-label={conversational ? "AI two-way SMS example" : "One-way SMS example"} className="sms-conversation p-5 md:p-6 flex flex-col gap-4 min-h-[340px]">
-            <div className="sms-message max-w-[90%] self-start rounded-lg bg-muted p-4"><p className="text-xs text-muted-foreground mb-2">Business</p><p className="text-sm">Your appointment is tomorrow at 10 AM.{conversational ? " Reply if you need to change it." : " We look forward to seeing you."}</p></div>
+            <div className="sms-message max-w-[90%] self-start rounded-lg bg-muted p-4"><p className="text-xs text-muted-foreground mb-2">Business</p><p className="text-sm">Still thinking about those sneakers in your cart?{conversational ? " Reply with any questions before you order." : " Visit our store to complete your order."}</p></div>
             {conversational ? <>
-              <div className="sms-message max-w-[85%] self-end rounded-lg bg-primary text-primary-foreground p-4"><p className="text-xs mb-2">Customer</p><p className="text-sm">Can I come in the afternoon instead?</p></div>
-              <div className="sms-message max-w-[90%] self-start rounded-lg bg-muted p-4"><p className="flex items-center gap-2 text-xs text-muted-foreground mb-2"><Bot className="w-3 h-3" />AI-assisted reply</p><p className="text-sm">What time would suit you? We’ll help you request a new appointment.</p></div>
+              <div className="sms-message max-w-[85%] self-end rounded-lg bg-primary text-primary-foreground p-4"><p className="text-xs mb-2">Customer</p><p className="text-sm">Do you have size 42, and can you deliver to Tema?</p></div>
+              <div className="sms-message max-w-[90%] self-start rounded-lg bg-muted p-4"><p className="flex items-center gap-2 text-xs text-muted-foreground mb-2"><Bot className="w-3 h-3" />AI-assisted reply</p><p className="text-sm">Yes! Size 42 is available, and we deliver to Tema. Ready to order? Your checkout link lets you confirm delivery and complete your purchase.</p></div>
             </> : <div className="sms-message flex items-center gap-2 text-sm text-muted-foreground mt-auto"><ArrowDown className="w-4 h-4" />Customer receives your update.</div>}
           </div>
         </div>
