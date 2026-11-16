@@ -1,0 +1,2 @@
+ALTER POLICY "Authenticated view categories" ON public.request_categories TO authenticated USING (public.is_staff((SELECT auth.uid())));
+ALTER POLICY "Authenticated view templates" ON public.request_templates TO authenticated USING (public.is_staff((SELECT auth.uid())));
