@@ -157,19 +157,27 @@ All colors MUST be HSL.
 .sms-page .sms-service-card:nth-child(2) { transition-delay: 80ms; }
 .sms-page .sms-service-card:nth-child(3) { transition-delay: 160ms; }
 .sms-page .sms-message {
-  animation: sms-reply-in 500ms ease both;
+  animation: sms-reply-in 400ms ease both;
 }
-.sms-page .sms-message:nth-child(2) { animation-delay: 350ms; }
-.sms-page .sms-message:nth-child(3) { animation-delay: 750ms; }
+.sms-page .sms-typing-dot {
+  animation: sms-typing-dot 1s ease-in-out infinite;
+}
+.sms-page .sms-typing-dot:nth-child(2) { animation-delay: 140ms; }
+.sms-page .sms-typing-dot:nth-child(3) { animation-delay: 280ms; }
 @keyframes sms-reply-in {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes sms-typing-dot {
+  0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
 }
 @media (prefers-reduced-motion: reduce) {
   .sms-page .sms-reveal,
   .sms-page .sms-service-card,
   .sms-page .sms-card-icon,
-  .sms-page .sms-message {
+  .sms-page .sms-message,
+  .sms-page .sms-typing-dot {
     animation: none;
     transition: none;
     opacity: 1;
