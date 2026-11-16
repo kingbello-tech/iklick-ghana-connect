@@ -127,6 +127,59 @@ All colors MUST be HSL.
   }
 }
 
+/* SMS presentation: progressive reveals, tactile service cards and example replies. */
+.sms-page .sms-service-card {
+  transition: transform 350ms ease, border-color 350ms ease, box-shadow 350ms ease;
+}
+.sms-page .sms-service-card:hover {
+  transform: translateY(-6px);
+  border-color: hsl(var(--primary) / 0.5);
+  box-shadow: 0 12px 32px -16px hsl(var(--glow-primary) / 0.4);
+}
+.sms-page .sms-card-icon {
+  transition: transform 350ms ease;
+}
+.sms-page .sms-service-card:hover .sms-card-icon {
+  transform: translateY(-2px) rotate(-5deg);
+}
+.sms-motion-ready .sms-reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 650ms ease, transform 650ms ease, border-color 350ms ease, box-shadow 350ms ease;
+}
+.sms-motion-ready .sms-reveal[data-revealed="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sms-motion-ready .sms-service-card[data-revealed="true"]:hover {
+  transform: translateY(-6px);
+}
+.sms-page .sms-service-card:nth-child(2) { transition-delay: 80ms; }
+.sms-page .sms-service-card:nth-child(3) { transition-delay: 160ms; }
+.sms-page .sms-message {
+  animation: sms-reply-in 500ms ease both;
+}
+.sms-page .sms-message:nth-child(2) { animation-delay: 350ms; }
+.sms-page .sms-message:nth-child(3) { animation-delay: 750ms; }
+@keyframes sms-reply-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sms-page .sms-reveal,
+  .sms-page .sms-service-card,
+  .sms-page .sms-card-icon,
+  .sms-page .sms-message {
+    animation: none;
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+  .sms-page .sms-service-card:hover,
+  .sms-page .sms-service-card:hover .sms-card-icon { transform: none; }
+  html:has(.sms-page) { scroll-behavior: auto; }
+}
+
 /* WhatsApp brand token — footer social links and the sticky support button */
 @layer base {
   :root {

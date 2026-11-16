@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MessageSquare, Zap, ShieldCheck, BarChart3, Code2, Users, Check, Copy, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MessagingExperience from "@/components/sms/MessagingExperience";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +19,7 @@ export const SMS_TIERS = [
   { min: 100_000, max: 499_999, rate: 0.032, label: "Business" },
   { min: 500_000, max: Infinity, rate: 0.027, label: "Enterprise" },
 ];
-export const tierFor = (v: number) => SMS_TIERS.find((t) => v >= t.min && v <= t.max)!;
+export const tierFor = (v: number) => SMS_TIERS.find((t) => v >= t.min && v <= t.max) ?? SMS_TIERS[0];
 
 const features = [
   { icon: Zap, title: "Fast delivery", text: "Direct routes to MTN, Telecel and AT for messages delivered in seconds." },
@@ -29,7 +30,7 @@ const features = [
   { icon: MessageSquare, title: "Value-added services", text: "USSD menus, short codes, OTPs and two-way SMS for your customers." },
 ];
 
-const useCases = ["Alerts & notifications", "OTP / verification", "Marketing campaigns", "Reminders & billing", "USSD / short code", "Other"];
+const useCases = ["AI two-way SMS", "Alerts & notifications", "OTP / verification", "Marketing campaigns", "Reminders & billing", "USSD / short code", "Other"];
 
 const snippets: Record<string, string> = {
   curl: `curl -X POST https://api.iklickgh.com/v1/sms/send \\
@@ -76,6 +77,22 @@ const sampleResponse = `{
 const fmt = (n: number) => n.toLocaleString("en-GH", { maximumFractionDigits: 2 });
 
 export default function SmsVas() {
+  const pageRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const root = pageRef.current;
+    if (!root || !window.IntersectionObserver || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.setAttribute("data-revealed", "true");
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    root.classList.add("sms-motion-ready");
+    root.querySelectorAll(".sms-reveal").forEach(element => observer.observe(element));
+    return () => { observer.disconnect(); root.classList.remove("sms-motion-ready"); };
+  }, []);
   const [volume, setVolume] = useState(25_000);
   const [segments, setSegments] = useState(1);
   const [lang, setLang] = useState<keyof typeof snippets>("curl");
@@ -103,30 +120,32 @@ export default function SmsVas() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div ref={pageRef} className="sms-page min-h-screen bg-background text-foreground">
       <Navbar />
 
       <section className="pt-32 pb-16 container mx-auto px-4 text-center">
         <span className="inline-block rounded-full border border-border px-3 py-1 text-xs uppercase tracking-wider text-muted-foreground mb-4">SMS & Value-Added Services</span>
         <h1 className="text-4xl md:text-6xl font-bold max-w-4xl mx-auto leading-tight">Reach every customer, <span className="text-primary">instantly</span>.</h1>
-        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">Bulk SMS, OTPs, USSD and short codes on reliable Ghanaian networks — with a simple API and real-time delivery reports.</p>
+        <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">From bulk SMS, OTPs and alerts to AI-powered two-way conversations — connect with customers through enterprise messaging built around your business.</p>
         <div className="mt-8 flex flex-wrap gap-3 justify-center">
           <Button size="lg" asChild><a href="#inquiry">Get started</a></Button>
           <Button size="lg" variant="outline" asChild><a href="#calculator">Estimate cost</a></Button>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 pb-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <MessagingExperience />
+
+      <section aria-label="Enterprise messaging services" className="container mx-auto px-4 pb-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {features.map(({ icon: Icon, title, text }) => (
-          <div key={title} className="rounded-2xl border border-border bg-card p-6">
-            <Icon className="h-6 w-6 text-primary mb-4" />
+          <div key={title} className="sms-reveal sms-service-card rounded-lg border border-border bg-card/50 backdrop-blur-sm p-6">
+            <Icon className="sms-card-icon h-6 w-6 text-primary mb-4" />
             <h3 className="font-semibold text-lg">{title}</h3>
             <p className="text-muted-foreground mt-2 text-sm">{text}</p>
           </div>
         ))}
       </section>
 
-      <section id="calculator" className="container mx-auto px-4 pb-20 scroll-mt-24">
+      <section id="calculator" className="sms-reveal container mx-auto px-4 pb-20 scroll-mt-24">
         <div className="rounded-3xl border border-border bg-card p-6 md:p-10 grid gap-10 lg:grid-cols-2">
           <div>
             <h2 className="text-3xl font-bold">Volume calculator</h2>
@@ -164,12 +183,12 @@ export default function SmsVas() {
                 </div>
               ))}
             </div>
-            <p className="mt-auto pt-6 text-xs text-muted-foreground">Indicative pricing. Final rates are confirmed in your quote.</p>
+            <p className="mt-auto pt-6 text-xs text-muted-foreground">Indicative outbound SMS pricing only. AI two-way SMS, incoming messages and workflow setup are quoted separately.</p>
           </div>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 pb-20">
+      <section className="sms-reveal container mx-auto px-4 pb-20">
         <h2 className="text-3xl font-bold">Developer-friendly API</h2>
         <p className="text-muted-foreground mt-2">Send your first message in minutes. API keys are issued when your account is set up.</p>
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -192,7 +211,7 @@ export default function SmsVas() {
         </div>
       </section>
 
-      <section id="inquiry" className="container mx-auto px-4 pb-24 scroll-mt-24">
+      <section id="inquiry" className="sms-reveal container mx-auto px-4 pb-24 scroll-mt-24">
         <div className="rounded-3xl border border-border bg-card p-6 md:p-10 max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold">Talk to our team</h2>
           <p className="text-muted-foreground mt-2">Tell us what you need and we'll send you a quote.</p>
