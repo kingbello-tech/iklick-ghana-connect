@@ -18,6 +18,7 @@ const Navbar = ({ visible = true }: NavbarProps) => {
     { name: "Services", href: "#services", isRoute: false },
     { name: "Projects", href: "/projects", isRoute: true },
     { name: "Team", href: "/team", isRoute: true },
+    { name: "SMS & VAS", href: "/sms-vas", isRoute: true },
     { name: "Support", href: "#support", isRoute: false },
     { name: "Contact", href: "#contact", isRoute: false }
   ];

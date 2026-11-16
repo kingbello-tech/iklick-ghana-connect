@@ -12,6 +12,7 @@ import Home from "./pages/Home";
 import SurveyPage from "./pages/SurveyPage";
 import Projects from "./pages/Projects";
 import Team from "./pages/Team";
+import SmsVas from "./pages/SmsVas";
 import IntakeForm from "./pages/IntakeForm";
 import NotFound from "./pages/NotFound";
 import LoginPage from "./pages/LoginPage";
@@ -89,6 +90,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/team" element={<Team />} />
+              <Route path="/sms-vas" element={<SmsVas />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/survey/:token" element={<SurveyPage />} />
               <Route path="/intake/:token" element={<IntakeForm />} />
