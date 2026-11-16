@@ -10,7 +10,7 @@ function TypingIndicator({ sender }: { sender: "Customer" | "AI-assisted reply" 
     <div
       role="status"
       aria-label={`${sender} is typing`}
-      className={`sms-message flex items-center gap-3 self-${customer ? "end" : "start"} rounded-lg px-4 py-3 ${customer ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+      className={`sms-message flex items-center gap-3 rounded-lg px-4 py-3 ${customer ? "self-end bg-primary/10 text-primary" : "self-start bg-muted text-muted-foreground"}`}
     >
       <span className="text-xs">{sender} is typing</span>
       <span className="flex items-center gap-1" aria-hidden="true">
