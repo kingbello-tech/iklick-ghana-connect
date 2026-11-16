@@ -3,10 +3,60 @@ import { ArrowDown, ArrowRight, Bot, MessageSquare, MessagesSquare, RotateCcw, S
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+function TypingIndicator({ sender }: { sender: "Customer" | "AI-assisted reply" }) {
+  const customer = sender === "Customer";
+
+  return (
+    <div
+      role="status"
+      aria-label={`${sender} is typing`}
+      className={`sms-message flex items-center gap-3 self-${customer ? "end" : "start"} rounded-lg px-4 py-3 ${customer ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+    >
+      <span className="text-xs">{sender} is typing</span>
+      <span className="flex items-center gap-1" aria-hidden="true">
+        {[0, 1, 2].map((dot) => <span key={dot} className="sms-typing-dot h-1.5 w-1.5 rounded-full bg-current" />)}
+      </span>
+    </div>
+  );
+}
+
 export default function MessagingExperience() {
   const [mode, setMode] = useState("two-way");
   const [replay, setReplay] = useState(0);
+  const [conversationStep, setConversationStep] = useState(0);
   const conversational = mode === "two-way";
+
+  useEffect(() => {
+    if (!conversational) {
+      setConversationStep(0);
+      return;
+    }
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setConversationStep(4);
+      return;
+    }
+
+    setConversationStep(0);
+    const timers = [
+      window.setTimeout(() => setConversationStep(1), 700),
+      window.setTimeout(() => setConversationStep(2), 2100),
+      window.setTimeout(() => setConversationStep(3), 2900),
+      window.setTimeout(() => setConversationStep(4), 4200),
+    ];
+
+    return () => timers.forEach(window.clearTimeout);
+  }, [conversational, replay]);
+
+  const selectMode = (nextMode: string) => {
+    setConversationStep(0);
+    setMode(nextMode);
+  };
+
+  const replayConversation = () => {
+    setConversationStep(0);
+    setReplay((value) => value + 1);
+  };
 
   return (
     <section aria-labelledby="messaging-heading" className="container mx-auto px-4 pb-20">
